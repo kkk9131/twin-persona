@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Download, Share2, Camera, ChevronRight, Sparkles, ChevronLeft } from 'lucide-react';
+import { Download, Share2, Camera, ChevronRight, Sparkles, ChevronLeft, RefreshCw } from 'lucide-react';
 import { CHARACTER_CODE_16_TYPES, CHARACTER_CODE_QUESTIONS, calculateCharacterCode16Type } from './data/characterCode16Types';
+import { AdviceService } from './services/adviceService';
 
 // MBTIグループ別統一カラーパレット
 const unifiedColorPalette = {
@@ -1334,6 +1335,9 @@ const App = () => {
   const [uploadedPhoto, setUploadedPhoto] = useState(null);
   const [results, setResults] = useState(null);
   const [isPremium, setIsPremium] = useState(false); // 課金状態管理
+  const [aiAdvice, setAiAdvice] = useState(null); // GEMINI APIからのアドバイス
+  const [adviceLoading, setAdviceLoading] = useState(false); // アドバイス生成中
+  const [adviceError, setAdviceError] = useState(null); // アドバイス生成エラー
   const canvasRef = useRef(null);
 
   // MBTI結果計算
@@ -1410,6 +1414,28 @@ const App = () => {
         scores
       });
       setStep('result');
+    }
+  };
+
+  // GEMINI APIからアドバイス生成
+  const generateAIAdvice = async () => {
+    if (!results) return;
+    
+    setAdviceLoading(true);
+    setAdviceError(null);
+    
+    try {
+      const advice = await AdviceService.generateAdvice({
+        mbtiType: results.mbti,
+        characterType: results.characterInfo.code,
+        gapLevel: results.gapAnalysis.level || 'medium'
+      });
+      setAiAdvice(advice);
+    } catch (error) {
+      console.error('AI advice generation failed:', error);
+      setAdviceError(error.message || 'アドバイス生成に失敗しました');
+    } finally {
+      setAdviceLoading(false);
     }
   };
 
@@ -2252,17 +2278,148 @@ const App = () => {
                 
                 {isPremium ? (
                   <div className="space-y-5">
-                    {Object.entries(results.advice).map(([key, advice]) => (
-                      <div key={key} className="p-4 bg-gradient-to-r from-dark-700/30 to-dark-600/30 rounded-xl border border-dark-500/30 backdrop-blur-sm">
-                        <h4 className="font-medium text-dark-200 mb-3 flex items-center gap-2">
-                          <span className="text-lg">{key === '仕事' ? '💼' : key === '友達' ? '👥' : '💕'}</span>
-                          <span className="text-explorers-primary">{key}</span>
-                        </h4>
-                        <p className="text-sm text-dark-300 leading-relaxed">
-                          {advice}
-                        </p>
+                    {!aiAdvice && !adviceLoading ? (
+                      <div className="text-center py-8">
+                        <button
+                          onClick={generateAIAdvice}
+                          disabled={adviceLoading}
+                          className="btn-primary"
+                        >
+                          <Sparkles className="w-5 h-5 inline mr-2" />
+                          AIアドバイスを生成する
+                        </button>
                       </div>
-                    ))}
+                    ) : adviceLoading ? (
+                      <div className="text-center py-8">
+                        <RefreshCw className="w-6 h-6 animate-spin mx-auto text-blue-400 mb-3" />
+                        <p className="text-dark-300">AIがあなた専用のアドバイスを生成中...</p>
+                      </div>
+                    ) : adviceError ? (
+                      <div className="text-center py-8">
+                        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg mb-4">
+                          <p className="text-red-400 text-sm mb-3">{adviceError}</p>
+                          <button 
+                            onClick={generateAIAdvice}
+                            className="text-red-400 hover:text-red-300 text-sm underline"
+                          >
+                            もう一度試す
+                          </button>
+                        </div>
+                      </div>
+                    ) : aiAdvice ? (
+                      <>
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="text-sm text-dark-300 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                            <span className="text-blue-400 font-semibold">{results.mbti}</span> × <span className="text-purple-400 font-semibold">{results.characterInfo.code}</span> 専用のAIアドバイス
+                          </div>
+                          <button
+                            onClick={generateAIAdvice}
+                            disabled={adviceLoading}
+                            className="text-dark-400 hover:text-dark-200 transition-colors text-sm flex items-center"
+                            title="新しいアドバイスを生成"
+                          >
+                            <RefreshCw className={`w-4 h-4 mr-1 ${adviceLoading ? 'animate-spin' : ''}`} />
+                            更新
+                          </button>
+                        </div>
+                        
+                        {/* キャリア */}
+                        <div className="p-4 bg-gradient-to-r from-dark-700/30 to-dark-600/30 rounded-xl border border-dark-500/30 backdrop-blur-sm">
+                          <h4 className="font-medium text-dark-200 mb-3 flex items-center gap-2">
+                            <span className="text-lg">💼</span>
+                            <span className="text-explorers-primary">仕事・キャリア</span>
+                          </h4>
+                          <div className="space-y-2">
+                            {aiAdvice.career?.map((tip, index) => (
+                              <p key={index} className="text-sm text-dark-300 leading-relaxed">
+                                • {tip}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 人間関係 */}
+                        <div className="p-4 bg-gradient-to-r from-dark-700/30 to-dark-600/30 rounded-xl border border-dark-500/30 backdrop-blur-sm">
+                          <h4 className="font-medium text-dark-200 mb-3 flex items-center gap-2">
+                            <span className="text-lg">🤝</span>
+                            <span className="text-explorers-primary">人間関係</span>
+                          </h4>
+                          <div className="space-y-2">
+                            {aiAdvice.relationships?.map((tip, index) => (
+                              <p key={index} className="text-sm text-dark-300 leading-relaxed">
+                                • {tip}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 恋愛 */}
+                        <div className="p-4 bg-gradient-to-r from-dark-700/30 to-dark-600/30 rounded-xl border border-dark-500/30 backdrop-blur-sm">
+                          <h4 className="font-medium text-dark-200 mb-3 flex items-center gap-2">
+                            <span className="text-lg">💕</span>
+                            <span className="text-explorers-primary">恋愛・パートナーシップ</span>
+                          </h4>
+                          <div className="space-y-2">
+                            {aiAdvice.romance?.map((tip, index) => (
+                              <p key={index} className="text-sm text-dark-300 leading-relaxed">
+                                • {tip}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 自己成長 */}
+                        <div className="p-4 bg-gradient-to-r from-dark-700/30 to-dark-600/30 rounded-xl border border-dark-500/30 backdrop-blur-sm">
+                          <h4 className="font-medium text-dark-200 mb-3 flex items-center gap-2">
+                            <span className="text-lg">🌱</span>
+                            <span className="text-explorers-primary">自己成長</span>
+                          </h4>
+                          <div className="space-y-2">
+                            {aiAdvice.growth?.map((tip, index) => (
+                              <p key={index} className="text-sm text-dark-300 leading-relaxed">
+                                • {tip}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* ライフスタイル */}
+                        <div className="p-4 bg-gradient-to-r from-dark-700/30 to-dark-600/30 rounded-xl border border-dark-500/30 backdrop-blur-sm">
+                          <h4 className="font-medium text-dark-200 mb-3 flex items-center gap-2">
+                            <span className="text-lg">🎨</span>
+                            <span className="text-explorers-primary">ライフスタイル</span>
+                          </h4>
+                          <div className="space-y-2">
+                            {aiAdvice.lifestyle?.map((tip, index) => (
+                              <p key={index} className="text-sm text-dark-300 leading-relaxed">
+                                • {tip}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* ストレス管理 */}
+                        <div className="p-4 bg-gradient-to-r from-dark-700/30 to-dark-600/30 rounded-xl border border-dark-500/30 backdrop-blur-sm">
+                          <h4 className="font-medium text-dark-200 mb-3 flex items-center gap-2">
+                            <span className="text-lg">🧘</span>
+                            <span className="text-explorers-primary">ストレス管理</span>
+                          </h4>
+                          <div className="space-y-2">
+                            {aiAdvice.stress?.map((tip, index) => (
+                              <p key={index} className="text-sm text-dark-300 leading-relaxed">
+                                • {tip}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="mt-6 p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-lg">
+                          <p className="text-dark-300 text-xs text-center">
+                            💡 このアドバイスは AI によって生成されており、参考情報として活用してください
+                          </p>
+                        </div>
+                      </>
+                    ) : null}
                   </div>
                 ) : (
                   <div className="relative">
@@ -2314,7 +2471,7 @@ const App = () => {
                           onClick={() => setIsPremium(true)}
                           className="bg-gradient-to-r from-explorers-primary to-explorers-accent text-white px-6 py-3 rounded-xl font-semibold hover:from-explorers-accent hover:to-explorers-primary transition-all"
                         >
-                          プレミアムにアップグレード
+                          AIアドバイスを見る
                         </button>
                       </div>
                     </div>
