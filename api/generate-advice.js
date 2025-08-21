@@ -56,7 +56,7 @@ export default async function handler(req, res) {
 各アドバイスは20-50文字程度で、具体的な行動に落とし込める形で、親しみやすい口調で書いてください。`;
     
     // GEMINI APIを直接呼び出し
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash-exp:generateContent?key=${process.env.GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
