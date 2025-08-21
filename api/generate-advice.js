@@ -1,34 +1,22 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-export const config = {
-  runtime: 'edge',
-};
+module.exports = async function handler(req, res) {
+  // CORS設定
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-export default async function handler(request) {
   // CORS preflight handling
-  if (request.method === 'OPTIONS') {
-    return new Response('ok', {
-      status: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      }
-    });
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
   }
 
-  if (request.method !== 'POST') {
-    return new Response(
-      JSON.stringify({ error: 'Method Not Allowed' }), 
-      { 
-        status: 405,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
   try {
-    const { mbtiType, characterType, gapAnalysis } = await request.json();
+    const { mbtiType, characterType, gapAnalysis } = req.body;
     
     // GEMINI API key validation
     if (!process.env.GEMINI_API_KEY) {
@@ -60,36 +48,21 @@ export default async function handler(request) {
       };
     }
 
-    return new Response(JSON.stringify({ 
+    return res.status(200).json({ 
       advice: parsedAdvice,
       success: true 
-    }), {
-      status: 200,
-      headers: { 
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      }
     });
 
   } catch (error) {
     console.error('Advice generation error:', error);
     
-    return new Response(
-      JSON.stringify({ 
-        error: 'アドバイス生成に失敗しました',
-        details: error.message,
-        success: false
-      }), 
-      { 
-        status: 500,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        }
-      }
-    );
+    return res.status(500).json({ 
+      error: 'アドバイス生成に失敗しました',
+      details: error.message,
+      success: false
+    });
   }
-}
+};
 
 function generateAdvicePrompt(mbtiType, characterType, gapAnalysis) {
   return `あなたは経験豊富な心理カウンセラーです。以下の診断結果に基づいて、実用的で具体的なアドバイスを提供してください。
