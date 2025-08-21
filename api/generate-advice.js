@@ -1,5 +1,3 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
 module.exports = async function handler(req, res) {
   // CORS設定
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -23,28 +21,45 @@ module.exports = async function handler(req, res) {
       throw new Error('GEMINI API key not configured');
     }
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
     const prompt = generateAdvicePrompt(mbtiType, characterType, gapAnalysis);
     
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const advice = response.text();
+    // GEMINI APIを直接呼び出し
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }]
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`GEMINI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const advice = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     // Parse the JSON response from GEMINI
     let parsedAdvice;
     try {
       parsedAdvice = JSON.parse(advice);
     } catch (parseError) {
-      // If JSON parsing fails, return the raw text
+      console.log('Failed to parse GEMINI response:', advice);
+      // If JSON parsing fails, create structured response from raw text
+      const lines = advice.split('\n').filter(line => line.trim());
       parsedAdvice = {
-        career: [advice.slice(0, 100) + "..."],
-        relationships: ["JSON解析エラーが発生しました"],
-        romance: ["再度お試しください"],
-        growth: [""],
-        lifestyle: [""],
-        stress: [""]
+        career: lines.slice(0, 3) || ["キャリア向上のため、継続的な学習を心がけましょう"],
+        relationships: lines.slice(3, 6) || ["相手を理解し、誠実なコミュニケーションを大切にしましょう"],
+        romance: lines.slice(6, 9) || ["自然体で、相手との共通点を見つけることが大切です"],
+        growth: lines.slice(9, 12) || ["小さな目標から始めて、着実に成長していきましょう"],
+        lifestyle: lines.slice(12, 15) || ["自分らしい生活リズムを見つけて大切にしましょう"],
+        stress: lines.slice(15, 18) || ["適度な休息とリラックスを心がけましょう"]
       };
     }
 
