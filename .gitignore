@@ -121,3 +121,4 @@ Thumbs.db
 
 # Serena cache
 .serena/
+.vercel
