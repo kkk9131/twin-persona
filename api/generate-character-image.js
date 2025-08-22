@@ -121,34 +121,30 @@ function generateImagePrompt(mbtiType, characterType, scores, gender) {
   const charismaLevel = scores?.charisma > 80 ? 'very high' : scores?.charisma > 60 ? 'high' : 'balanced';
   const gapLevel = scores?.gap > 80 ? 'very high' : scores?.gap > 60 ? 'high' : 'balanced';
 
-  return `Create a stylized MBTI personality character illustration in the style of official MBTI artwork.
+  return `Create a low-poly 3D character illustration designed as a social media share card.
 
-Character Design:
+Character:
 - Gender: ${gender}
-- MBTI type: ${mbtiType} (${mbtiTrait})
+- MBTI type: ${mbtiType} – ${mbtiTrait}
 - Character impression: ${characterType} style with ${characterStyle}
-- Art style: Simplified cartoon illustration, similar to official MBTI character designs
-- Body proportions: COMPLETE FULL BODY from head to feet, chibi-like proportions (2.5-3 heads tall)
-- Character positioning: Standing centered, ENTIRE FIGURE visible within frame borders
-- Facial features: Simple, expressive, ${characterType === 'gentle' ? 'kind eyes and soft smile' : characterType === 'cool' ? 'calm expression and slight smirk' : characterType === 'dynamic' ? 'bright eyes and confident smile' : 'natural expression and gentle smile'}
-- Clothing: Simple, modern casual wear that reflects ${characterType} personality
-- Color palette: Soft, friendly colors typical of MBTI illustrations
+- Style: low-poly 3D, polygonal surfaces, geometric faceted design, 150-200 polygons
+- Pose: ${characterType === 'dynamic' ? 'energetic and lively' : characterType === 'gentle' ? 'soft and welcoming' : characterType === 'cool' ? 'composed and confident' : 'natural and relaxed'}
+- Outfit: modern stylish clothing matching the ${characterType} impression
 
-Background & Layout:
-- Background: Simple gradient or solid color, not too busy
-- Character scale: Medium size, centered, with generous padding around edges
-- Ensure character fits completely within image boundaries
-- Style: Clean, professional, educational illustration similar to MBTI foundation materials
+Entertainment Score Visualization:
+- ${charismaLevel} Charisma: ${charismaLevel === 'very high' ? 'glowing aura, radiant atmosphere' : 'subtle glow'}
+- ${gapLevel} Gap factor: ${gapLevel === 'very high' ? 'intriguing contrast in styling' : 'harmonious balance'}
+- Overall vibe: ${mbtiType} personality with ${characterType} visual impression
 
-Text Layout:
-- Position: Top-left corner only
-- Content: "${mbtiType} ${characterType}" 
-- Font: Clean, sans-serif, medium size
-- Color: High contrast against background
-- Ensure text is NOT cut off or cropped
-- Leave adequate margin from image edges
-
-Overall aesthetic: Educational, approachable, similar to official MBTI personality type illustrations`;
+Card Design:
+- Format: 1:1 square, optimized for Instagram/Twitter sharing
+- Background: abstract polygonal shapes with gradient matching personality type
+- Lighting: soft ambient with directional highlight
+- Color scheme: vibrant but harmonious, reflecting both MBTI and Character Code
+- Text overlay (must be clearly visible):
+   • Top: "MBTI: ${mbtiType}"
+   • Bottom: "Character: ${characterType}"
+- Style: Clean, modern, shareable social media aesthetic`;
 }
 
 function generateFallbackSVG(mbtiType, characterType) {
