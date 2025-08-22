@@ -1329,7 +1329,8 @@ const generateScores = (mbtiType, characterType) => {
 };
 
 const App = () => {
-  const [step, setStep] = useState('start'); // start, mbti, character, photo, generating, result
+  const [step, setStep] = useState('start'); // start, gender, mbti, character, photo, generating, result
+  const [selectedGender, setSelectedGender] = useState(null); // 男性, 女性, 非公開
   const [mbtiAnswers, setMbtiAnswers] = useState({});
   const [characterAnswers, setCharacterAnswers] = useState({});
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -1455,7 +1456,7 @@ const App = () => {
         results.mbti,
         results.characterInfo.code,
         results.scores,
-        'neutral' // デフォルトで中性的
+        selectedGender === '男性' ? 'male' : selectedGender === '女性' ? 'female' : 'neutral'
       );
       
       setCharacterImage(response);
@@ -1601,8 +1602,8 @@ const App = () => {
           return newAnswers;
         });
       } else {
-        // 最初の質問の場合はスタート画面に戻る
-        setStep('start');
+        // 最初の質問の場合は性別選択画面に戻る
+        setStep('gender');
         setMbtiAnswers({});
         setCurrentQuestion(0);
       }
@@ -1664,11 +1665,21 @@ const App = () => {
   // 最初からやり直し
   const handleRestart = () => {
     setStep('start');
+    setSelectedGender(null);
     setMbtiAnswers({});
     setCharacterAnswers({});
     setCurrentQuestion(0);
     setUploadedPhoto(null);
     setResults(null);
+    setCharacterImage(null);
+    setAiAdvice(null);
+  };
+
+  // 性別選択処理
+  const handleGenderSelect = (gender) => {
+    setSelectedGender(gender);
+    setStep('mbti');
+    setCurrentQuestion(0);
   };
 
   // レンダリング
@@ -1762,7 +1773,7 @@ const App = () => {
               </div>
 
               <button
-                onClick={() => setStep('mbti')}
+                onClick={() => setStep('gender')}
                 className="btn-primary text-lg px-8 py-4"
               >
                 <Sparkles className="w-5 h-5 inline mr-2" />
@@ -1774,6 +1785,71 @@ const App = () => {
               所要時間: 約8-15分 | データは保存されません
               {isPremium && <span className="text-explorers-primary ml-2">| プレミアム機能でより詳細な分析</span>}
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* 性別選択画面 */}
+      {step === 'gender' && (
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="max-w-xl mx-auto">
+            <div className="bg-dark-800/80 backdrop-blur-md rounded-3xl p-8 border border-dark-700/50 shadow-2xl">
+              {/* ヘッダー */}
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-analysts-primary to-diplomats-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Camera className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  基本情報
+                </h2>
+                <p className="text-dark-300 text-sm">
+                  より正確なキャラクター生成のため<br />
+                  性別を教えてください
+                </p>
+              </div>
+
+              {/* 性別選択 */}
+              <div className="space-y-4 mb-8">
+                {[
+                  { value: '男性', icon: '♂', color: 'from-blue-500 to-blue-600' },
+                  { value: '女性', icon: '♀', color: 'from-pink-500 to-pink-600' },
+                  { value: '非公開', icon: '○', color: 'from-gray-500 to-gray-600' }
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => handleGenderSelect(option.value)}
+                    className={`w-full p-4 rounded-xl border-2 text-left transition-all hover:scale-105 ${
+                      selectedGender === option.value
+                        ? 'border-analysts-primary bg-analysts-primary/10'
+                        : 'border-dark-600 bg-dark-700/50 hover:border-dark-500'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-12 h-12 bg-gradient-to-br ${option.color} rounded-xl flex items-center justify-center text-white text-xl font-bold`}>
+                        {option.icon}
+                      </div>
+                      <div>
+                        <h3 className="text-white font-semibold">{option.value}</h3>
+                        <p className="text-dark-400 text-sm">
+                          {option.value === '男性' && 'Male character generation'}
+                          {option.value === '女性' && 'Female character generation'} 
+                          {option.value === '非公開' && 'Gender-neutral character'}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* 戻るボタン */}
+              <button
+                onClick={() => setStep('start')}
+                className="w-full bg-dark-700 text-white py-3 rounded-xl hover:bg-dark-600 transition-colors flex items-center justify-center space-x-2"
+              >
+                <ChevronLeft className="w-5 h-5" />
+                <span>戻る</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
