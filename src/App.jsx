@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { Download, Share2, Camera, ChevronRight, Sparkles, ChevronLeft, RefreshCw } from 'lucide-react';
 import { CHARACTER_CODE_16_TYPES, CHARACTER_CODE_QUESTIONS, calculateCharacterCode16Type } from './data/characterCode16Types';
 import { AdviceService } from './services/adviceService';
+import { ImageService } from './services/imageService';
 
 // MBTIグループ別統一カラーパレット
 const unifiedColorPalette = {
@@ -1338,6 +1339,9 @@ const App = () => {
   const [aiAdvice, setAiAdvice] = useState(null); // GEMINI APIからのアドバイス
   const [adviceLoading, setAdviceLoading] = useState(false); // アドバイス生成中
   const [adviceError, setAdviceError] = useState(null); // アドバイス生成エラー
+  const [characterImage, setCharacterImage] = useState(null); // DALL-E 3 キャラクター画像
+  const [imageLoading, setImageLoading] = useState(false); // 画像生成中
+  const [imageError, setImageError] = useState(null); // 画像生成エラー
   const canvasRef = useRef(null);
 
   // MBTI結果計算
@@ -1436,6 +1440,30 @@ const App = () => {
       setAdviceError(error.message || 'アドバイス生成に失敗しました');
     } finally {
       setAdviceLoading(false);
+    }
+  };
+
+  // DALL-E 3 キャラクター画像生成
+  const generateCharacterImage = async () => {
+    if (!results) return;
+    
+    setImageLoading(true);
+    setImageError(null);
+    
+    try {
+      const response = await ImageService.generateCharacterImage(
+        results.mbti,
+        results.characterInfo.code,
+        results.scores,
+        'neutral' // デフォルトで中性的
+      );
+      
+      setCharacterImage(response);
+    } catch (error) {
+      console.error('Character image generation failed:', error);
+      setImageError(error.message || 'キャラクター画像生成に失敗しました');
+    } finally {
+      setImageLoading(false);
     }
   };
 
@@ -2000,40 +2028,74 @@ const App = () => {
                   )}
                 </h3>
                 
-                {isPremium ? (
-                  <div 
-                    className="w-48 h-48 mx-auto mb-4 p-4 bg-gradient-to-br from-dark-700/50 to-dark-600/50 rounded-2xl border border-dark-500/50 shadow-glow"
-                    dangerouslySetInnerHTML={{ 
-                      __html: generateEnhancedCharacterSVG(results.mbti, results.character) 
-                    }}
-                  />
+                {characterImage?.imageUrl ? (
+                  <div className="w-48 h-48 mx-auto mb-4 bg-gradient-to-br from-dark-700/50 to-dark-600/50 rounded-2xl border border-dark-500/50 shadow-glow overflow-hidden">
+                    <img 
+                      src={characterImage.imageUrl} 
+                      alt={`${results.mbti} × ${results.characterInfo.code} キャラクター`}
+                      className="w-full h-full object-cover rounded-2xl"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'block';
+                      }}
+                    />
+                    {/* フォールバックSVG */}
+                    <div 
+                      style={{ display: 'none' }}
+                      className="w-full h-full flex items-center justify-center"
+                      dangerouslySetInnerHTML={{ 
+                        __html: generateEnhancedCharacterSVG(results.mbti, results.character) 
+                      }}
+                    />
+                  </div>
                 ) : (
                   <div className="relative">
-                    {/* ぼかしキャラクター */}
+                    {/* デフォルトSVGキャラクター */}
                     <div 
-                      className="w-48 h-48 mx-auto mb-4 p-4 bg-gradient-to-br from-dark-700/50 to-dark-600/50 rounded-2xl border border-dark-500/50 shadow-glow blur-md select-none pointer-events-none"
+                      className="w-48 h-48 mx-auto mb-4 p-4 bg-gradient-to-br from-dark-700/50 to-dark-600/50 rounded-2xl border border-dark-500/50 shadow-glow"
                       dangerouslySetInnerHTML={{ 
                         __html: generateEnhancedCharacterSVG(results.mbti, results.character) 
                       }}
                     />
                     
-                    {/* アップグレードオーバーレイ */}
+                    {/* AI生成オーバーレイ */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center p-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-explorers-primary to-explorers-accent rounded-full flex items-center justify-center mx-auto mb-3">
-                          <Sparkles className="w-6 h-6 text-white" />
-                        </div>
-                        <h4 className="text-sm font-bold text-white mb-1">AIキャラクター</h4>
-                        <p className="text-xs text-dark-300 mb-3">
-                          あなた専用の<br />
-                          キャラクターを生成
-                        </p>
-                        <button
-                          onClick={() => setIsPremium(true)}
-                          className="bg-gradient-to-r from-explorers-primary to-explorers-accent text-white px-4 py-2 rounded-lg text-xs font-semibold hover:from-explorers-accent hover:to-explorers-primary transition-all"
-                        >
-                          キャラクターを見る
-                        </button>
+                        {imageLoading ? (
+                          <>
+                            <div className="w-12 h-12 bg-gradient-to-r from-explorers-primary to-explorers-accent rounded-full flex items-center justify-center mx-auto mb-3 animate-pulse">
+                              <RefreshCw className="w-6 h-6 text-white animate-spin" />
+                            </div>
+                            <h4 className="text-sm font-bold text-white mb-1">AI生成中...</h4>
+                            <p className="text-xs text-dark-300">
+                              あなた専用の<br />
+                              キャラクターを作成中
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-12 h-12 bg-gradient-to-r from-explorers-primary to-explorers-accent rounded-full flex items-center justify-center mx-auto mb-3">
+                              <Sparkles className="w-6 h-6 text-white" />
+                            </div>
+                            <h4 className="text-sm font-bold text-white mb-1">AIキャラクター</h4>
+                            <p className="text-xs text-dark-300 mb-3">
+                              あなた専用の<br />
+                              キャラクターを生成
+                            </p>
+                            <button
+                              onClick={generateCharacterImage}
+                              disabled={imageLoading}
+                              className="bg-gradient-to-r from-explorers-primary to-explorers-accent text-white px-4 py-2 rounded-lg text-xs font-semibold hover:from-explorers-accent hover:to-explorers-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              キャラクターを生成
+                            </button>
+                            {imageError && (
+                              <p className="text-xs text-red-400 mt-2">
+                                {imageError}
+                              </p>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
