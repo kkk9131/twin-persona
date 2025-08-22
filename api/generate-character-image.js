@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { mbtiType, characterType, scores = {}, gender = 'neutral' } = req.body;
+    const { mbtiType, characterType, scores = {}, gender = 'neutral', occupation = null } = req.body;
     
     // OpenAI API key validation
     if (!process.env.OPENAI_API_KEY) {
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     console.log('API Key starts with:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 10) + '...' : 'NONE');
 
     // プロンプト生成
-    const prompt = generateImagePrompt(mbtiType, characterType, scores, gender);
+    const prompt = generateImagePrompt(mbtiType, characterType, scores, gender, occupation);
     console.log('Generated prompt:', prompt.substring(0, 100) + '...');
     
     // OpenAI DALL-E 3 APIを呼び出し
@@ -92,7 +92,7 @@ export default async function handler(req, res) {
   }
 }
 
-function generateImagePrompt(mbtiType, characterType, scores, gender) {
+function generateImagePrompt(mbtiType, characterType, scores, gender, occupation = null) {
   // MBTIタイプの特性マッピング
   const mbtiTraits = {
     'ENTP': 'energetic, adventurous, bold debater',
@@ -114,8 +114,23 @@ function generateImagePrompt(mbtiType, characterType, scores, gender) {
     'cool': 'sophisticated, composed, mysterious aura'
   };
 
+  // 職業別の衣装マッピング
+  const occupationOutfits = {
+    'ビジネス': 'professional business suit, formal attire',
+    'クリエイティブ': 'stylish casual creative wear, artistic clothing',
+    'テック': 'modern tech casual, smart casual with tech accessories',
+    '医療': 'medical professional attire, clean healthcare clothing',
+    '教育': 'professional educator clothing, approachable formal wear',
+    'サービス': 'friendly service industry uniform, welcoming attire',
+    '学生': 'casual student clothing, youthful modern wear',
+    'アーティスト': 'creative artistic clothing, expressive fashion',
+    'スポーツ': 'athletic wear, sports-inspired casual clothing',
+    'その他': 'modern stylish clothing'
+  };
+
   const mbtiTrait = mbtiTraits[mbtiType] || 'unique personality';
   const characterStyle = characterStyles[characterType] || 'distinctive style';
+  const outfitStyle = occupation ? occupationOutfits[occupation] || 'modern stylish clothing' : `modern stylish clothing matching the ${characterType} impression`;
 
   // スコアに基づく特性の強調
   const charismaLevel = scores?.charisma > 80 ? 'very high' : scores?.charisma > 60 ? 'high' : 'balanced';
@@ -128,8 +143,10 @@ Character:
 - MBTI type: ${mbtiType} – ${mbtiTrait}
 - Character impression: ${characterType} style with ${characterStyle}
 - Style: low-poly 3D, polygonal surfaces, geometric faceted design, 150-200 polygons
+- Body: FULL BODY CHARACTER showing head to feet completely, standing upright
+- Framing: Wide shot ensuring entire figure fits within image boundaries with margin
 - Pose: ${characterType === 'dynamic' ? 'energetic and lively' : characterType === 'gentle' ? 'soft and welcoming' : characterType === 'cool' ? 'composed and confident' : 'natural and relaxed'}
-- Outfit: modern stylish clothing matching the ${characterType} impression
+- Outfit: ${outfitStyle}
 
 Entertainment Score Visualization:
 - ${charismaLevel} Charisma: ${charismaLevel === 'very high' ? 'glowing aura, radiant atmosphere' : 'subtle glow'}
@@ -141,9 +158,10 @@ Card Design:
 - Background: abstract polygonal shapes with gradient matching personality type
 - Lighting: soft ambient with directional highlight
 - Color scheme: vibrant but harmonious, reflecting both MBTI and Character Code
-- Text overlay (must be clearly visible):
-   • Top: "MBTI: ${mbtiType}"
-   • Bottom: "Character: ${characterType}"
+- Text overlay: "${mbtiType} ${characterType}" positioned in top-left corner with sufficient margin
+- Text styling: Bold, readable font with high contrast outline/shadow for visibility
+- Text size: Large enough to read clearly but not overwhelming
+- Text placement: Ensure text stays within image boundaries and is not cropped
 - Style: Clean, modern, shareable social media aesthetic`;
 }
 

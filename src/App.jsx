@@ -1329,8 +1329,9 @@ const generateScores = (mbtiType, characterType) => {
 };
 
 const App = () => {
-  const [step, setStep] = useState('start'); // start, gender, mbti, character, photo, generating, result
+  const [step, setStep] = useState('start'); // start, gender, occupation, mbti, character, photo, generating, result
   const [selectedGender, setSelectedGender] = useState(null); // 男性, 女性, 非公開
+  const [selectedOccupation, setSelectedOccupation] = useState(null); // 職業選択
   const [mbtiAnswers, setMbtiAnswers] = useState({});
   const [characterAnswers, setCharacterAnswers] = useState({});
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -1456,7 +1457,8 @@ const App = () => {
         results.mbti,
         results.characterInfo.code,
         results.scores,
-        selectedGender === '男性' ? 'male' : selectedGender === '女性' ? 'female' : 'neutral'
+        selectedGender === '男性' ? 'male' : selectedGender === '女性' ? 'female' : 'neutral',
+        selectedOccupation
       );
       
       setCharacterImage(response);
@@ -1602,8 +1604,8 @@ const App = () => {
           return newAnswers;
         });
       } else {
-        // 最初の質問の場合は性別選択画面に戻る
-        setStep('gender');
+        // 最初の質問の場合は職業選択画面に戻る
+        setStep('occupation');
         setMbtiAnswers({});
         setCurrentQuestion(0);
       }
@@ -1666,6 +1668,7 @@ const App = () => {
   const handleRestart = () => {
     setStep('start');
     setSelectedGender(null);
+    setSelectedOccupation(null);
     setMbtiAnswers({});
     setCharacterAnswers({});
     setCurrentQuestion(0);
@@ -1678,6 +1681,12 @@ const App = () => {
   // 性別選択処理
   const handleGenderSelect = (gender) => {
     setSelectedGender(gender);
+    setStep('occupation');
+  };
+
+  // 職業選択処理
+  const handleOccupationSelect = (occupation) => {
+    setSelectedOccupation(occupation);
     setStep('mbti');
     setCurrentQuestion(0);
   };
@@ -1844,6 +1853,68 @@ const App = () => {
               {/* 戻るボタン */}
               <button
                 onClick={() => setStep('start')}
+                className="w-full bg-dark-700 text-white py-3 rounded-xl hover:bg-dark-600 transition-colors flex items-center justify-center space-x-2"
+              >
+                <ChevronLeft className="w-5 h-5" />
+                <span>戻る</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 職業選択画面 */}
+      {step === 'occupation' && (
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="max-w-xl mx-auto">
+            <div className="bg-dark-800/80 backdrop-blur-md rounded-3xl p-8 border border-dark-700/50 shadow-2xl">
+              {/* ヘッダー */}
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-sentinels-primary to-explorers-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Sparkles className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  職業・役割
+                </h2>
+                <p className="text-dark-300 text-sm">
+                  キャラクターの衣装に反映される<br />
+                  職業や役割を選択してください
+                </p>
+              </div>
+
+              {/* 職業選択 */}
+              <div className="grid grid-cols-2 gap-3 mb-8">
+                {[
+                  { value: 'ビジネス', icon: '💼', desc: 'スーツ・フォーマル' },
+                  { value: 'クリエイティブ', icon: '🎨', desc: 'アーティスト・デザイナー' },
+                  { value: 'テック', icon: '💻', desc: 'IT・エンジニア' },
+                  { value: '医療', icon: '🏥', desc: '医師・看護師' },
+                  { value: '教育', icon: '📚', desc: '教師・講師' },
+                  { value: 'サービス', icon: '🤝', desc: '接客・サービス業' },
+                  { value: '学生', icon: '🎓', desc: '学生・制服' },
+                  { value: 'アーティスト', icon: '🎭', desc: '芸術・表現者' },
+                  { value: 'スポーツ', icon: '⚽', desc: 'アスリート・トレーナー' },
+                  { value: 'その他', icon: '👤', desc: 'カジュアル・私服' }
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => handleOccupationSelect(option.value)}
+                    className={`p-4 rounded-xl border-2 text-center transition-all hover:scale-105 ${
+                      selectedOccupation === option.value
+                        ? 'border-sentinels-primary bg-sentinels-primary/10'
+                        : 'border-dark-600 bg-dark-700/50 hover:border-dark-500'
+                    }`}
+                  >
+                    <div className="text-2xl mb-2">{option.icon}</div>
+                    <h3 className="text-white font-semibold text-sm mb-1">{option.value}</h3>
+                    <p className="text-dark-400 text-xs">{option.desc}</p>
+                  </button>
+                ))}
+              </div>
+
+              {/* 戻るボタン */}
+              <button
+                onClick={() => setStep('gender')}
                 className="w-full bg-dark-700 text-white py-3 rounded-xl hover:bg-dark-600 transition-colors flex items-center justify-center space-x-2"
               >
                 <ChevronLeft className="w-5 h-5" />
