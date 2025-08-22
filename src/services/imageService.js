@@ -15,6 +15,7 @@ export class ImageService {
       });
 
       const data = await response.json();
+      console.log('API Response:', data);
       
       if (!data.success) {
         console.warn('AI image generation failed, using fallback:', data.error);

@@ -26,9 +26,14 @@ export default async function handler(req, res) {
         alternativeUrl: generateFallbackSVG(mbtiType, characterType)
       });
     }
+    
+    // デバッグ用ログ
+    console.log('API Key exists:', !!process.env.OPENAI_API_KEY);
+    console.log('API Key starts with:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 10) + '...' : 'NONE');
 
     // プロンプト生成
     const prompt = generateImagePrompt(mbtiType, characterType, scores, gender);
+    console.log('Generated prompt:', prompt.substring(0, 100) + '...');
     
     // OpenAI DALL-E 3 APIを呼び出し
     const response = await fetch('https://api.openai.com/v1/images/generations', {
@@ -123,8 +128,9 @@ Character:
 - MBTI type: ${mbtiType} – ${mbtiTrait}
 - Character impression: ${characterType} style with ${characterStyle}
 - Style: low-poly 3D, polygonal surfaces, geometric faceted design, 150-200 polygons
+- Body: FULL BODY view from head to feet, standing pose, complete figure visible
 - Pose: ${characterType === 'dynamic' ? 'energetic and lively' : characterType === 'gentle' ? 'soft and welcoming' : characterType === 'cool' ? 'composed and confident' : 'natural and relaxed'}
-- Outfit: modern stylish clothing matching the ${characterType} impression
+- Outfit: modern stylish full-body clothing matching the ${characterType} impression
 
 Entertainment Score Visualization:
 - ${charismaLevel} Charisma: ${charismaLevel === 'very high' ? 'glowing aura, radiant atmosphere' : 'subtle glow'}
@@ -136,9 +142,8 @@ Card Design:
 - Background: abstract polygonal shapes with gradient matching personality type
 - Lighting: soft ambient with directional highlight
 - Color scheme: vibrant but harmonious, reflecting both MBTI and Character Code
-- Text overlay (must be clearly visible):
-   • Top: "MBTI: ${mbtiType}"
-   • Bottom: "Character: ${characterType}"
+- Text overlay: ONLY "${mbtiType} ${characterType}" in top-left corner, clean readable font
+- No other text or labels on the image
 - Style: Clean, modern, shareable social media aesthetic`;
 }
 
