@@ -1,5 +1,5 @@
 export class ImageService {
-  static async generateCharacterImage(mbtiType, characterType, scores = {}, gender = 'neutral', occupation = null) {
+  static async generateCharacterImage(mbtiType, characterCode, scores = {}, gender = 'neutral', occupation = null) {
     try {
       const response = await fetch('/api/generate-character-image', {
         method: 'POST',
@@ -8,7 +8,7 @@ export class ImageService {
         },
         body: JSON.stringify({
           mbtiType,
-          characterType,
+          characterCode,
           scores,
           gender,
           occupation
@@ -24,7 +24,8 @@ export class ImageService {
           success: false,
           error: data.error,
           imageUrl: data.alternativeUrl || null,
-          source: 'fallback'
+          source: 'fallback',
+          characterCode: data.characterCode || characterCode
         };
       }
 
@@ -32,7 +33,8 @@ export class ImageService {
         success: true,
         imageUrl: data.imageUrl,
         prompt: data.prompt,
-        source: data.source || 'dall-e-3'
+        source: data.source || 'dall-e-3',
+        characterCode: data.characterCode || characterCode
       };
 
     } catch (error) {
@@ -41,7 +43,8 @@ export class ImageService {
         success: false,
         error: error.message,
         imageUrl: null,
-        source: 'error'
+        source: 'error',
+        characterCode: characterCode
       };
     }
   }

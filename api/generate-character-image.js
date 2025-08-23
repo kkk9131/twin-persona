@@ -14,7 +14,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { mbtiType, characterType, scores = {}, gender = 'neutral', occupation = null } = req.body;
+    // 16タイプ対応：characterTypeからcharacterCodeに変更
+    const { mbtiType, characterCode, characterType, scores = {}, gender = 'neutral', occupation = null } = req.body;
+    
+    // 後方互換性のためcharacterTypeもサポート
+    const finalCharacterCode = characterCode || characterType;
     
     // OpenAI API key validation
     if (!process.env.OPENAI_API_KEY) {
@@ -23,16 +27,17 @@ export default async function handler(req, res) {
         success: false,
         error: 'OpenAI API key not configured',
         fallback: true,
-        alternativeUrl: generateFallbackSVG(mbtiType, characterType)
+        alternativeUrl: generateFallbackSVG(mbtiType, finalCharacterCode)
       });
     }
     
     // デバッグ用ログ
     console.log('API Key exists:', !!process.env.OPENAI_API_KEY);
     console.log('API Key starts with:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 10) + '...' : 'NONE');
+    console.log('Character Code:', finalCharacterCode);
 
-    // プロンプト生成
-    const prompt = generateImagePrompt(mbtiType, characterType, scores, gender, occupation);
+    // プロンプト生成（16タイプ対応）
+    const prompt = generateImagePrompt(mbtiType, finalCharacterCode, scores, gender, occupation);
     console.log('Generated prompt:', prompt.substring(0, 100) + '...');
     
     // OpenAI DALL-E 3 APIを呼び出し
@@ -61,7 +66,7 @@ export default async function handler(req, res) {
         fallback: true,
         error: `DALL-E API error: ${response.status}`,
         message: 'Image generation is currently unavailable. Using fallback SVG.',
-        alternativeUrl: generateFallbackSVG(mbtiType, characterType)
+        alternativeUrl: generateFallbackSVG(mbtiType, finalCharacterCode)
       });
     }
 
@@ -76,45 +81,90 @@ export default async function handler(req, res) {
       success: true,
       imageUrl: imageUrl,
       prompt: prompt,
-      source: 'dall-e-3'
+      source: 'dall-e-3',
+      characterCode: finalCharacterCode
     });
 
   } catch (error) {
     console.error('Character image generation error:', error);
     
+    const fallbackCode = req.body.characterCode || req.body.characterType || 'DOFC';
     return res.status(200).json({ 
       success: false,
       error: error.message,
       fallback: true,
-      alternativeUrl: generateFallbackSVG(req.body.mbtiType || 'ENTP', req.body.characterType || 'dynamic'),
+      alternativeUrl: generateFallbackSVG(req.body.mbtiType || 'ENTP', fallbackCode),
       source: 'fallback'
     });
   }
 }
 
-function generateImagePrompt(mbtiType, characterType, scores, gender, occupation = null) {
-  // MBTIタイプの特性マッピング
+function generateImagePrompt(mbtiType, characterCode, scores, gender, occupation = null) {
+  // MBTI特性マッピング
   const mbtiTraits = {
     'ENTP': 'energetic, adventurous, bold debater',
-    'INTJ': 'strategic, determined, visionary architect',
+    'INTJ': 'strategic, determined, visionary architect', 
     'ENFP': 'enthusiastic, creative, inspiring campaigner',
     'INFJ': 'insightful, principled, passionate advocate',
     'ESTP': 'bold, practical, perceptive entrepreneur',
     'ISTP': 'practical, versatile, hands-on virtuoso',
     'ESFJ': 'caring, social, dutiful consul',
     'ISFJ': 'warm, responsible, loyal protector',
-    // 他のタイプも追加...
+    'ENTJ': 'natural leader, decisive, strategic',
+    'INTP': 'innovative thinker, curious, independent',
+    'ENFJ': 'charismatic teacher, empathetic, inspiring',
+    'INFP': 'idealistic mediator, creative, passionate',
+    'ESTJ': 'organized executive, practical, traditional',
+    'ISTJ': 'reliable logistician, systematic, dutiful',
+    'ESFP': 'spontaneous entertainer, enthusiastic, social',
+    'ISFP': 'gentle artist, sensitive, flexible'
   };
 
-  // Character Codeの印象マッピング
+  // 16タイプCharacterCode印象マッピング
   const characterStyles = {
-    'gentle': 'soft, approachable, warm presence',
-    'natural': 'authentic, relaxed, effortless charm',
-    'dynamic': 'energetic, bold, vibrant personality',
-    'cool': 'sophisticated, composed, mysterious aura'
+    // 印象的グループ
+    'DOFC': 'trustworthy broadcaster vibe, reliable and approachable with professional warmth',
+    'DOFT': 'energetic idol center charm, bright and captivating with natural magnetism',
+    'DOMC': 'organized leader presence, structured and responsible with commanding authority',
+    'DOMT': 'gentle spring sunshine warmth, nurturing and comforting with healing presence',
+    
+    // 残像的グループ  
+    'DIFC': 'serene refined beauty, elegant sophistication with understated grace',
+    'NIMC': 'dreamy ethereal charm, mystical and pure with otherworldly beauty',
+    'DIMC': 'heart-fluttering first love, innocent sweetness with charming purity',
+    'NIFC': 'urban charismatic presence, sophisticated allure with magnetic appeal',
+    
+    // 立体的グループ
+    'NOMC': 'mysterious chameleon nature, adaptable charm with enigmatic depth',
+    'DIMT': 'multifaceted reverse appeal, surprising depth with intriguing contrasts',
+    'DIFT': 'cute comfort zone, adorable healing presence with gentle reassurance',
+    'NOFC': 'unique protagonist aura, distinctive individuality with captivating personality',
+    
+    // 感覚的グループ
+    'NIMT': 'edgy artistic flair, creative intensity with avant-garde sensibility',
+    'NIFT': 'chic free spirit, stylish independence with effortless cool',
+    'NOFT': 'rebellious romantic, passionate defiance with artistic soul',
+    'NOMT': 'glamorous muse inspiration, creative catalyst with artistic magnetism'
   };
 
-  // 職業別の衣装マッピング
+  // グループ別ビジュアルスタイル
+  const groupStyles = {
+    '印象的': 'bright, approachable, warm colors, clear lighting, friendly atmosphere',
+    '残像的': 'memorable, sophisticated, cool tones, dramatic lighting, mysterious elegance', 
+    '立体的': 'multi-dimensional, varied angles, complex composition, dynamic perspective',
+    '感覚的': 'artistic, creative, vibrant colors, expressive lighting, imaginative atmosphere'
+  };
+
+  // タイプからグループを判定
+  const getGroup = (code) => {
+    if (['DOFC', 'DOFT', 'DOMC', 'DOMT'].includes(code)) return '印象的';
+    if (['DIFC', 'NIMC', 'DIMC', 'NIFC'].includes(code)) return '残像的';
+    if (['NOMC', 'DIMT', 'DIFT', 'NOFC'].includes(code)) return '立体的';
+    if (['NIMT', 'NIFT', 'NOFT', 'NOMT'].includes(code)) return '感覚的';
+    return '印象的'; // デフォルト
+  };
+
+  // 職業別衣装マッピング
   const occupationOutfits = {
     'ビジネス': 'professional business suit, formal attire',
     'クリエイティブ': 'stylish casual creative wear, artistic clothing',
@@ -129,8 +179,10 @@ function generateImagePrompt(mbtiType, characterType, scores, gender, occupation
   };
 
   const mbtiTrait = mbtiTraits[mbtiType] || 'unique personality';
-  const characterStyle = characterStyles[characterType] || 'distinctive style';
-  const outfitStyle = occupation ? occupationOutfits[occupation] || 'modern stylish clothing' : `modern stylish clothing matching the ${characterType} impression`;
+  const characterStyle = characterStyles[characterCode] || 'distinctive style';
+  const group = getGroup(characterCode);
+  const groupStyle = groupStyles[group];
+  const outfitStyle = occupation ? occupationOutfits[occupation] || 'modern stylish clothing' : `modern stylish clothing matching the ${characterCode} impression`;
 
   // スコアに基づく特性の強調
   const charismaLevel = scores?.charisma > 80 ? 'very high' : scores?.charisma > 60 ? 'high' : 'balanced';
@@ -141,41 +193,81 @@ function generateImagePrompt(mbtiType, characterType, scores, gender, occupation
 Character:
 - Gender: ${gender}
 - MBTI type: ${mbtiType} – ${mbtiTrait}
-- Character impression: ${characterType} style with ${characterStyle}
+- Character impression: ${characterCode} with ${characterStyle}
+- Group style: ${group}グループ (${groupStyle})
 - Style: low-poly 3D, polygonal surfaces, geometric faceted design, 150-200 polygons
 - Body: FULL BODY CHARACTER showing head to feet completely, standing upright
 - Framing: Wide shot ensuring entire figure fits within image boundaries with margin
-- Pose: ${characterType === 'dynamic' ? 'energetic and lively' : characterType === 'gentle' ? 'soft and welcoming' : characterType === 'cool' ? 'composed and confident' : 'natural and relaxed'}
+- Pose: Reflecting ${characterCode} personality with ${characterStyle}
 - Outfit: ${outfitStyle}
 
 Entertainment Score Visualization:
 - ${charismaLevel} Charisma: ${charismaLevel === 'very high' ? 'glowing aura, radiant atmosphere' : 'subtle glow'}
 - ${gapLevel} Gap factor: ${gapLevel === 'very high' ? 'intriguing contrast in styling' : 'harmonious balance'}
-- Overall vibe: ${mbtiType} personality with ${characterType} visual impression
+- Overall vibe: ${mbtiType} personality with ${characterCode} visual impression from ${group}グループ
 
 Card Design:
 - Format: 1:1 square, optimized for Instagram/Twitter sharing
-- Background: abstract polygonal shapes with gradient matching personality type
-- Lighting: soft ambient with directional highlight
-- Color scheme: vibrant but harmonious, reflecting both MBTI and Character Code
-- Text overlay: "${mbtiType} ${characterType}" positioned in top-left corner with sufficient margin
+- Background: abstract polygonal shapes with gradient matching personality type and ${group}グループ
+- Lighting: ${groupStyle.includes('dramatic') ? 'dramatic directional lighting' : 'soft ambient with directional highlight'}
+- Color scheme: ${group === '印象的' ? 'warm, bright, approachable colors' : 
+                  group === '残像的' ? 'cool, sophisticated, memorable tones' :
+                  group === '立体的' ? 'complex, multi-layered color palette' :
+                  'vibrant, creative, artistic colors'}
+- Text overlay: "${mbtiType} × ${characterCode}" positioned in top-left corner with sufficient margin
 - Text styling: Bold, readable font with high contrast outline/shadow for visibility
 - Text size: Large enough to read clearly but not overwhelming
 - Text placement: Ensure text stays within image boundaries and is not cropped
-- Style: Clean, modern, shareable social media aesthetic`;
+- Style: Clean, modern, shareable social media aesthetic reflecting ${group}グループ characteristics`;
 }
 
-function generateFallbackSVG(mbtiType, characterType) {
-  // フォールバック用のSVGキャラクター生成
+function generateFallbackSVG(mbtiType, characterCode) {
+  // フォールバック用のSVGキャラクター生成（16タイプ対応）
   // 既存のSVG生成ロジックを活用
-  return `data:image/svg+xml;base64,${btoa(generateCharacterSVG(mbtiType, characterType))}`;
+  return `data:image/svg+xml;base64,${btoa(generateCharacterSVG(mbtiType, characterCode))}`;
 }
 
-function generateCharacterSVG(mbtiType, characterType) {
-  // 簡単なSVGキャラクター（既存のロジックを活用）
-  return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-    <rect width="200" height="200" fill="#f0f0f0"/>
-    <circle cx="100" cy="100" r="50" fill="#8B5CF6"/>
-    <text x="100" y="180" text-anchor="middle" font-family="Arial" font-size="12">${mbtiType}</text>
+function generateCharacterSVG(mbtiType, characterCode) {
+  // 16タイプ対応のシンプルなSVGキャラクター
+  
+  // グループ別カラーマッピング
+  const groupColors = {
+    // 印象的グループ - 暖色系
+    'DOFC': '#F59E0B', 'DOFT': '#F59E0B', 'DOMC': '#F59E0B', 'DOMT': '#F59E0B',
+    // 残像的グループ - 寒色系  
+    'DIFC': '#06B6D4', 'NIMC': '#06B6D4', 'DIMC': '#06B6D4', 'NIFC': '#06B6D4',
+    // 立体的グループ - 緑系
+    'NOMC': '#10B981', 'DIMT': '#10B981', 'DIFT': '#10B981', 'NOFC': '#10B981',
+    // 感覚的グループ - 紫系
+    'NIMT': '#8B5CF6', 'NIFT': '#8B5CF6', 'NOFT': '#8B5CF6', 'NOMT': '#8B5CF6'
+  };
+  
+  // デフォルトカラー
+  const characterColor = groupColors[characterCode] || '#8B5CF6';
+  
+  // グループ名取得
+  const getGroupName = (code) => {
+    if (['DOFC', 'DOFT', 'DOMC', 'DOMT'].includes(code)) return '印象的';
+    if (['DIFC', 'NIMC', 'DIMC', 'NIFC'].includes(code)) return '残像的';
+    if (['NOMC', 'DIMT', 'DIFT', 'NOFC'].includes(code)) return '立体的';
+    if (['NIMT', 'NIFT', 'NOFT', 'NOMT'].includes(code)) return '感覚的';
+    return '印象的';
+  };
+  
+  const groupName = getGroupName(characterCode);
+  
+  return `<svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="${characterColor}" stop-opacity="0.1"/>
+        <stop offset="100%" stop-color="${characterColor}" stop-opacity="0.3"/>
+      </linearGradient>
+    </defs>
+    <rect width="300" height="300" fill="url(#bgGradient)"/>
+    <circle cx="150" cy="120" r="60" fill="${characterColor}" opacity="0.8"/>
+    <circle cx="150" cy="120" r="40" fill="white" opacity="0.3"/>
+    <text x="150" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="${characterColor}">${mbtiType}</text>
+    <text x="150" y="235" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="${characterColor}">${characterCode}</text>
+    <text x="150" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="${characterColor}" opacity="0.7">${groupName}グループ</text>
   </svg>`;
 }
