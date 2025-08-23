@@ -15,7 +15,41 @@ export default async function handler(req, res) {
 
   try {
     // 16タイプ対応：characterTypeからcharacterCodeに変更
-    const { mbtiType, characterCode, characterType, scores = {}, gender = 'neutral', occupation = null } = req.body;
+    const { mbtiType, characterCode, characterType, scores = {}, gender = 'neutral', occupation = null, accessToken } = req.body;
+
+    // 課金チェック
+    if (!accessToken) {
+      return res.status(401).json({
+        success: false,
+        error: 'Access token required',
+        message: 'プレミアム機能のアクセスにはトークンが必要です'
+      });
+    }
+
+    // トークン検証
+    try {
+      const tokenResponse = await fetch(`${process.env.VERCEL_URL || 'http://localhost:3000'}/api/verify-token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: accessToken })
+      });
+      
+      const tokenData = await tokenResponse.json();
+      if (!tokenData.valid) {
+        return res.status(401).json({
+          success: false,
+          error: 'Invalid or expired token',
+          message: 'アクセストークンが無効または期限切れです'
+        });
+      }
+    } catch (tokenError) {
+      console.error('Token verification error:', tokenError);
+      return res.status(500).json({
+        success: false,
+        error: 'Token verification failed',
+        message: 'トークン検証に失敗しました'
+      });
+    }
     
     // 後方互換性のためcharacterTypeもサポート
     const finalCharacterCode = characterCode || characterType;

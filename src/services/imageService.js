@@ -1,5 +1,5 @@
 export class ImageService {
-  static async generateCharacterImage(mbtiType, characterCode, scores = {}, gender = 'neutral', occupation = null) {
+  static async generateCharacterImage(mbtiType, characterCode, scores = {}, gender = 'neutral', occupation = null, accessToken = null) {
     try {
       const response = await fetch('/api/generate-character-image', {
         method: 'POST',
@@ -11,7 +11,8 @@ export class ImageService {
           characterCode,
           scores,
           gender,
-          occupation
+          occupation,
+          accessToken
         })
       });
 

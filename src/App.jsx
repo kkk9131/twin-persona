@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Download, Share2, Camera, ChevronRight, Sparkles, ChevronLeft, RefreshCw } from 'lucide-react';
+import PaymentModal from './components/PaymentModal';
 import { CHARACTER_CODE_16_TYPES, CHARACTER_CODE_GROUPS, CHARACTER_CODE_16_QUESTIONS, calculateCharacterCode16Type } from './data/characterCode16Types';
 import { AdviceService } from './services/adviceService';
 import { ImageService } from './services/imageService';
@@ -1488,6 +1489,8 @@ const App = () => {
   const [uploadedPhoto, setUploadedPhoto] = useState(null);
   const [results, setResults] = useState(null);
   const [isPremium, setIsPremium] = useState(false); // 課金状態管理
+  const [showPaymentModal, setShowPaymentModal] = useState(false); // 決済モーダル表示
+  const [accessToken, setAccessToken] = useState(null); // アクセストークン
   const [aiAdvice, setAiAdvice] = useState(null); // GEMINI APIからのアドバイス
   const [adviceLoading, setAdviceLoading] = useState(false); // アドバイス生成中
   const [adviceError, setAdviceError] = useState(null); // アドバイス生成エラー
@@ -1600,7 +1603,8 @@ const App = () => {
       const advice = await AdviceService.generateAdvice({
         mbtiType: results.mbti,
         characterCode: results.characterInfo.code, // 16タイプのcharacterCode
-        gapAnalysis: results.gapAnalysis.level || 'medium'
+        gapAnalysis: results.gapAnalysis.level || 'medium',
+        accessToken: accessToken // アクセストークンを追加
       });
       
       if (advice.success) {
@@ -1633,7 +1637,8 @@ const App = () => {
         results.characterInfo.code,
         results.scores,
         selectedGender === '男性' ? 'male' : selectedGender === '女性' ? 'female' : 'neutral',
-        selectedOccupation
+        selectedOccupation,
+        accessToken // アクセストークンを追加
       );
       
       setCharacterImage(response);
@@ -1856,6 +1861,31 @@ const App = () => {
     setAiAdvice(null);
   };
 
+  // 決済成功時の処理
+  const handlePaymentSuccess = async (paymentIntentId) => {
+    try {
+      // トークンを生成（実際のトークンはWebhookで生成されるため、paymentIntentIdを一時的に使用）
+      const token = `payment_${paymentIntentId}`;
+      setAccessToken(token);
+      setIsPremium(true);
+      setShowPaymentModal(false);
+      
+      // 診断開始
+      setStep('gender');
+    } catch (error) {
+      console.error('決済後処理エラー:', error);
+    }
+  };
+
+  // プレミアム診断開始処理
+  const handleStartPremium = () => {
+    if (isPremium) {
+      setStep('gender');
+    } else {
+      setShowPaymentModal(true);
+    }
+  };
+
   // 性別選択処理
   const handleGenderSelect = (gender) => {
     setSelectedGender(gender);
@@ -1960,7 +1990,7 @@ const App = () => {
               </div>
 
               <button
-                onClick={() => setStep('gender')}
+                onClick={handleStartPremium}
                 className="btn-primary text-lg px-8 py-4"
               >
                 <Sparkles className="w-5 h-5 inline mr-2" />
@@ -2092,7 +2122,7 @@ const App = () => {
 
               {/* 戻るボタン */}
               <button
-                onClick={() => setStep('gender')}
+                onClick={handleStartPremium}
                 className="w-full bg-dark-700 text-white py-3 rounded-xl hover:bg-dark-600 transition-colors flex items-center justify-center space-x-2"
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -2961,6 +2991,13 @@ const App = () => {
 
       {/* 隠しキャンバス（画像生成用） */}
       <canvas ref={canvasRef} className="hidden" />
+
+      {/* 決済モーダル */}
+      <PaymentModal 
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onSuccess={handlePaymentSuccess}
+      />
     </div>
   );
 };
