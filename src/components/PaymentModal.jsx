@@ -101,6 +101,7 @@ const CheckoutForm = ({ email, setEmail, onSuccess, onClose }) => {
         <div className="p-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-purple-500 focus-within:border-purple-500">
           <CardElement
             options={{
+              hidePostalCode: true,
               style: {
                 base: {
                   fontSize: '16px',

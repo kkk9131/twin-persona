@@ -1870,7 +1870,11 @@ const App = () => {
       setIsPremium(true);
       setShowPaymentModal(false);
       
-      console.log('決済成功！プレミアム機能がアンロックされました');
+      console.log('決済成功！プレミアム機能がアンロックされました', {
+        paymentIntentId,
+        token,
+        isPremium: true
+      });
       
       // 診断開始
       setStep('gender');

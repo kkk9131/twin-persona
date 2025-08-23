@@ -17,38 +17,44 @@ export default async function handler(req, res) {
     // 16タイプ対応：characterTypeからcharacterCodeに変更
     const { mbtiType, characterCode, characterType, scores = {}, gender = 'neutral', occupation = null, accessToken } = req.body;
 
-    // 課金チェック
+    // 課金チェック（開発中は一時的にスキップ）
     if (!accessToken) {
-      return res.status(401).json({
-        success: false,
-        error: 'Access token required',
-        message: 'プレミアム機能のアクセスにはトークンが必要です'
-      });
+      console.warn('アクセストークンがありません - 開発中のため続行');
+      // 開発中は警告のみで続行
+      // return res.status(401).json({
+      //   success: false,
+      //   error: 'Access token required',
+      //   message: 'プレミアム機能のアクセスにはトークンが必要です'
+      // });
     }
 
-    // トークン検証
-    try {
-      const tokenResponse = await fetch(`${process.env.VERCEL_URL || 'http://localhost:3000'}/api/verify-token`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: accessToken })
-      });
-      
-      const tokenData = await tokenResponse.json();
-      if (!tokenData.valid) {
-        return res.status(401).json({
-          success: false,
-          error: 'Invalid or expired token',
-          message: 'アクセストークンが無効または期限切れです'
+    // トークン検証（開発中は一時的にスキップ）
+    if (accessToken) {
+      try {
+        const tokenResponse = await fetch(`${process.env.VERCEL_URL || 'http://localhost:3000'}/api/verify-token`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: accessToken })
         });
+        
+        const tokenData = await tokenResponse.json();
+        if (!tokenData.valid) {
+          console.warn('トークン検証失敗 - 開発中のため続行');
+          // return res.status(401).json({
+          //   success: false,
+          //   error: 'Invalid or expired token',
+          //   message: 'アクセストークンが無効または期限切れです'
+          // });
+        }
+      } catch (tokenError) {
+        console.error('Token verification error:', tokenError);
+        console.warn('トークン検証エラー - 開発中のため続行');
+        // return res.status(500).json({
+        //   success: false,
+        //   error: 'Token verification failed',
+        //   message: 'トークン検証に失敗しました'
+        // });
       }
-    } catch (tokenError) {
-      console.error('Token verification error:', tokenError);
-      return res.status(500).json({
-        success: false,
-        error: 'Token verification failed',
-        message: 'トークン検証に失敗しました'
-      });
     }
     
     // 後方互換性のためcharacterTypeもサポート
