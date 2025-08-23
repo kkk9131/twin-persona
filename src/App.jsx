@@ -1921,11 +1921,7 @@ const App = () => {
   
   return (
     <div 
-      className="min-h-screen font-sans"
-      style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        minHeight: '100vh'
-      }}
+      className="min-h-screen bg-rich-gradient font-sans"
     >
       {/* 開始画面 */}
       {step === 'start' && (
@@ -2147,7 +2143,7 @@ const App = () => {
 
               {/* 戻るボタン */}
               <button
-                onClick={handleStartPremium}
+                onClick={() => setCurrentScreen('start')}
                 className="w-full bg-dark-700 text-white py-3 rounded-xl hover:bg-dark-600 transition-colors flex items-center justify-center space-x-2"
               >
                 <ChevronLeft className="w-5 h-5" />
