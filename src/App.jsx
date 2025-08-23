@@ -1870,6 +1870,8 @@ const App = () => {
       setIsPremium(true);
       setShowPaymentModal(false);
       
+      console.log('決済成功！プレミアム機能がアンロックされました');
+      
       // 診断開始
       setStep('gender');
     } catch (error) {
@@ -1877,13 +1879,21 @@ const App = () => {
     }
   };
 
-  // プレミアム診断開始処理
-  const handleStartPremium = () => {
+  // 診断開始処理
+  const handleStartDiagnosis = () => {
     if (isPremium) {
+      // プレミアム選択済みで決済完了済み → 直接診断開始
       setStep('gender');
     } else {
-      setShowPaymentModal(true);
+      // 無料プラン選択 → 直接診断開始
+      setStep('gender');
     }
+  };
+
+  // プレミアム選択時の決済モーダル表示
+  const handleSelectPremium = () => {
+    setIsPremium(true);
+    setShowPaymentModal(true);
   };
 
   // 性別選択処理
@@ -1949,7 +1959,7 @@ const App = () => {
                         ? 'border-sentinels-primary bg-sentinels-primary/10' 
                         : 'border-dark-500 bg-dark-700/30 hover:border-dark-400'
                     }`}
-                    onClick={() => setIsPremium(false)}
+                    onClick={() => { setIsPremium(false); setAccessToken(null); }}
                   >
                     <div className="text-center">
                       <h4 className="font-bold text-dark-100 mb-2">無料プラン</h4>
@@ -1972,7 +1982,7 @@ const App = () => {
                         ? 'border-explorers-primary bg-explorers-primary/10' 
                         : 'border-dark-500 bg-dark-700/30 hover:border-dark-400'
                     }`}
-                    onClick={() => setIsPremium(true)}
+                    onClick={handleSelectPremium}
                   >
                     <div className="text-center">
                       <h4 className="font-bold text-dark-100 mb-2">プレミアムプラン</h4>
@@ -1990,7 +2000,7 @@ const App = () => {
               </div>
 
               <button
-                onClick={handleStartPremium}
+                onClick={handleStartDiagnosis}
                 className="btn-primary text-lg px-8 py-4"
               >
                 <Sparkles className="w-5 h-5 inline mr-2" />
