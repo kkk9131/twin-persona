@@ -1885,6 +1885,7 @@ const App = () => {
 
   // 診断開始処理
   const handleStartDiagnosis = () => {
+    console.log('診断開始処理', { isPremium, accessToken, step });
     if (isPremium) {
       // プレミアム選択済みで決済完了済み → 直接診断開始
       setStep('gender');
@@ -1902,20 +1903,30 @@ const App = () => {
 
   // 性別選択処理
   const handleGenderSelect = (gender) => {
+    console.log('性別選択', { gender, isPremium, accessToken });
     setSelectedGender(gender);
     setStep('occupation');
   };
 
   // 職業選択処理
   const handleOccupationSelect = (occupation) => {
+    console.log('職業選択', { occupation, isPremium, accessToken });
     setSelectedOccupation(occupation);
     setStep('mbti');
     setCurrentQuestion(0);
   };
 
   // レンダリング
+  console.log('現在のステップ:', step, { isPremium, accessToken });
+  
   return (
-    <div className="min-h-screen bg-rich-gradient font-sans particle-bg">
+    <div 
+      className="min-h-screen font-sans"
+      style={{
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        minHeight: '100vh'
+      }}
+    >
       {/* 開始画面 */}
       {step === 'start' && (
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 text-center">
