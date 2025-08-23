@@ -1,5 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Download, Share2, Camera, ChevronRight, Sparkles, ChevronLeft, RefreshCw } from 'lucide-react';
+import PaymentModal from './components/PaymentModal';
 import { CHARACTER_CODE_16_TYPES, CHARACTER_CODE_GROUPS, CHARACTER_CODE_16_QUESTIONS, calculateCharacterCode16Type } from './data/characterCode16Types';
 import { AdviceService } from './services/adviceService';
 import { ImageService } from './services/imageService';
@@ -1488,6 +1489,8 @@ const App = () => {
   const [uploadedPhoto, setUploadedPhoto] = useState(null);
   const [results, setResults] = useState(null);
   const [isPremium, setIsPremium] = useState(false); // 課金状態管理
+  const [showPaymentModal, setShowPaymentModal] = useState(false); // 決済モーダル表示状態
+  const [accessToken, setAccessToken] = useState(null); // プレミアムアクセストークン
   const [aiAdvice, setAiAdvice] = useState(null); // GEMINI APIからのアドバイス
   const [adviceLoading, setAdviceLoading] = useState(false); // アドバイス生成中
   const [adviceError, setAdviceError] = useState(null); // アドバイス生成エラー
@@ -1869,6 +1872,30 @@ const App = () => {
     setCurrentQuestion(0);
   };
 
+  // 決済関連の処理
+  const handleSelectPremium = () => {
+    console.log('プレミアムプラン選択');
+    setIsPremium(true);
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentSuccess = (paymentIntentId) => {
+    console.log('決済成功:', paymentIntentId);
+    setAccessToken(`premium_${paymentIntentId}_${Date.now()}`);
+    setShowPaymentModal(false);
+    setStep('gender');
+  };
+
+  const handleStartDiagnosis = () => {
+    console.log('診断開始:', { isPremium, hasToken: !!accessToken });
+    if (isPremium && !accessToken) {
+      // プレミアムプランだが決済未完了の場合、モーダルを表示
+      setShowPaymentModal(true);
+      return;
+    }
+    setStep('gender');
+  };
+
   // レンダリング
   return (
     <div className="min-h-screen bg-rich-gradient font-sans particle-bg">
@@ -1942,7 +1969,7 @@ const App = () => {
                         ? 'border-explorers-primary bg-explorers-primary/10' 
                         : 'border-dark-500 bg-dark-700/30 hover:border-dark-400'
                     }`}
-                    onClick={() => setIsPremium(true)}
+                    onClick={handleSelectPremium}
                   >
                     <div className="text-center">
                       <h4 className="font-bold text-dark-100 mb-2">プレミアムプラン</h4>
@@ -1960,7 +1987,7 @@ const App = () => {
               </div>
 
               <button
-                onClick={() => setStep('gender')}
+                onClick={handleStartDiagnosis}
                 className="btn-primary text-lg px-8 py-4"
               >
                 <Sparkles className="w-5 h-5 inline mr-2" />
@@ -2092,7 +2119,7 @@ const App = () => {
 
               {/* 戻るボタン */}
               <button
-                onClick={() => setStep('gender')}
+                onClick={handleStartDiagnosis}
                 className="w-full bg-dark-700 text-white py-3 rounded-xl hover:bg-dark-600 transition-colors flex items-center justify-center space-x-2"
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -2889,7 +2916,7 @@ const App = () => {
                           </p>
                         </div>
                         <button
-                          onClick={() => setIsPremium(true)}
+                          onClick={handleSelectPremium}
                           className="bg-gradient-to-r from-explorers-primary to-explorers-accent text-white px-6 py-3 rounded-xl font-semibold hover:from-explorers-accent hover:to-explorers-primary transition-all"
                         >
                           AIアドバイスを見る
@@ -2958,6 +2985,13 @@ const App = () => {
           </div>
         </div>
       )}
+
+      {/* 決済モーダル */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        onSuccess={handlePaymentSuccess}
+      />
 
       {/* 隠しキャンバス（画像生成用） */}
       <canvas ref={canvasRef} className="hidden" />
