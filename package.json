@@ -15,7 +15,9 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "lucide-react": "^0.263.1",
-    "@google/generative-ai": "^0.2.1"
+    "@google/generative-ai": "^0.2.1",
+    "@stripe/stripe-js": "^7.8.0",
+    "@stripe/react-stripe-js": "^3.9.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.15",
