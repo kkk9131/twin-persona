@@ -122,3 +122,9 @@ Thumbs.db
 # Serena cache
 .serena/
 .vercel
+
+# YoYo AI version control directory
+.yoyo/
+
+# Debug and test files
+tests/

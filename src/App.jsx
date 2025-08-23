@@ -1,7 +1,8 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Download, Share2, Camera, ChevronRight, Sparkles, ChevronLeft, RefreshCw } from 'lucide-react';
-import { CHARACTER_CODE_16_TYPES, CHARACTER_CODE_QUESTIONS, calculateCharacterCode16Type } from './data/characterCode16Types';
+import { CHARACTER_CODE_16_TYPES, CHARACTER_CODE_GROUPS, CHARACTER_CODE_16_QUESTIONS, calculateCharacterCode16Type } from './data/characterCode16Types';
 import { AdviceService } from './services/adviceService';
+import { ImageService } from './services/imageService';
 
 // MBTIグループ別統一カラーパレット
 const unifiedColorPalette = {
@@ -115,24 +116,68 @@ geometric faceted style, smooth edge flow, ${style.expression}`;
 // 外部APIからMBTI情報を取得（将来実装）
 const fetchMBTIData = async (mbtiType) => {
   try {
+    // 将来的なAPI統合用（現在はコメントアウト）
     // 実際のMBTI APIエンドポイント（例）
     // const response = await fetch(`https://api.16personalities.com/types/${mbtiType}`);
     // const data = await response.json();
     // return data;
     
-    // 現在はローカルデータを返す（将来的にAPI統合）
     console.log(`Fetching MBTI data for ${mbtiType}...`);
-    return mbtiResults[mbtiType];
+    
+    // ローカルのMBTIデータを取得
+    const mbtiInfo = mbtiResults[mbtiType];
+    
+    if (!mbtiInfo) {
+      console.warn(`MBTI type ${mbtiType} not found in local data`);
+      // フォールバック：基本情報を返す
+      return {
+        type: mbtiType,
+        name: mbtiType,
+        description: `${mbtiType}タイプの特徴`,
+        group: 'その他'
+      };
+    }
+    
+    // MBTIグループ情報を追加（16タイプシステムとの連携）
+    const mbtiGroups = {
+      'INTJ': 'analysts', 'INTP': 'analysts', 'ENTJ': 'analysts', 'ENTP': 'analysts',
+      'INFJ': 'diplomats', 'INFP': 'diplomats', 'ENFJ': 'diplomats', 'ENFP': 'diplomats',
+      'ISTJ': 'sentinels', 'ISFJ': 'sentinels', 'ESTJ': 'sentinels', 'ESFJ': 'sentinels',
+      'ISTP': 'explorers', 'ISFP': 'explorers', 'ESTP': 'explorers', 'ESFP': 'explorers'
+    };
+    
+    // 完全なMBTI情報を返す（16タイプシステムとの連携用）
+    return {
+      ...mbtiInfo,
+      type: mbtiType,
+      mbtiGroup: mbtiGroups[mbtiType] || 'other',
+      // 16タイプシステムとの連携用データ
+      compatibility: {
+        withCharacterCode: true, // 16タイプCharacterCodeとの互換性
+        axes: {
+          EI: mbtiType[0], // E or I
+          SN: mbtiType[1], // S or N  
+          TF: mbtiType[2], // T or F
+          JP: mbtiType[3]  // J or P
+        }
+      }
+    };
   } catch (error) {
     console.error('Failed to fetch MBTI data:', error);
-    return mbtiResults[mbtiType]; // フォールバック
+    // エラー時のフォールバック
+    const fallbackData = mbtiResults[mbtiType] || {
+      type: mbtiType,
+      name: mbtiType,
+      description: `${mbtiType}タイプ`
+    };
+    return fallbackData;
   }
-};
+};;
 
 // Character Code情報を分析APIで取得（将来実装）
 const analyzeCharacterCode = async (answers) => {
   try {
-    // 実際の分析APIエンドポイント（例）
+    // 将来的なAPI統合用（現在はコメントアウト）
     // const response = await fetch('/api/analyze-character', {
     //   method: 'POST',
     //   headers: { 'Content-Type': 'application/json' },
@@ -142,15 +187,48 @@ const analyzeCharacterCode = async (answers) => {
     // return data;
     
     // 16タイプシステムでローカル計算
-    console.log('Analyzing character code (16 types)...', answers);
-    const characterType = calculateCharacterCode16Type(answers);
-    return characterType;
+    console.log('Analyzing character code (16 types system)...', answers);
+    const characterCode = calculateCharacterCode16Type(answers);
+    
+    // CHARACTER_CODE_16_TYPESから詳細情報を取得
+    const characterInfo = CHARACTER_CODE_16_TYPES[characterCode];
+    
+    if (!characterInfo) {
+      console.warn(`Character code ${characterCode} not found in 16 types data`);
+      // フォールバック：基本情報を返す
+      return {
+        code: characterCode,
+        name: characterCode,
+        group: '特別'
+      };
+    }
+    
+    // 16タイプの完全な情報を返す
+    return {
+      code: characterInfo.code,
+      name: characterInfo.name,
+      group: characterInfo.group,
+      description: characterInfo.description || '',
+      traits: characterInfo.traits || '',
+      // 追加の分析データ（将来の拡張用）
+      axes: {
+        DN: characterCode[0], // D or N
+        IO: characterCode[1], // I or O
+        FM: characterCode[2], // F or M
+        CT: characterCode[3]  // C or T
+      }
+    };
   } catch (error) {
     console.error('Failed to analyze character code:', error);
-    // フォールバック計算（16タイプシステム）
-    return CHARACTER_CODE_16_TYPES.DIFT; // デフォルトタイプを返す
+    // フォールバック：デフォルトタイプを返す
+    const defaultType = CHARACTER_CODE_16_TYPES.DIFT || {
+      code: 'DIFT',
+      name: '可愛い安心できる人',
+      group: '立体的'
+    };
+    return defaultType;
   }
-};
+};;
 
 // AI画像生成API（将来実装）
 const generateAICharacterImage = async (mbtiType, characterType) => {
@@ -285,108 +363,87 @@ const generateDecorationElements = (characterType, colors) => {
 };
 
 // 肩書き生成ロジック（全16タイプ対応）
-const generateTitle = (mbtiType, characterType) => {
+const generateTitle = (mbtiType, characterCode) => {
+  // 16タイプ対応のタイトル生成
   const combinations = {
     ENFP: {
-      gentle: "愛され系クリエイター",
-      natural: "自由な発想家",
-      dynamic: "カリスマ系エンターテイナー",
-      cool: "クールな革新者"
-    },
-    ENFJ: {
-      gentle: "癒し系カウンセラー", 
-      natural: "自然体のメンター",
-      dynamic: "カリスマティック・リーダー",
-      cool: "知的な指導者"
-    },
-    ENTP: {
-      gentle: "優しい発明家",
-      natural: "自由な起業家", 
-      dynamic: "エネルギッシュな革命家",
-      cool: "クールな戦略家"
-    },
-    ENTJ: {
-      gentle: "親しみやすいリーダー",
-      natural: "自然な統率者",
-      dynamic: "カリスマ系指導者", 
-      cool: "戦略的な経営者"
-    },
-    ESFP: {
-      gentle: "愛されエンターテイナー",
-      natural: "自然体のムードメーカー",
-      dynamic: "パワフル・パフォーマー",
-      cool: "洗練されたアーティスト"
-    },
-    ESFJ: {
-      gentle: "思いやり深きサポーター",
-      natural: "自然な世話役",
-      dynamic: "エネルギッシュな調整役",
-      cool: "上品なホスト"
-    },
-    ESTP: {
-      gentle: "親しみやすい実行者",
-      natural: "自然体のアクティビスト", 
-      dynamic: "ダイナミック・アクター",
-      cool: "クールな実践家"
-    },
-    ESTJ: {
-      gentle: "優しい管理者",
-      natural: "自然な責任者",
-      dynamic: "パワフル・マネージャー",
-      cool: "洗練された幹部"
-    },
-    INFP: {
-      gentle: "癒し系アーティスト",
-      natural: "自然体の詩人",
-      dynamic: "情熱的な理想主義者",
-      cool: "ミステリアスな創作者"
-    },
-    INFJ: {
-      gentle: "優しい預言者",
-      natural: "自然な導き手",
-      dynamic: "情熱的なビジョナリー",
-      cool: "神秘的な賢者"
-    },
-    INTP: {
-      gentle: "優しい研究者",
-      natural: "自然体の思索家",
-      dynamic: "情熱的な学者",
-      cool: "クールな天才"
+      // 印象的グループ
+      'DOFC': "愛され系アナウンサー",
+      'DOFT': "カリスマアイドル",
+      'DOMC': "情熱的なリーダー",
+      'DOMT': "癒し系クリエイター",
+      // 残像的グループ
+      'DIFC': "優雅な革新者",
+      'NIMC': "天使のような夢想家",
+      'DIMC': "初恋系アーティスト",
+      'NIFC': "都会的インフルエンサー",
+      // 立体的グループ
+      'NOMC': "変幻自在のエンターテイナー",
+      'DIMT': "ギャップ萌えクリエイター",
+      'DIFT': "愛されヒーラー",
+      'NOFC': "唯一無二の表現者",
+      // 感覚的グループ
+      'NIMT': "前衛的アーティスト",
+      'NIFT': "自由奔放な革新者",
+      'NOFT': "情熱的な反逆者",
+      'NOMT': "魅惑のミューズ"
     },
     INTJ: {
-      gentle: "優しい戦略家",
-      natural: "自然体の建築家",
-      dynamic: "印象的な革新者",
-      cool: "クールな天才"
+      // 印象的グループ
+      'DOFC': "信頼の戦略家",
+      'DOFT': "カリスマ建築家",
+      'DOMC': "組織のブレイン",
+      'DOMT': "優しき賢者",
+      // 残像的グループ
+      'DIFC': "洗練された知性派",
+      'NIMC': "純粋な理論家",
+      'DIMC': "初恋系天才",
+      'NIFC': "都会的ストラテジスト",
+      // 立体的グループ
+      'NOMC': "謎めいた策士",
+      'DIMT': "ギャップ萌え天才",
+      'DIFT': "可愛い哲学者",
+      'NOFC': "孤高の革新者",
+      // 感覚的グループ
+      'NIMT': "前衛的思想家",
+      'NIFT': "クールな理論家",
+      'NOFT': "反骨の知識人",
+      'NOMT': "魅惑の頭脳派"
     },
-    ISFP: {
-      gentle: "やわらか系アーティスト",
-      natural: "自然派クリエイター",
-      dynamic: "情熱的な芸術家",
-      cool: "洗練された美術家"
-    },
-    ISFJ: {
-      gentle: "愛され守護者",
-      natural: "自然な保護者",
-      dynamic: "エネルギッシュな支援者",
-      cool: "上品な擁護者"
-    },
-    ISTP: {
-      gentle: "やわらか職人",
-      natural: "自然体の巨匠",
-      dynamic: "ダイナミック・クラフター",
-      cool: "クールな技術者"
-    },
-    ISTJ: {
-      gentle: "優しい管理者",
-      natural: "自然な責任者",
-      dynamic: "情熱的な実務家",
-      cool: "洗練された専門家"
+    // 他のMBTIタイプも同様に16タイプ対応（デフォルト値を用意）
+    DEFAULT: {
+      'DOFC': "模範的なアナウンサー",
+      'DOFT': "アイドルのセンター",
+      'DOMC': "しっかり者のリーダー",
+      'DOMT': "春の陽だまりのような人",
+      'DIFC': "上品で洗練された人",
+      'NIMC': "天使のような純粋さ",
+      'DIMC': "初恋のときめき",
+      'NIFC': "都会的でカリスマ性",
+      'NOMC': "ミステリアスなカメレオン",
+      'DIMT': "多面的な逆転魅力",
+      'DIFT': "可愛い安心できる人",
+      'NOFC': "ユニークな主人公オーラ",
+      'NIMT': "エッジの効いたアーティスト",
+      'NIFT': "シックな自由人",
+      'NOFT': "反骨精神のロマンチスト",
+      'NOMT': "グラマラスなミューズ"
     }
   };
   
-  return combinations[mbtiType]?.[characterType.code] || `${mbtiResults[mbtiType]?.name || "謎の"}${characterType?.name || "タイプ"}`;
-};
+  // MBTIタイプの組み合わせが定義されていない場合はデフォルトを使用
+  const mbtiCombinations = combinations[mbtiType] || combinations.DEFAULT;
+  const title = mbtiCombinations[characterCode];
+  
+  // タイトルが見つからない場合のフォールバック
+  if (!title) {
+    const mbtiName = mbtiResults[mbtiType]?.name || mbtiType;
+    const characterName = CHARACTER_CODE_16_TYPES[characterCode]?.name || characterCode;
+    return `${mbtiName}×${characterName}`;
+  }
+  
+  return title;
+};;
 
 // MBTI診断の質問データ（28問 - 各軸7問）
 const mbtiQuestions = [
@@ -1146,44 +1203,90 @@ const compatibilityData = {
 };
 
 // ギャップ分析
-const generateGapAnalysis = (mbtiType, characterType) => {
-  const rarity = rarityData[mbtiType]?.[characterType] || 1.5;
-  
-  const gapDescriptions = {
-    INTJ: {
-      gentle: "やわらかく見えるけど、実は戦略的な天才",
-      natural: "自然体に見えるけど、実は計画的な建築家",
-      dynamic: "エネルギッシュに見えるけど、実は冷静な戦略家",
-      cool: "クールに見えるけど、実は情熱的な革新者"
+const generateGapAnalysis = (mbtiType, characterCode) => {
+  // 16タイプ対応の希少性データ（仮の値、実際のデータに基づいて調整可能）
+  const rarityData16 = {
+    'INTJ': {
+      'DOFC': 2.1, 'DOFT': 1.8, 'DOMC': 2.5, 'DOMT': 1.9,
+      'DIFC': 1.5, 'NIMC': 1.2, 'DIMC': 1.3, 'NIFC': 1.7,
+      'NOMC': 1.4, 'DIMT': 1.6, 'DIFT': 1.8, 'NOFC': 1.3,
+      'NIMT': 1.1, 'NIFT': 1.2, 'NOFT': 1.0, 'NOMT': 1.3
     },
-    ENFP: {
-      gentle: "おとなしく見えるけど、実は情熱的なクリエイター",
-      natural: "普通に見えるけど、実は独創的な発想家",
-      dynamic: "見た目通りエネルギッシュで、まさに天性のエンターテイナー",
-      cool: "クールに見えるけど、実は熱血な理想主義者"
-    },
-    INFJ: {
-      gentle: "優しく見えるけど、実は深い洞察力を持つ賢者",
-      natural: "自然体に見えるけど、実は神秘的な預言者",
-      dynamic: "活発に見えるけど、実は内省的なビジョナリー",
-      cool: "クールに見えるけど、実は情熱的な理想主義者"
-    },
-    ENTJ: {
-      gentle: "親しみやすく見えるけど、実は強力なリーダー",
-      natural: "自然体に見えるけど、実は野心的な指揮官",
-      dynamic: "見た目通りカリスマ的で、まさに天性の指導者",
-      cool: "クールに見えるけど、実は情熱的な改革者"
+    'ENFP': {
+      'DOFC': 3.5, 'DOFT': 4.2, 'DOMC': 3.1, 'DOMT': 3.8,
+      'DIFC': 2.8, 'NIMC': 2.5, 'DIMC': 2.9, 'NIFC': 2.7,
+      'NOMC': 2.6, 'DIMT': 2.4, 'DIFT': 3.2, 'NOFC': 2.3,
+      'NIMT': 2.1, 'NIFT': 2.2, 'NOFT': 2.0, 'NOMT': 2.4
     }
+    // 他のMBTIタイプはデフォルト値を使用
   };
   
-  const baseDescription = gapDescriptions[mbtiType]?.[characterType] || 
-    `${characterType?.name}に見えるけど、実は${mbtiResults[mbtiType]?.name}`;
+  const rarity = rarityData16[mbtiType]?.[characterCode] || 1.5;
+  
+  // 16タイプ対応のギャップ説明
+  const characterInfo = CHARACTER_CODE_16_TYPES[characterCode];
+  const groupName = characterInfo?.group || '特別';
+  
+  // グループ別のギャップ特性
+  const groupGapTraits = {
+    '印象的': '親しみやすい外見と',
+    '残像的': '洗練された印象と',
+    '立体的': '多面的な魅力と',
+    '感覚的': '個性的な雰囲気と'
+  };
+  
+  const gapTrait = groupGapTraits[groupName] || '独特な印象と';
+  
+  // MBTIタイプ別の内面特性
+  const mbtiInnerTraits = {
+    'INTJ': '戦略的で独立心の強い内面',
+    'ENFP': '情熱的で創造的な内面',
+    'INFJ': '洞察力と理想主義的な内面',
+    'ENTJ': 'リーダーシップと野心的な内面',
+    'INTP': '論理的で探究心の強い内面',
+    'ENTP': '革新的で挑戦的な内面',
+    'INFP': '理想主義的で創造的な内面',
+    'ENFJ': '共感的でカリスマ的な内面',
+    'ISFJ': '献身的で思いやりのある内面',
+    'ISTJ': '責任感と信頼性の高い内面',
+    'ESFJ': '協調的で世話好きな内面',
+    'ESTJ': '組織的で実行力のある内面',
+    'ISFP': '芸術的で柔軟な内面',
+    'ISTP': '実践的で分析的な内面',
+    'ESFP': '社交的で楽観的な内面',
+    'ESTP': '行動的で現実的な内面'
+  };
+  
+  const innerTrait = mbtiInnerTraits[mbtiType] || '深い内面';
+  
+  // ギャップレベルの判定（4軸の差異から計算）
+  let gapLevel = 'medium';
+  
+  // D/N軸とE/I軸の組み合わせでギャップを判定
+  const firstAxis = characterCode[0]; // D or N
+  const isExtroverted = mbtiType[0] === 'E';
+  
+  if ((firstAxis === 'D' && !isExtroverted) || (firstAxis === 'N' && isExtroverted)) {
+    gapLevel = 'high';
+  } else if ((firstAxis === 'D' && isExtroverted) || (firstAxis === 'N' && !isExtroverted)) {
+    gapLevel = 'low';
+  }
+  
+  const gapLevelText = {
+    'high': '大きなギャップ',
+    'medium': '程よいギャップ',
+    'low': '自然な調和'
+  };
+  
+  const description = `${characterInfo?.name || characterCode}の${gapTrait}${innerTrait}を持つ、${gapLevelText[gapLevel]}が魅力的なタイプ`;
   
   return {
-    statement: `${baseDescription}で全体の${rarity}%の希少タイプ`,
-    rarity_percentage: rarity
+    statement: `${description}で、全体の${rarity}%という希少な組み合わせ`,
+    rarity_percentage: rarity,
+    level: gapLevel,
+    group: groupName
   };
-};
+};;
 
 // 相性分析
 const getCompatibility = (userMbtiType) => {
@@ -1201,45 +1304,61 @@ const getCompatibility = (userMbtiType) => {
 };
 
 // 実用的アドバイス生成
-const generateAdvice = (mbtiType, characterType) => {
-  const advice = {
-    INTJ: {
-      gentle: {
-        仕事: "やわらかい印象で周囲に受け入れられやすく、その後に戦略的な提案をすることで高い説得力を発揮できます。計画性と人当たりの良さを両立させましょう。",
-        友達: "第一印象の親しみやすさで友人を作りやすく、深く付き合うほど知的な魅力に気づいてもらえます。表面的でない深い友情を築けるでしょう。",
-        恋愛: "優しい印象で相手を安心させ、徐々に知的で深い内面を見せることで、長期的な信頼関係を築けます。ミステリアスな魅力も武器になります。"
-      },
-      natural: {
-        仕事: "自然体の雰囲気で周囲の警戒心を解き、冷静な分析力と戦略的思考で成果を出せます。押し付けがましくない提案が高く評価されるでしょう。",
-        友達: "リラックスした雰囲気で人を引き寄せ、時間をかけて深い思考や洞察を共有することで、知的な絆の深い友情を育めます。",
-        恋愛: "自然な魅力で相手をリラックスさせ、徐々に深い内面や将来への真剣な思いを伝えることで、成熟した恋愛関係を築けるでしょう。"
-      }
+const generateAdvice = (mbtiType, characterCode) => {
+  // 16タイプ対応のローカル助言生成（AI APIが使えない場合のフォールバック）
+  const characterInfo = CHARACTER_CODE_16_TYPES[characterCode];
+  const mbtiInfo = mbtiResults[mbtiType];
+  
+  if (!characterInfo || !mbtiInfo) {
+    // デフォルト助言
+    return {
+      仕事: "あなたの個性を活かした働き方を見つけましょう。",
+      友達: "自然体で人と接することで、深い友情を築けます。",
+      恋愛: "あなたらしさを大切にしながら、素敵な関係を築きましょう。"
+    };
+  }
+  
+  // グループ別の助言テンプレート
+  const groupAdviceTemplates = {
+    '印象的': {
+      仕事: `${characterInfo.name}の親しみやすい印象を活かしながら、${mbtiInfo.name}の本質的な強みでチームに貢献できます。明るく前向きな雰囲気作りが得意でしょう。`,
+      友達: `第一印象の良さで友人を作りやすく、${mbtiInfo.name}の深い洞察力で長続きする友情を築けます。グループの中心的存在になれるでしょう。`,
+      恋愛: `${characterInfo.name}の温かい魅力で相手を安心させ、${mbtiInfo.name}の誠実さで信頼関係を深められます。`
     },
-    ENFP: {
-      gentle: {
-        仕事: "優しい印象で チームの和を保ちながら、創造的なアイデアで職場に新しい風を吹き込めます。人を巻き込む力と思いやりを両立できる貴重な存在です。",
-        友達: "親しみやすさで多くの人に愛され、持ち前の創造性と情熱で友人たちにインスピレーションを与える存在になれるでしょう。",
-        恋愛: "優しく温かい印象で相手を包み込み、情熱的で創造的な愛情表現で関係を盛り上げることができます。安心感と刺激を両方与えられる理想的なパートナーです。"
-      },
-      dynamic: {
-        仕事: "エネルギッシュな印象通り、職場のムードメーカーとして活躍しながら、革新的なアイデアでプロジェクトを成功に導けます。天性のリーダーシップを発揮しましょう。",
-        友達: "場を盛り上げる天才として愛され、常に新しい体験や冒険を提案することで、友人たちの人生を豊かにする存在になれます。",
-        恋愛: "魅力的でエネルギッシュな印象で相手を惹きつけ、情熱的で創造的なデートやサプライズで関係を常に新鮮に保てます。一緒にいて飽きない最高のパートナーです。"
-      }
+    '残像的': {
+      仕事: `${characterInfo.name}の洗練された印象と、${mbtiInfo.name}の専門性を組み合わせることで、プロフェッショナルとして高く評価されるでしょう。`,
+      友達: `記憶に残る特別な存在として、${mbtiInfo.name}の深い理解力で本物の友情を築けます。少数精鋭の深い関係を大切にしましょう。`,
+      恋愛: `${characterInfo.name}の神秘的な魅力と、${mbtiInfo.name}の情熱的な愛情で、忘れられない関係を作れます。`
+    },
+    '立体的': {
+      仕事: `${characterInfo.name}の多面的な魅力を状況に応じて使い分け、${mbtiInfo.name}の適応力で様々な場面で活躍できます。`,
+      友達: `意外性のあるギャップで人を惹きつけ、${mbtiInfo.name}の理解力で多様な友人関係を築けるでしょう。`,
+      恋愛: `${characterInfo.name}の複雑な魅力で相手を飽きさせず、${mbtiInfo.name}の深い愛情で長続きする関係を作れます。`
+    },
+    '感覚的': {
+      仕事: `${characterInfo.name}の芸術的センスと、${mbtiInfo.name}の創造性を組み合わせて、独創的な成果を生み出せるでしょう。`,
+      友達: `個性的な魅力で特別な存在となり、${mbtiInfo.name}の感性で深い共感を生む友情を築けます。`,
+      恋愛: `${characterInfo.name}の独特な魅力と、${mbtiInfo.name}の情熱で、他にはない特別な関係を築けるでしょう。`
     }
   };
   
-  const defaultAdvice = {
-    仕事: `${characterType?.name}の印象を活かしながら、${mbtiResults[mbtiType]?.name}の本質的な強みで成果を出す、バランスの取れた働き方ができます。`,
-    友達: `第一印象は${characterType?.name}でも、深く付き合うと${mbtiResults[mbtiType]?.name}の真の魅力が伝わり、本物の友情を築けるでしょう。`,
-    恋愛: `${characterType?.name}の魅力で相手を惹きつけ、${mbtiResults[mbtiType]?.name}の深い愛情で長続きする関係を作ることができます。`
-  };
+  // グループに基づいた助言を返す
+  const groupAdvice = groupAdviceTemplates[characterInfo.group];
   
-  return advice[mbtiType]?.[characterType] || defaultAdvice;
-};
+  if (groupAdvice) {
+    return groupAdvice;
+  }
+  
+  // フォールバック：汎用的な助言
+  return {
+    仕事: `${characterInfo.name}の印象を活かしながら、${mbtiInfo.name}の本質的な強みで成果を出す、バランスの取れた働き方ができます。`,
+    友達: `第一印象は${characterInfo.name}でも、深く付き合うと${mbtiInfo.name}の真の魅力が伝わり、本物の友情を築けるでしょう。`,
+    恋愛: `${characterInfo.name}の魅力で相手を惹きつけ、${mbtiInfo.name}の深い愛情で長続きする関係を作ることができます。`
+  };
+};;
 
 // エンタメスコア生成
-const generateScores = (mbtiType, characterType) => {
+const generateScores = (mbtiType, characterCode) => {
   // 基本スコア計算ロジック
   const calculateScore = (base, modifier1, modifier2, min = 20, max = 98) => {
     const score = Math.max(min, Math.min(max, base + modifier1 + modifier2 + Math.floor(Math.random() * 10 - 5)));
@@ -1266,13 +1385,45 @@ const generateScores = (mbtiType, characterType) => {
     INFP: { charisma: 70, friendly: 85, mysterious: 75, gap: 65, rarity: 25, attractive: 80 }
   };
   
-  // Character Type別修正値（16タイプに対応）
-  const getCharacterModifiers = (characterType) => {
-    // 基本的なカテゴリ分けに基づく修正値
-    const firstLetter = characterType.code[0]; // N or D
-    const secondLetter = characterType.code[1]; // I or O
-    const thirdLetter = characterType.code[2]; // F or M
-    const fourthLetter = characterType.code[3]; // C or T
+  // 16タイプCharacterCode別修正値（グループ特性も考慮）
+  const getCharacterModifiers = (code) => {
+    // CHARACTER_CODE_16_TYPESから情報を取得
+    const characterInfo = CHARACTER_CODE_16_TYPES[code];
+    if (!characterInfo) {
+      // フォールバック：コードから直接解析
+      return getModifiersFromCode(code);
+    }
+    
+    // グループ別の基本修正値
+    const groupModifiers = {
+      '印象的': { charisma: 10, friendly: 15, mysterious: 0, gap: 5, rarity: 0, attractive: 10 },
+      '残像的': { charisma: 15, friendly: 5, mysterious: 10, gap: 10, rarity: 5, attractive: 15 },
+      '立体的': { charisma: 5, friendly: 10, mysterious: 15, gap: 20, rarity: 10, attractive: 5 },
+      '感覚的': { charisma: 20, friendly: 0, mysterious: 5, gap: 15, rarity: 15, attractive: 10 }
+    };
+    
+    const baseModifiers = groupModifiers[characterInfo.group] || { charisma: 0, friendly: 0, mysterious: 0, gap: 0, rarity: 0, attractive: 0 };
+    
+    // 4軸による追加修正
+    const axisModifiers = getModifiersFromCode(code);
+    
+    // 基本修正値と軸修正値を合成
+    return {
+      charisma: baseModifiers.charisma + axisModifiers.charisma,
+      friendly: baseModifiers.friendly + axisModifiers.friendly,
+      mysterious: baseModifiers.mysterious + axisModifiers.mysterious,
+      gap: baseModifiers.gap + axisModifiers.gap,
+      rarity: baseModifiers.rarity + axisModifiers.rarity,
+      attractive: baseModifiers.attractive + axisModifiers.attractive
+    };
+  };
+  
+  // コードから直接修正値を計算（フォールバック用）
+  const getModifiersFromCode = (code) => {
+    const firstLetter = code[0]; // N or D
+    const secondLetter = code[1]; // I or O
+    const thirdLetter = code[2]; // F or M
+    const fourthLetter = code[3]; // C or T
     
     let modifiers = { charisma: 0, friendly: 0, mysterious: 0, gap: 0, rarity: 0, attractive: 0 };
     
@@ -1315,7 +1466,7 @@ const generateScores = (mbtiType, characterType) => {
   };
   
   const baseScores = mbtiBaseScores[mbtiType] || mbtiBaseScores.INFP;
-  const modifiers = getCharacterModifiers(characterType);
+  const modifiers = getCharacterModifiers(characterCode);
   
   return {
     カリスマ度: calculateScore(baseScores.charisma, modifiers.charisma, 0),
@@ -1325,10 +1476,12 @@ const generateScores = (mbtiType, characterType) => {
     希少度: calculateScore(baseScores.rarity, modifiers.rarity, 0),
     モテ度: calculateScore(baseScores.attractive, modifiers.attractive, 0)
   };
-};
+};;
 
 const App = () => {
-  const [step, setStep] = useState('start'); // start, mbti, character, photo, generating, result
+  const [step, setStep] = useState('start'); // start, gender, occupation, mbti, character, photo, generating, result
+  const [selectedGender, setSelectedGender] = useState(null); // 男性, 女性, 非公開
+  const [selectedOccupation, setSelectedOccupation] = useState(null); // 職業選択
   const [mbtiAnswers, setMbtiAnswers] = useState({});
   const [characterAnswers, setCharacterAnswers] = useState({});
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -1338,6 +1491,9 @@ const App = () => {
   const [aiAdvice, setAiAdvice] = useState(null); // GEMINI APIからのアドバイス
   const [adviceLoading, setAdviceLoading] = useState(false); // アドバイス生成中
   const [adviceError, setAdviceError] = useState(null); // アドバイス生成エラー
+  const [characterImage, setCharacterImage] = useState(null); // DALL-E 3 キャラクター画像
+  const [imageLoading, setImageLoading] = useState(false); // 画像生成中
+  const [imageError, setImageError] = useState(null); // 画像生成エラー
   const canvasRef = useRef(null);
 
   // MBTI結果計算
@@ -1365,7 +1521,7 @@ const App = () => {
   const completeDiagnosis = async () => {
     try {
       const mbtiType = calculateMBTI();
-      const characterType = calculateCharacterType();
+      const characterCode = calculateCharacterType(); // 16タイプコード
       
       // APIから詳細データを取得
       const [mbtiInfo, characterInfo] = await Promise.all([
@@ -1373,18 +1529,25 @@ const App = () => {
         analyzeCharacterCode(characterAnswers)
       ]);
       
-      const title = generateTitle(mbtiType, characterType);
-      const gapAnalysis = generateGapAnalysis(mbtiType, characterType);
+      // 16タイプ対応の各種生成関数を呼び出し
+      const title = generateTitle(mbtiType, characterCode);
+      const gapAnalysis = generateGapAnalysis(mbtiType, characterCode);
       const compatibility = getCompatibility(mbtiType);
-      const advice = generateAdvice(mbtiType, characterType);
-      const scores = generateScores(mbtiType, characterType);
+      const advice = generateAdvice(mbtiType, characterCode);
+      const scores = generateScores(mbtiType, characterCode);
       
+      // 結果データ構造を統一（16タイプ対応）
       setResults({
         mbti: mbtiType,
-        character: characterType,
+        character: characterCode, // 旧互換性のため
+        characterCode: characterCode, // 16タイプコード
         title,
         mbtiInfo: mbtiInfo || mbtiResults[mbtiType], // フォールバック
-        characterInfo: characterInfo || characterType, // 16タイプシステム対応
+        characterInfo: characterInfo || CHARACTER_CODE_16_TYPES[characterCode] || { 
+          code: characterCode,
+          name: CHARACTER_CODE_16_TYPES[characterCode]?.name || characterCode,
+          group: CHARACTER_CODE_16_TYPES[characterCode]?.group || '特別'
+        },
         gapAnalysis,
         compatibility,
         advice,
@@ -1395,19 +1558,27 @@ const App = () => {
       console.error('診断処理中にエラーが発生しました:', error);
       // エラー時はローカルデータで処理続行
       const mbtiType = calculateMBTI();
-      const characterType = calculateCharacterType();
-      const title = generateTitle(mbtiType, characterType);
-      const gapAnalysis = generateGapAnalysis(mbtiType, characterType);
-      const compatibility = getCompatibility(mbtiType);
-      const advice = generateAdvice(mbtiType, characterType);
-      const scores = generateScores(mbtiType, characterType);
+      const characterCode = calculateCharacterType(); // 16タイプコード
       
+      // 16タイプ対応の各種生成関数を呼び出し
+      const title = generateTitle(mbtiType, characterCode);
+      const gapAnalysis = generateGapAnalysis(mbtiType, characterCode);
+      const compatibility = getCompatibility(mbtiType);
+      const advice = generateAdvice(mbtiType, characterCode);
+      const scores = generateScores(mbtiType, characterCode);
+      
+      // 結果データ構造を統一（16タイプ対応）
       setResults({
         mbti: mbtiType,
-        character: characterType,
+        character: characterCode, // 旧互換性のため
+        characterCode: characterCode, // 16タイプコード
         title,
         mbtiInfo: mbtiResults[mbtiType],
-        characterInfo: characterType, // 16タイプシステム対応
+        characterInfo: CHARACTER_CODE_16_TYPES[characterCode] || {
+          code: characterCode,
+          name: CHARACTER_CODE_16_TYPES[characterCode]?.name || characterCode,
+          group: CHARACTER_CODE_16_TYPES[characterCode]?.group || '特別'
+        },
         gapAnalysis,
         compatibility,
         advice,
@@ -1415,7 +1586,7 @@ const App = () => {
       });
       setStep('result');
     }
-  };
+  };;
 
   // GEMINI APIからアドバイス生成
   const generateAIAdvice = async () => {
@@ -1425,17 +1596,52 @@ const App = () => {
     setAdviceError(null);
     
     try {
+      // 16タイプ対応：characterCodeを使用
       const advice = await AdviceService.generateAdvice({
         mbtiType: results.mbti,
-        characterType: results.characterInfo.code,
-        gapLevel: results.gapAnalysis.level || 'medium'
+        characterCode: results.characterInfo.code, // 16タイプのcharacterCode
+        gapAnalysis: results.gapAnalysis.level || 'medium'
       });
-      setAiAdvice(advice);
+      
+      if (advice.success) {
+        setAiAdvice(advice.advice);
+      } else {
+        setAdviceError(advice.error || 'アドバイス生成に失敗しました');
+        // エラー時でもフォールバックアドバイスがある場合は表示
+        if (advice.advice) {
+          setAiAdvice(advice.advice);
+        }
+      }
     } catch (error) {
       console.error('AI advice generation failed:', error);
       setAdviceError(error.message || 'アドバイス生成に失敗しました');
     } finally {
       setAdviceLoading(false);
+    }
+  };;
+
+  // DALL-E 3 キャラクター画像生成
+  const generateCharacterImage = async () => {
+    if (!results) return;
+    
+    setImageLoading(true);
+    setImageError(null);
+    
+    try {
+      const response = await ImageService.generateCharacterImage(
+        results.mbti,
+        results.characterInfo.code,
+        results.scores,
+        selectedGender === '男性' ? 'male' : selectedGender === '女性' ? 'female' : 'neutral',
+        selectedOccupation
+      );
+      
+      setCharacterImage(response);
+    } catch (error) {
+      console.error('Character image generation failed:', error);
+      setImageError(error.message || 'キャラクター画像生成に失敗しました');
+    } finally {
+      setImageLoading(false);
     }
   };
 
@@ -1472,48 +1678,51 @@ const App = () => {
     ctx.fillText(`MBTI: ${results.mbti}`, 400, 300);
     ctx.fillText(`(${results.mbtiInfo.name})`, 400, 340);
     
-    // Character Code結果
+    // Character Code結果（16タイプ）
     ctx.fillText(`印象: ${results.characterInfo.code} (${results.characterInfo.name})`, 400, 420);
     
-    // スコア表示
+    // グループ情報
     ctx.font = '24px Arial';
+    ctx.fillText(`${CHARACTER_CODE_GROUPS[results.characterInfo.group]?.name}グループ`, 400, 460);
+    
+    // スコア表示
     const scores = Object.entries(results.scores);
     scores.forEach(([key, value], index) => {
-      const y = 500 + index * 40;
+      const y = 520 + index * 35;
       ctx.fillText(`${key}: ${value}%`, 400, y);
     });
     
     // フッター
     ctx.font = '20px Arial';
     ctx.fillText('TwinPersona診断', 400, 750);
-  }, [results]);
+  }, [results]);;
 
   // X（Twitter）シェア機能
   const handleShareX = () => {
     if (!results) return;
     
-    const shareText = `私の診断結果は「${results.title}」でした！\n${results.mbti} × ${results.characterInfo.code}\n${results.gapAnalysis.statement}\n\n#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbti} #${results.characterInfo.code}`;
+    const shareText = `私の診断結果は「${results.title}」でした！\n${results.mbti} × ${results.characterInfo.code}「${results.characterInfo.name}」\n${CHARACTER_CODE_GROUPS[results.characterInfo.group]?.name}グループ\n${results.gapAnalysis.statement}\n\n#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbti} #${results.characterInfo.code}`;
     const shareUrl = window.location.href;
     const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
     
     window.open(xUrl, '_blank', 'width=550,height=420');
-  };
+  };;
 
   // LINEシェア機能
   const handleShareLine = () => {
     if (!results) return;
     
-    const shareText = `私の診断結果は「${results.title}」でした！\n${results.mbti} × ${results.characterInfo.code}\n${results.gapAnalysis.statement}\n\n#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbti} #${results.characterInfo.code}\n${window.location.href}`;
+    const shareText = `私の診断結果は「${results.title}」でした！\n${results.mbti} × ${results.characterInfo.code}「${results.characterInfo.name}」\n${CHARACTER_CODE_GROUPS[results.characterInfo.group]?.name}グループ\n${results.gapAnalysis.statement}\n\n#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbti} #${results.characterInfo.code}\n${window.location.href}`;
     const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(shareText)}`;
     
     window.open(lineUrl, '_blank');
-  };
+  };;
 
   // 汎用シェア機能（Web Share API）
   const handleShare = async () => {
     if (!results) return;
 
-    const shareText = `私の診断結果は「${results.title}」でした！\n${results.mbti} × ${results.characterInfo.code}\n${results.gapAnalysis.statement}\n\n#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbti} #${results.characterInfo.code}`;
+    const shareText = `私の診断結果は「${results.title}」でした！\n${results.mbti} × ${results.characterInfo.code}「${results.characterInfo.name}」\n${CHARACTER_CODE_GROUPS[results.characterInfo.group]?.name}グループ\n${results.gapAnalysis.statement}\n\n#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbti} #${results.characterInfo.code}`;
     
     if (navigator.share) {
       try {
@@ -1535,7 +1744,7 @@ const App = () => {
         console.error('コピーに失敗しました:', err);
       }
     }
-  };
+  };;
 
   // 画像ダウンロード
   const handleDownload = () => {
@@ -1543,11 +1752,11 @@ const App = () => {
     const canvas = canvasRef.current;
     if (canvas) {
       const link = document.createElement('a');
-      link.download = `twinpersona-${results.mbti}-${results.character}.png`;
+      link.download = `twinpersona-${results.mbti}-${results.characterInfo.code}.png`;
       link.href = canvas.toDataURL();
       link.click();
     }
-  };
+  };;
 
   // 写真アップロード処理
   const handlePhotoUpload = (event) => {
@@ -1573,8 +1782,8 @@ const App = () => {
           return newAnswers;
         });
       } else {
-        // 最初の質問の場合はスタート画面に戻る
-        setStep('start');
+        // 最初の質問の場合は職業選択画面に戻る
+        setStep('occupation');
         setMbtiAnswers({});
         setCurrentQuestion(0);
       }
@@ -1596,7 +1805,7 @@ const App = () => {
     } else if (step === 'photo') {
       // 写真アップロード画面からCharacter診断の最後に戻る
       setStep('character');
-      setCurrentQuestion(CHARACTER_CODE_QUESTIONS.length - 1);
+      setCurrentQuestion(CHARACTER_CODE_16_QUESTIONS.length - 1);
       setUploadedPhoto(null);
     }
   };
@@ -1617,12 +1826,12 @@ const App = () => {
   const handleCharacterAnswer = (questionIndex, answer) => {
     setCharacterAnswers(prev => ({ ...prev, [questionIndex]: answer }));
     
-    if (questionIndex < CHARACTER_CODE_QUESTIONS.length - 1) {
+    if (questionIndex < CHARACTER_CODE_16_QUESTIONS.length - 1) {
       setCurrentQuestion(questionIndex + 1);
     } else {
       setStep('photo');
     }
-  };
+  };;
 
   // 写真アップロード後の処理
   const handlePhotoNext = () => {
@@ -1636,11 +1845,28 @@ const App = () => {
   // 最初からやり直し
   const handleRestart = () => {
     setStep('start');
+    setSelectedGender(null);
+    setSelectedOccupation(null);
     setMbtiAnswers({});
     setCharacterAnswers({});
     setCurrentQuestion(0);
     setUploadedPhoto(null);
     setResults(null);
+    setCharacterImage(null);
+    setAiAdvice(null);
+  };
+
+  // 性別選択処理
+  const handleGenderSelect = (gender) => {
+    setSelectedGender(gender);
+    setStep('occupation');
+  };
+
+  // 職業選択処理
+  const handleOccupationSelect = (occupation) => {
+    setSelectedOccupation(occupation);
+    setStep('mbti');
+    setCurrentQuestion(0);
   };
 
   // レンダリング
@@ -1734,7 +1960,7 @@ const App = () => {
               </div>
 
               <button
-                onClick={() => setStep('mbti')}
+                onClick={() => setStep('gender')}
                 className="btn-primary text-lg px-8 py-4"
               >
                 <Sparkles className="w-5 h-5 inline mr-2" />
@@ -1746,6 +1972,133 @@ const App = () => {
               所要時間: 約8-15分 | データは保存されません
               {isPremium && <span className="text-explorers-primary ml-2">| プレミアム機能でより詳細な分析</span>}
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* 性別選択画面 */}
+      {step === 'gender' && (
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="max-w-xl mx-auto">
+            <div className="bg-dark-800/80 backdrop-blur-md rounded-3xl p-8 border border-dark-700/50 shadow-2xl">
+              {/* ヘッダー */}
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-analysts-primary to-diplomats-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Camera className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  基本情報
+                </h2>
+                <p className="text-dark-300 text-sm">
+                  より正確なキャラクター生成のため<br />
+                  性別を教えてください
+                </p>
+              </div>
+
+              {/* 性別選択 */}
+              <div className="space-y-4 mb-8">
+                {[
+                  { value: '男性', icon: '♂', color: 'from-blue-500 to-blue-600' },
+                  { value: '女性', icon: '♀', color: 'from-pink-500 to-pink-600' },
+                  { value: '非公開', icon: '○', color: 'from-gray-500 to-gray-600' }
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => handleGenderSelect(option.value)}
+                    className={`w-full p-4 rounded-xl border-2 text-left transition-all hover:scale-105 ${
+                      selectedGender === option.value
+                        ? 'border-analysts-primary bg-analysts-primary/10'
+                        : 'border-dark-600 bg-dark-700/50 hover:border-dark-500'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className={`w-12 h-12 bg-gradient-to-br ${option.color} rounded-xl flex items-center justify-center text-white text-xl font-bold`}>
+                        {option.icon}
+                      </div>
+                      <div>
+                        <h3 className="text-white font-semibold">{option.value}</h3>
+                        <p className="text-dark-400 text-sm">
+                          {option.value === '男性' && 'Male character generation'}
+                          {option.value === '女性' && 'Female character generation'} 
+                          {option.value === '非公開' && 'Gender-neutral character'}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* 戻るボタン */}
+              <button
+                onClick={() => setStep('start')}
+                className="w-full bg-dark-700 text-white py-3 rounded-xl hover:bg-dark-600 transition-colors flex items-center justify-center space-x-2"
+              >
+                <ChevronLeft className="w-5 h-5" />
+                <span>戻る</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 職業選択画面 */}
+      {step === 'occupation' && (
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="max-w-xl mx-auto">
+            <div className="bg-dark-800/80 backdrop-blur-md rounded-3xl p-8 border border-dark-700/50 shadow-2xl">
+              {/* ヘッダー */}
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-sentinels-primary to-explorers-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Sparkles className="w-8 h-8 text-white" />
+                </div>
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  職業・役割
+                </h2>
+                <p className="text-dark-300 text-sm">
+                  キャラクターの衣装に反映される<br />
+                  職業や役割を選択してください
+                </p>
+              </div>
+
+              {/* 職業選択 */}
+              <div className="grid grid-cols-2 gap-3 mb-8">
+                {[
+                  { value: 'ビジネス', icon: '💼', desc: 'スーツ・フォーマル' },
+                  { value: 'クリエイティブ', icon: '🎨', desc: 'アーティスト・デザイナー' },
+                  { value: 'テック', icon: '💻', desc: 'IT・エンジニア' },
+                  { value: '医療', icon: '🏥', desc: '医師・看護師' },
+                  { value: '教育', icon: '📚', desc: '教師・講師' },
+                  { value: 'サービス', icon: '🤝', desc: '接客・サービス業' },
+                  { value: '学生', icon: '🎓', desc: '学生・制服' },
+                  { value: 'アーティスト', icon: '🎭', desc: '芸術・表現者' },
+                  { value: 'スポーツ', icon: '⚽', desc: 'アスリート・トレーナー' },
+                  { value: 'その他', icon: '👤', desc: 'カジュアル・私服' }
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => handleOccupationSelect(option.value)}
+                    className={`p-4 rounded-xl border-2 text-center transition-all hover:scale-105 ${
+                      selectedOccupation === option.value
+                        ? 'border-sentinels-primary bg-sentinels-primary/10'
+                        : 'border-dark-600 bg-dark-700/50 hover:border-dark-500'
+                    }`}
+                  >
+                    <div className="text-2xl mb-2">{option.icon}</div>
+                    <h3 className="text-white font-semibold text-sm mb-1">{option.value}</h3>
+                    <p className="text-dark-400 text-xs">{option.desc}</p>
+                  </button>
+                ))}
+              </div>
+
+              {/* 戻るボタン */}
+              <button
+                onClick={() => setStep('gender')}
+                className="w-full bg-dark-700 text-white py-3 rounded-xl hover:bg-dark-600 transition-colors flex items-center justify-center space-x-2"
+              >
+                <ChevronLeft className="w-5 h-5" />
+                <span>戻る</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1814,14 +2167,14 @@ const App = () => {
               <div className="flex justify-between items-center mb-2">
                 <span className="text-sm text-dark-300">Character Code診断</span>
                 <span className="text-sm text-dark-300">
-                  {currentQuestion + 1} / {CHARACTER_CODE_QUESTIONS.length}
+                  {currentQuestion + 1} / {CHARACTER_CODE_16_QUESTIONS.length}
                 </span>
               </div>
               <div className="progress-bar">
                 <div 
                   className="progress-fill"
                   style={{ 
-                    width: `${((currentQuestion + 1) / CHARACTER_CODE_QUESTIONS.length) * 100}%`,
+                    width: `${((currentQuestion + 1) / CHARACTER_CODE_16_QUESTIONS.length) * 100}%`,
                     background: 'linear-gradient(90deg, #4fd1c7, #81e6d9, #319795)'
                   }}
                 ></div>
@@ -1830,11 +2183,11 @@ const App = () => {
 
             <div className="question-card">
               <h2 className="text-xl font-bold text-dark-100 mb-6">
-                {CHARACTER_CODE_QUESTIONS[currentQuestion].question}
+                {CHARACTER_CODE_16_QUESTIONS[currentQuestion].question}
               </h2>
               
               <div className="space-y-4">
-                {CHARACTER_CODE_QUESTIONS[currentQuestion].options.map((option, index) => (
+                {CHARACTER_CODE_16_QUESTIONS[currentQuestion].options.map((option, index) => (
                   <button
                     key={index}
                     onClick={() => handleCharacterAnswer(currentQuestion, option)}
@@ -2000,40 +2353,74 @@ const App = () => {
                   )}
                 </h3>
                 
-                {isPremium ? (
-                  <div 
-                    className="w-48 h-48 mx-auto mb-4 p-4 bg-gradient-to-br from-dark-700/50 to-dark-600/50 rounded-2xl border border-dark-500/50 shadow-glow"
-                    dangerouslySetInnerHTML={{ 
-                      __html: generateEnhancedCharacterSVG(results.mbti, results.character) 
-                    }}
-                  />
+                {characterImage?.imageUrl ? (
+                  <div className="w-48 h-48 mx-auto mb-4 bg-gradient-to-br from-dark-700/50 to-dark-600/50 rounded-2xl border border-dark-500/50 shadow-glow overflow-hidden">
+                    <img 
+                      src={characterImage.imageUrl} 
+                      alt={`${results.mbti} × ${results.characterInfo.code} キャラクター`}
+                      className="w-full h-full object-cover rounded-2xl"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'block';
+                      }}
+                    />
+                    {/* フォールバックSVG */}
+                    <div 
+                      style={{ display: 'none' }}
+                      className="w-full h-full flex items-center justify-center"
+                      dangerouslySetInnerHTML={{ 
+                        __html: generateEnhancedCharacterSVG(results.mbti, results.characterInfo.code) 
+                      }}
+                    />
+                  </div>
                 ) : (
                   <div className="relative">
-                    {/* ぼかしキャラクター */}
+                    {/* デフォルトSVGキャラクター */}
                     <div 
-                      className="w-48 h-48 mx-auto mb-4 p-4 bg-gradient-to-br from-dark-700/50 to-dark-600/50 rounded-2xl border border-dark-500/50 shadow-glow blur-md select-none pointer-events-none"
+                      className="w-48 h-48 mx-auto mb-4 p-4 bg-gradient-to-br from-dark-700/50 to-dark-600/50 rounded-2xl border border-dark-500/50 shadow-glow"
                       dangerouslySetInnerHTML={{ 
-                        __html: generateEnhancedCharacterSVG(results.mbti, results.character) 
+                        __html: generateEnhancedCharacterSVG(results.mbti, results.characterInfo.code) 
                       }}
                     />
                     
-                    {/* アップグレードオーバーレイ */}
+                    {/* AI生成オーバーレイ */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="text-center p-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-explorers-primary to-explorers-accent rounded-full flex items-center justify-center mx-auto mb-3">
-                          <Sparkles className="w-6 h-6 text-white" />
-                        </div>
-                        <h4 className="text-sm font-bold text-white mb-1">AIキャラクター</h4>
-                        <p className="text-xs text-dark-300 mb-3">
-                          あなた専用の<br />
-                          キャラクターを生成
-                        </p>
-                        <button
-                          onClick={() => setIsPremium(true)}
-                          className="bg-gradient-to-r from-explorers-primary to-explorers-accent text-white px-4 py-2 rounded-lg text-xs font-semibold hover:from-explorers-accent hover:to-explorers-primary transition-all"
-                        >
-                          キャラクターを見る
-                        </button>
+                        {imageLoading ? (
+                          <>
+                            <div className="w-12 h-12 bg-gradient-to-r from-explorers-primary to-explorers-accent rounded-full flex items-center justify-center mx-auto mb-3 animate-pulse">
+                              <RefreshCw className="w-6 h-6 text-white animate-spin" />
+                            </div>
+                            <h4 className="text-sm font-bold text-white mb-1">AI生成中...</h4>
+                            <p className="text-xs text-dark-300">
+                              あなた専用の<br />
+                              キャラクターを作成中
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-12 h-12 bg-gradient-to-r from-explorers-primary to-explorers-accent rounded-full flex items-center justify-center mx-auto mb-3">
+                              <Sparkles className="w-6 h-6 text-white" />
+                            </div>
+                            <h4 className="text-sm font-bold text-white mb-1">AIキャラクター</h4>
+                            <p className="text-xs text-dark-300 mb-3">
+                              あなた専用の<br />
+                              キャラクターを生成
+                            </p>
+                            <button
+                              onClick={generateCharacterImage}
+                              disabled={imageLoading}
+                              className="bg-gradient-to-r from-explorers-primary to-explorers-accent text-white px-4 py-2 rounded-lg text-xs font-semibold hover:from-explorers-accent hover:to-explorers-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              キャラクターを生成
+                            </button>
+                            {imageError && (
+                              <p className="text-xs text-red-400 mt-2">
+                                {imageError}
+                              </p>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -2097,7 +2484,7 @@ const App = () => {
                   <div>
                     <h4 className="font-semibold text-dark-200 mb-2">性格の特徴</h4>
                     <div className="flex flex-wrap gap-2 mb-3">
-                      {results.mbtiInfo.characteristics.map((char, index) => (
+                      {(results.mbtiInfo.characteristics || []).map((char, index) => (
                         <span key={index} className="px-2 py-1 bg-analysts-primary/20 text-analysts-primary rounded-md text-xs">
                           {char}
                         </span>
@@ -2113,17 +2500,17 @@ const App = () => {
                     
                     <div className="bg-dark-700/30 p-3 rounded-lg">
                       <h5 className="font-medium text-explorers-primary text-xs mb-1">💼 仕事場面</h5>
-                      <p className="text-dark-300 text-xs">{results.mbtiInfo.situations.work}</p>
+                      <p className="text-dark-300 text-xs">{results.mbtiInfo.situations?.work || 'データがありません'}</p>
                     </div>
                     
                     <div className="bg-dark-700/30 p-3 rounded-lg">
                       <h5 className="font-medium text-sentinels-primary text-xs mb-1">👥 社交場面</h5>
-                      <p className="text-dark-300 text-xs">{results.mbtiInfo.situations.social}</p>
+                      <p className="text-dark-300 text-xs">{results.mbtiInfo.situations?.social || 'データがありません'}</p>
                     </div>
                     
                     <div className="bg-dark-700/30 p-3 rounded-lg">
                       <h5 className="font-medium text-analysts-primary text-xs mb-1">💕 恋愛場面</h5>
-                      <p className="text-dark-300 text-xs">{results.mbtiInfo.situations.romance}</p>
+                      <p className="text-dark-300 text-xs">{results.mbtiInfo.situations?.romance || 'データがありません'}</p>
                     </div>
                   </div>
                   
@@ -2139,24 +2526,58 @@ const App = () => {
                   ✨ 印象詳細分析 ({results.characterInfo.code})
                 </h3>
                 
+                {/* 16タイプグループ情報 */}
+                <div className="bg-gradient-to-r from-diplomats-primary/20 to-diplomats-accent/10 rounded-lg p-4 mb-4 border border-diplomats-primary/30">
+                  <h4 className="font-semibold text-diplomats-primary mb-2 text-sm flex items-center gap-2">
+                    🏷️ {CHARACTER_CODE_GROUPS[results.characterInfo.group]?.name}グループ
+                  </h4>
+                  <p className="text-dark-300 text-xs mb-3 leading-relaxed">
+                    {CHARACTER_CODE_GROUPS[results.characterInfo.group]?.description}
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {(CHARACTER_CODE_GROUPS[results.characterInfo.group]?.characteristics || []).map((char, index) => (
+                      <span key={index} className="px-2 py-1 bg-diplomats-primary/20 text-diplomats-primary rounded-md text-xs">
+                        {char}
+                      </span>
+                    ))}
+                  </div>
+                  
+                  {/* 同じグループの他のタイプ */}
+                  <div className="mt-3">
+                    <h5 className="font-medium text-dark-200 text-xs mb-2">同じグループの他のタイプ</h5>
+                    <div className="grid grid-cols-2 gap-1 text-xs">
+                      {CHARACTER_CODE_GROUPS[results.characterInfo.group]?.types
+                        .filter(typeCode => typeCode !== results.characterInfo.code)
+                        ?.map((typeCode) => (
+                          <div key={typeCode} className="bg-dark-700/30 rounded px-2 py-1">
+                            <span className="text-diplomats-primary font-medium">{typeCode}</span>
+                            <span className="text-dark-400 ml-1">
+                              {CHARACTER_CODE_16_TYPES[typeCode]?.name}
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+
                 {/* Character Code軸の説明 */}
                 <div className="bg-dark-700/50 rounded-lg p-4 mb-4">
                   <h4 className="font-semibold text-dark-200 mb-2 text-sm">Character Code 4軸分析</h4>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <span className="text-diplomats-primary font-medium">
-                        {results.characterInfo.axes.n_o === 'N' ? 'N (Neutral)' : 'D (Deep)'}
+                        {results.characterInfo.axes.d_n === 'N' ? 'N (Neutral)' : 'D (Deep)'}
                       </span>
                       <span className="text-dark-400 ml-1">
-                        {results.characterInfo.axes.n_o === 'N' ? '中性的・洗練' : '深い・包容力'}
+                        {results.characterInfo.axes.d_n === 'N' ? '中性的・洗練' : '深い・包容力'}
                       </span>
                     </div>
                     <div>
                       <span className="text-diplomats-primary font-medium">
-                        {results.characterInfo.axes.i_r === 'I' ? 'I (Intense)' : 'O (Open)'}
+                        {results.characterInfo.axes.o_i === 'I' ? 'I (Intense)' : 'O (Open)'}
                       </span>
                       <span className="text-dark-400 ml-1">
-                        {results.characterInfo.axes.i_r === 'I' ? '強烈・印象的' : '開放的・親しみ'}
+                        {results.characterInfo.axes.o_i === 'I' ? '強烈・印象的' : '開放的・親しみ'}
                       </span>
                     </div>
                     <div>
@@ -2182,7 +2603,7 @@ const App = () => {
                   <div>
                     <h4 className="font-semibold text-dark-200 mb-2">第一印象の特徴</h4>
                     <div className="flex flex-wrap gap-2 mb-3">
-                      {results.characterInfo.characteristics.map((char, index) => (
+                      {(results.characterInfo.characteristics || []).map((char, index) => (
                         <span key={index} className="px-2 py-1 bg-diplomats-primary/20 text-diplomats-primary rounded-md text-xs">
                           {char}
                         </span>
@@ -2198,17 +2619,17 @@ const App = () => {
                     
                     <div className="bg-dark-700/30 p-3 rounded-lg">
                       <h5 className="font-medium text-explorers-primary text-xs mb-1">💼 仕事場面</h5>
-                      <p className="text-dark-300 text-xs">{results.characterInfo.situations.work}</p>
+                      <p className="text-dark-300 text-xs">{results.characterInfo.situations?.work || 'データがありません'}</p>
                     </div>
                     
                     <div className="bg-dark-700/30 p-3 rounded-lg">
                       <h5 className="font-medium text-sentinels-primary text-xs mb-1">👥 社交場面</h5>
-                      <p className="text-dark-300 text-xs">{results.characterInfo.situations.social}</p>
+                      <p className="text-dark-300 text-xs">{results.characterInfo.situations?.social || 'データがありません'}</p>
                     </div>
                     
                     <div className="bg-dark-700/30 p-3 rounded-lg">
                       <h5 className="font-medium text-analysts-primary text-xs mb-1">💕 恋愛場面</h5>
-                      <p className="text-dark-300 text-xs">{results.characterInfo.situations.romance}</p>
+                      <p className="text-dark-300 text-xs">{results.characterInfo.situations?.romance || 'データがありません'}</p>
                     </div>
                   </div>
                   
@@ -2251,7 +2672,7 @@ const App = () => {
                     <div key={key}>
                       <h4 className="font-medium text-dark-200 mb-3">{key}</h4>
                       <div className="flex flex-wrap gap-2">
-                        {types.map((type, index) => (
+                        {(types || []).map((type, index) => (
                           <span 
                             key={index}
                             className="px-3 py-2 bg-gradient-to-r from-sentinels-primary/20 to-sentinels-accent/10 text-sentinels-primary border border-sentinels-primary/30 rounded-full text-sm font-medium backdrop-blur-sm"
@@ -2330,7 +2751,7 @@ const App = () => {
                             <span className="text-explorers-primary">仕事・キャリア</span>
                           </h4>
                           <div className="space-y-2">
-                            {aiAdvice.career?.map((tip, index) => (
+                            {(aiAdvice.career || []).map((tip, index) => (
                               <p key={index} className="text-sm text-dark-300 leading-relaxed">
                                 • {tip}
                               </p>
@@ -2345,7 +2766,7 @@ const App = () => {
                             <span className="text-explorers-primary">人間関係</span>
                           </h4>
                           <div className="space-y-2">
-                            {aiAdvice.relationships?.map((tip, index) => (
+                            {(aiAdvice.relationships || []).map((tip, index) => (
                               <p key={index} className="text-sm text-dark-300 leading-relaxed">
                                 • {tip}
                               </p>
@@ -2360,7 +2781,7 @@ const App = () => {
                             <span className="text-explorers-primary">恋愛・パートナーシップ</span>
                           </h4>
                           <div className="space-y-2">
-                            {aiAdvice.romance?.map((tip, index) => (
+                            {(aiAdvice.romance || []).map((tip, index) => (
                               <p key={index} className="text-sm text-dark-300 leading-relaxed">
                                 • {tip}
                               </p>
@@ -2375,7 +2796,7 @@ const App = () => {
                             <span className="text-explorers-primary">自己成長</span>
                           </h4>
                           <div className="space-y-2">
-                            {aiAdvice.growth?.map((tip, index) => (
+                            {(aiAdvice.growth || []).map((tip, index) => (
                               <p key={index} className="text-sm text-dark-300 leading-relaxed">
                                 • {tip}
                               </p>
@@ -2390,7 +2811,7 @@ const App = () => {
                             <span className="text-explorers-primary">ライフスタイル</span>
                           </h4>
                           <div className="space-y-2">
-                            {aiAdvice.lifestyle?.map((tip, index) => (
+                            {(aiAdvice.lifestyle || []).map((tip, index) => (
                               <p key={index} className="text-sm text-dark-300 leading-relaxed">
                                 • {tip}
                               </p>
@@ -2405,7 +2826,7 @@ const App = () => {
                             <span className="text-explorers-primary">ストレス管理</span>
                           </h4>
                           <div className="space-y-2">
-                            {aiAdvice.stress?.map((tip, index) => (
+                            {(aiAdvice.stress || []).map((tip, index) => (
                               <p key={index} className="text-sm text-dark-300 leading-relaxed">
                                 • {tip}
                               </p>
