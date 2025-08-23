@@ -128,13 +128,13 @@ const PaymentModal = ({ isOpen, onClose, onSuccess }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6">
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-200">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold">プレミアム診断アンロック</h3>
+          <h3 className="text-xl font-bold text-gray-800">プレミアム診断アンロック</h3>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-600 hover:text-gray-800 transition-colors"
             disabled={isProcessing}
           >
             <X size={24} />
@@ -142,39 +142,39 @@ const PaymentModal = ({ isOpen, onClose, onSuccess }) => {
         </div>
 
         <div className="space-y-4 mb-6">
-          <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-lg">
-            <h4 className="font-semibold mb-2">🎯 プレミアム機能</h4>
-            <ul className="text-sm space-y-1">
-              <li>✨ AI画像生成（キャラクター作成）</li>
-              <li>🔍 顔画像分析（印象診断）</li>
-              <li>💡 詳細アドバイス（個別提案）</li>
+          <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-lg border border-purple-100">
+            <h4 className="font-semibold mb-2 text-gray-800">🎯 プレミアム機能</h4>
+            <ul className="text-sm space-y-2 text-gray-700">
+              <li className="flex items-center"><span className="mr-2">✨</span> AI画像生成（キャラクター作成）</li>
+              <li className="flex items-center"><span className="mr-2">🔍</span> 顔画像分析（印象診断）</li>
+              <li className="flex items-center"><span className="mr-2">💡</span> 詳細アドバイス（個別提案）</li>
             </ul>
           </div>
 
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-            <span className="font-medium">料金</span>
-            <span className="text-2xl font-bold">¥500</span>
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <span className="font-medium text-gray-700">料金</span>
+            <span className="text-2xl font-bold text-gray-800">¥500</span>
           </div>
         </div>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">
-              <Mail size={16} className="inline mr-1" />
+            <label className="block text-sm font-medium mb-2 text-gray-700">
+              <Mail size={16} className="inline mr-1 text-gray-600" />
               メールアドレス（領収書送信用）
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-800 placeholder-gray-400"
               placeholder="your@email.com"
               disabled={isProcessing}
             />
           </div>
 
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
               {error}
             </div>
           )}
@@ -182,7 +182,7 @@ const PaymentModal = ({ isOpen, onClose, onSuccess }) => {
           <button
             onClick={handleStripeCheckout}
             disabled={isProcessing}
-            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white p-3 rounded-lg font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 rounded-lg font-medium hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg transition-all duration-200"
           >
             {isProcessing ? (
               <>
@@ -197,8 +197,8 @@ const PaymentModal = ({ isOpen, onClose, onSuccess }) => {
             )}
           </button>
 
-          <p className="text-xs text-gray-500 text-center">
-            安全な決済システムStripeを使用しています
+          <p className="text-xs text-gray-600 text-center">
+            🔒 安全な決済システムStripeを使用しています
           </p>
         </div>
       </div>
