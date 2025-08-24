@@ -2271,6 +2271,11 @@ const App = () => {
             <div className="question-card">
               <h2 className="text-2xl font-bold text-dark-100 mb-4">
                 顔写真のアップロード（任意）
+                {!isPremium && (
+                  <span className="ml-2 text-xs bg-explorers-primary/20 text-explorers-primary px-2 py-1 rounded-full">
+                    プレミアム
+                  </span>
+                )}
               </h2>
               <p className="text-dark-300 mb-6 leading-relaxed">
                 Character Code診断の精度向上のため、お顔の写真をアップロードできます。<br />
@@ -2278,35 +2283,58 @@ const App = () => {
               </p>
               
               <div className="mb-6">
-                <div className="border-2 border-dashed border-dark-500 rounded-xl p-8 mb-4 bg-dark-700/30 backdrop-blur-sm hover:border-dark-400 transition-all duration-300">
-                  <Camera className="w-12 h-12 text-dark-400 mx-auto mb-4" />
-                  {uploadedPhoto ? (
-                    <div>
-                      <img 
-                        src={uploadedPhoto} 
-                        alt="アップロード済み" 
-                        className="w-32 h-32 object-cover rounded-xl mx-auto mb-4 border-2 border-sentinels-primary shadow-glow-green"
-                      />
-                      <p className="text-sentinels-primary font-medium">写真がアップロードされました</p>
-                    </div>
-                  ) : (
-                    <div>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handlePhotoUpload}
-                        className="hidden"
-                        id="photo-upload"
-                      />
-                      <label
-                        htmlFor="photo-upload"
-                        className="btn-secondary cursor-pointer inline-block"
-                      >
+                {isPremium && accessToken ? (
+                  // プレミアム版：写真アップロード可能
+                  <div className="border-2 border-dashed border-dark-500 rounded-xl p-8 mb-4 bg-dark-700/30 backdrop-blur-sm hover:border-dark-400 transition-all duration-300">
+                    <Camera className="w-12 h-12 text-dark-400 mx-auto mb-4" />
+                    {uploadedPhoto ? (
+                      <div>
+                        <img 
+                          src={uploadedPhoto} 
+                          alt="アップロード済み" 
+                          className="w-32 h-32 object-cover rounded-xl mx-auto mb-4 border-2 border-sentinels-primary shadow-glow-green"
+                        />
+                        <p className="text-sentinels-primary font-medium">写真がアップロードされました</p>
+                      </div>
+                    ) : (
+                      <div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handlePhotoUpload}
+                          className="hidden"
+                          id="photo-upload"
+                        />
+                        <label
+                          htmlFor="photo-upload"
+                          className="btn-secondary cursor-pointer inline-block"
+                        >
+                          写真を選択
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  // 無料版：ぼかし表示
+                  <div className="relative">
+                    <div className="border-2 border-dashed border-dark-500 rounded-xl p-8 mb-4 bg-dark-700/30 backdrop-blur-sm blur-sm select-none pointer-events-none">
+                      <Camera className="w-12 h-12 text-dark-400 mx-auto mb-4" />
+                      <div className="btn-secondary cursor-pointer inline-block">
                         写真を選択
-                      </label>
+                      </div>
                     </div>
-                  )}
-                </div>
+                    
+                    {/* プレミアム機能表示 */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-dark-900/80 backdrop-blur-sm rounded-xl">
+                      <div className="text-center p-4">
+                        <Camera className="w-8 h-8 text-explorers-primary mx-auto mb-2" />
+                        <p className="text-sm text-dark-300">
+                          この機能はプレミアムのみ
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
               
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -2493,16 +2521,9 @@ const App = () => {
                           <Sparkles className="w-6 h-6 text-white" />
                         </div>
                         <h4 className="text-sm font-bold text-white mb-1">AIキャラクター生成</h4>
-                        <p className="text-xs text-dark-300 mb-3">
-                          あなた専用の高品質<br />
-                          キャラクター画像を生成
+                        <p className="text-sm text-dark-300">
+                          この機能はプレミアムのみ
                         </p>
-                        <button
-                          onClick={handleSelectPremium}
-                          className="bg-gradient-to-r from-explorers-primary to-explorers-accent text-white px-4 py-2 rounded-lg text-xs font-semibold hover:from-explorers-accent hover:to-explorers-primary transition-all"
-                        >
-                          プレミアムにアップグレード
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -2964,18 +2985,11 @@ const App = () => {
                           <div className="w-16 h-16 bg-gradient-to-r from-explorers-primary to-explorers-accent rounded-full flex items-center justify-center mx-auto mb-3">
                             <Sparkles className="w-8 h-8 text-white" />
                           </div>
-                          <h4 className="text-lg font-bold text-white mb-2">AI詳細分析</h4>
-                          <p className="text-sm text-dark-300 leading-relaxed">
-                            あなただけのパーソナライズされた<br />
-                            実用的アドバイスを表示
+                          <h4 className="text-lg font-bold text-white mb-2">実用的アドバイス</h4>
+                          <p className="text-sm text-dark-300">
+                            この機能はプレミアムのみ
                           </p>
                         </div>
-                        <button
-                          onClick={handleSelectPremium}
-                          className="bg-gradient-to-r from-explorers-primary to-explorers-accent text-white px-6 py-3 rounded-xl font-semibold hover:from-explorers-accent hover:to-explorers-primary transition-all"
-                        >
-                          AIアドバイスを見る
-                        </button>
                       </div>
                     </div>
                   </div>
