@@ -1723,12 +1723,32 @@ const App = () => {
   const handleShareX = () => {
     if (!results) return;
     
-    const shareText = `私の診断結果は「${results.title}」でした！\n${results.mbti} × ${results.characterInfo.code}「${results.characterInfo.name}」\n${CHARACTER_CODE_GROUPS[results.characterInfo.group]?.name}グループ\n${results.gapAnalysis.statement}\n\n#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbti} #${results.characterInfo.code}`;
+    // 最高スコアを取得
+    const scores = results.scores || {};
+    const scoreEntries = Object.entries(scores);
+    const topScore = scoreEntries.reduce((max, [key, value]) => 
+      value > max.value ? { key, value } : max, 
+      { key: '', value: 0 }
+    );
+
+    // 相性の良いMBTIを取得
+    const compatibility = results.compatibility?.most_compatible || 'INFJ';
+
+    // 新しい統一フォーマット
+    const shareText = `私の診断結果は「${results.title}」でした！
+
+MBTI: ${results.mbti} ${results.mbtiInfo.name}
+印象: ${results.characterInfo.code} ${results.characterInfo.name}
+${topScore.key} ${topScore.value}%でした！
+相性のいいMBTIは${compatibility}です！！
+
+#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbti} #${results.characterInfo.code}`;
+
     const shareUrl = window.location.href;
     const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
     
     window.open(xUrl, '_blank', 'width=550,height=420');
-  };;
+  };;;
 
   // 汎用シェア機能（Web Share API）
   const handleShare = async () => {
