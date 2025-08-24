@@ -365,7 +365,7 @@ const generateDecorationElements = (characterType, colors) => {
 
 // 肩書き生成ロジック（全16タイプ対応）
 const generateTitle = (mbtiType, characterCode) => {
-  // 16タイプ対応のタイトル生成
+  // 16タイプ対応のタイトル生成 - 旧コンビネーション肩書き
   const combinations = {
     ENFP: {
       // 印象的グループ
@@ -434,16 +434,14 @@ const generateTitle = (mbtiType, characterCode) => {
   
   // MBTIタイプの組み合わせが定義されていない場合はデフォルトを使用
   const mbtiCombinations = combinations[mbtiType] || combinations.DEFAULT;
-  const title = mbtiCombinations[characterCode];
+  const combinedTitle = mbtiCombinations[characterCode];
   
-  // タイトルが見つからない場合のフォールバック
-  if (!title) {
-    const mbtiName = mbtiResults[mbtiType]?.name || mbtiType;
-    const characterName = CHARACTER_CODE_16_TYPES[characterCode]?.name || characterCode;
-    return `${mbtiName}×${characterName}`;
-  }
+  // MBTIの名前とCharacterCodeの名前を取得
+  const mbtiName = mbtiResults[mbtiType]?.name || mbtiType;
+  const characterName = CHARACTER_CODE_16_TYPES[characterCode]?.name || characterCode;
   
-  return title;
+  // タイトルとして「MBTIの名前×CharacterCodeの名前」を返す
+  return `${mbtiName}×${combinedTitle || characterName}`;
 };;
 
 // MBTI診断の質問データ（28問 - 各軸7問）
@@ -1732,43 +1730,152 @@ const App = () => {
     window.open(xUrl, '_blank', 'width=550,height=420');
   };;
 
-  // LINEシェア機能
-  const handleShareLine = () => {
-    if (!results) return;
-    
-    const shareText = `私の診断結果は「${results.title}」でした！\n${results.mbti} × ${results.characterInfo.code}「${results.characterInfo.name}」\n${CHARACTER_CODE_GROUPS[results.characterInfo.group]?.name}グループ\n${results.gapAnalysis.statement}\n\n#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbti} #${results.characterInfo.code}\n${window.location.href}`;
-    const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(shareText)}`;
-    
-    window.open(lineUrl, '_blank');
-  };;
-
   // 汎用シェア機能（Web Share API）
   const handleShare = async () => {
     if (!results) return;
 
-    const shareText = `私の診断結果は「${results.title}」でした！\n${results.mbti} × ${results.characterInfo.code}「${results.characterInfo.name}」\n${CHARACTER_CODE_GROUPS[results.characterInfo.group]?.name}グループ\n${results.gapAnalysis.statement}\n\n#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbti} #${results.characterInfo.code}`;
+    // 最高スコアを取得
+    const scores = results.scores || {};
+    const scoreEntries = Object.entries(scores);
+    const topScore = scoreEntries.reduce((max, [key, value]) => 
+      value > max.value ? { key, value } : max, 
+      { key: '', value: 0 }
+    );
+
+    // 相性の良いMBTIを取得
+    const compatibility = results.compatibility?.most_compatible || 'INFJ';
+
+    // OGP画像生成用のパラメータを構築
+    const ogParams = new URLSearchParams({
+      mbti: results.mbti,
+      mbtiName: results.mbtiInfo.name,
+      characterCode: results.characterInfo.code,
+      characterName: results.characterInfo.name,
+      topScore: topScore.key,
+      topScoreValue: topScore.value.toString(),
+      compatibility: compatibility,
+      // キャラクター画像がある場合は追加（プレミアム機能）
+      ...(results.characterImage?.imageUrl && { characterImage: results.characterImage.imageUrl })
+    });
+
+    // OGP画像URL
+    const ogImageUrl = `${window.location.origin}/api/og-image?${ogParams.toString()}`;
+
+    // シェア用テキスト
+    const shareText = `私の診断結果は「${results.title}」でした！
+
+MBTI: ${results.mbti} ${results.mbtiInfo.name}
+印象: ${results.characterInfo.code} ${results.characterInfo.name}
+${topScore.key} ${topScore.value}%でした！
+相性のいいMBTIは${compatibility}です！！
+
+#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbti} #${results.characterInfo.code}`;
+
+    // シェアURL（結果ページ）
+    const shareUrl = window.location.href;
     
     if (navigator.share) {
       try {
+        // Web Share API（モバイル対応）
         await navigator.share({
           title: 'TwinPersona診断結果',
           text: shareText,
-          url: window.location.href,
+          url: shareUrl,
         });
       } catch (err) {
-        // シェアがキャンセルされた場合など
-        console.log('シェアがキャンセルされました');
+        if (err.name !== 'AbortError') {
+          console.error('シェアに失敗しました:', err);
+          // フォールバック：クリップボードコピー
+          fallbackShare(shareText, shareUrl, ogImageUrl);
+        }
       }
     } else {
-      // Web Share APIが利用できない場合はクリップボードにコピー
+      // Web Share APIが利用できない場合
+      fallbackShare(shareText, shareUrl, ogImageUrl);
+    }
+  };
+
+  // フォールバック共有機能
+  const fallbackShare = async (shareText, shareUrl, ogImageUrl) => {
+    try {
+      // OGP画像をダウンロード
+      const response = await fetch(ogImageUrl);
+      const blob = await response.blob();
+      
+      // 一時的なダウンロードリンクを作成
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'twin-persona-result.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      // テキストをクリップボードにコピー
+      await navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
+      
+      alert('画像がダウンロードされ、テキストがクリップボードにコピーされました！\nSNSに投稿してください。');
+    } catch (err) {
+      console.error('フォールバック共有に失敗しました:', err);
+      // 最終フォールバック：テキストのみコピー
       try {
-        await navigator.clipboard.writeText(shareText + '\n' + window.location.href);
-        alert('クリップボードにコピーしました！');
-      } catch (err) {
-        console.error('コピーに失敗しました:', err);
+        await navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}\n\nOGP画像: ${ogImageUrl}`);
+        alert('テキストとOGP画像URLがクリップボードにコピーされました！');
+      } catch (clipboardErr) {
+        console.error('クリップボードコピーに失敗しました:', clipboardErr);
+        // 手動コピー用のプロンプト表示
+        prompt('以下のテキストをコピーしてください:', `${shareText}\n\n${shareUrl}\n\nOGP画像: ${ogImageUrl}`);
       }
     }
-  };;
+  };;;
+  // LINEシェア機能
+  const handleShareToLine = async () => {
+    if (!results) return;
+
+    // 最高スコアを取得
+    const scores = results.scores || {};
+    const scoreEntries = Object.entries(scores);
+    const topScore = scoreEntries.reduce((max, [key, value]) => 
+      value > max.value ? { key, value } : max, 
+      { key: '', value: 0 }
+    );
+
+    // 相性の良いMBTIを取得
+    const compatibility = results.compatibility?.most_compatible || 'INFJ';
+
+    // OGP画像生成用のパラメータを構築
+    const ogParams = new URLSearchParams({
+      mbti: results.mbti,
+      mbtiName: results.mbtiInfo.name,
+      characterCode: results.characterInfo.code,
+      characterName: results.characterInfo.name,
+      topScore: topScore.key,
+      topScoreValue: topScore.value.toString(),
+      compatibility: compatibility,
+      // キャラクター画像がある場合は追加（プレミアム機能）
+      ...(results.characterImage?.imageUrl && { characterImage: results.characterImage.imageUrl })
+    });
+
+    // シェア用テキスト
+    const shareText = `私の診断結果は「${results.title}」でした！
+
+MBTI: ${results.mbti} ${results.mbtiInfo.name}
+印象: ${results.characterInfo.code} ${results.characterInfo.name}
+${topScore.key} ${topScore.value}%でした！
+相性のいいMBTIは${compatibility}です！！
+
+#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbti} #${results.characterInfo.code}`;
+
+    // シェアURL（OGPパラメータ付き）
+    const shareUrl = `${window.location.origin}${window.location.pathname}?${ogParams.toString()}`;
+
+    // LINEシェアURL
+    const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+    
+    // 新しいウィンドウでLINEシェアを開く
+    window.open(lineUrl, '_blank');
+  };
 
   // 画像ダウンロード
   const handleDownload = () => {
@@ -2544,6 +2651,33 @@ const App = () => {
                   🧠 性格詳細分析 ({results.mbti})
                 </h3>
                 
+                {/* MBTIタイプ情報 - 印象詳細と同じレイアウト */}
+                <div className="bg-gradient-to-r from-analysts-primary/20 to-analysts-accent/10 rounded-lg p-4 mb-4 border border-analysts-primary/30">
+                  <h4 className="font-semibold text-analysts-primary mb-2 text-sm flex items-center gap-2">
+                    🏷️ {results.mbtiInfo.name}タイプ
+                  </h4>
+                  <p className="text-dark-300 text-xs mb-3 leading-relaxed">
+                    {results.mbtiInfo.description}
+                  </p>
+                  <div className="flex flex-wrap gap-1">
+                    {(results.mbtiInfo.characteristics || []).map((char, index) => (
+                      <span key={index} className="px-2 py-1 bg-analysts-primary/20 text-analysts-primary rounded-md text-xs">
+                        {char}
+                      </span>
+                    ))}
+                  </div>
+                  
+                  {/* 第一印象 */}
+                  <div className="mt-3">
+                    <h5 className="font-medium text-dark-200 text-xs mb-2">第一印象</h5>
+                    <div className="bg-dark-700/30 rounded px-2 py-1">
+                      <p className="text-dark-300 text-xs leading-relaxed">
+                        {results.mbtiInfo.firstImpression}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* MBTI 4軸分析 */}
                 <div className="bg-dark-700/50 rounded-lg p-4 mb-4">
                   <h4 className="font-semibold text-dark-200 mb-2 text-sm">MBTI 4軸分析</h4>
@@ -2583,44 +2717,29 @@ const App = () => {
                   </div>
                 </div>
 
-                <div className="space-y-4 text-sm">
-                  <div>
-                    <h4 className="font-semibold text-dark-200 mb-2">性格の特徴</h4>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {(results.mbtiInfo.characteristics || []).map((char, index) => (
-                        <span key={index} className="px-2 py-1 bg-analysts-primary/20 text-analysts-primary rounded-md text-xs">
-                          {char}
-                        </span>
-                      ))}
-                    </div>
-                    <p className="text-dark-300 text-xs leading-relaxed">
-                      {results.mbtiInfo.firstImpression}
-                    </p>
+                {/* シーン別の性格 */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-dark-200 text-sm">シーン別の性格</h4>
+                  
+                  <div className="bg-dark-700/30 p-3 rounded-lg">
+                    <h5 className="font-medium text-explorers-primary text-xs mb-1">💼 仕事場面</h5>
+                    <p className="text-dark-300 text-xs">{results.mbtiInfo.situations?.work || 'データがありません'}</p>
                   </div>
                   
-                  <div className="space-y-3">
-                    <h4 className="font-semibold text-dark-200">シーン別の性格</h4>
-                    
-                    <div className="bg-dark-700/30 p-3 rounded-lg">
-                      <h5 className="font-medium text-explorers-primary text-xs mb-1">💼 仕事場面</h5>
-                      <p className="text-dark-300 text-xs">{results.mbtiInfo.situations?.work || 'データがありません'}</p>
-                    </div>
-                    
-                    <div className="bg-dark-700/30 p-3 rounded-lg">
-                      <h5 className="font-medium text-sentinels-primary text-xs mb-1">👥 社交場面</h5>
-                      <p className="text-dark-300 text-xs">{results.mbtiInfo.situations?.social || 'データがありません'}</p>
-                    </div>
-                    
-                    <div className="bg-dark-700/30 p-3 rounded-lg">
-                      <h5 className="font-medium text-analysts-primary text-xs mb-1">💕 恋愛場面</h5>
-                      <p className="text-dark-300 text-xs">{results.mbtiInfo.situations?.romance || 'データがありません'}</p>
-                    </div>
+                  <div className="bg-dark-700/30 p-3 rounded-lg">
+                    <h5 className="font-medium text-sentinels-primary text-xs mb-1">👥 社交場面</h5>
+                    <p className="text-dark-300 text-xs">{results.mbtiInfo.situations?.social || 'データがありません'}</p>
                   </div>
                   
-                  <p className="text-xs text-dark-400 text-center">
-                    このMBTIタイプは全体の約{results.mbtiInfo.percentage}%
-                  </p>
+                  <div className="bg-dark-700/30 p-3 rounded-lg">
+                    <h5 className="font-medium text-analysts-primary text-xs mb-1">💕 恋愛場面</h5>
+                    <p className="text-dark-300 text-xs">{results.mbtiInfo.situations?.romance || 'データがありません'}</p>
+                  </div>
                 </div>
+                
+                <p className="text-xs text-dark-400 text-center mt-4">
+                  このMBTIタイプは全体の約{results.mbtiInfo.percentage}%
+                </p>
               </div>
 
               {/* Character Code詳細分析 */}
@@ -3012,7 +3131,7 @@ const App = () => {
                 </button>
                 
                 <button
-                  onClick={handleShareLine}
+                  onClick={handleShareToLine}
                   className="bg-[#00B900] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#009900] transition-all flex items-center justify-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
