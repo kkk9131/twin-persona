@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { addValidToken } from './verify-token';
+import { addValidToken } from './verify-token.js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;

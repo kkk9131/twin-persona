@@ -1,5 +1,5 @@
 export class AdviceService {
-  static async generateAdvice({ mbtiType, characterCode, gapAnalysis }) {
+  static async generateAdvice({ mbtiType, characterCode, gapAnalysis, accessToken }) {
     try {
       const response = await fetch('/api/generate-advice', {
         method: 'POST',
@@ -9,7 +9,8 @@ export class AdviceService {
         body: JSON.stringify({
           mbtiType,
           characterCode,
-          gapAnalysis
+          gapAnalysis,
+          accessToken
         })
       });
 
