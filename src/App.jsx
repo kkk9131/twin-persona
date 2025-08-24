@@ -1106,6 +1106,7 @@ function App() {
   const [onboardingData, setOnboardingData] = useState({});
   const [mbtiAnswers, setMbtiAnswers] = useState({});
   const [characterAnswers, setCharacterAnswers] = useState({});
+  const [photoData, setPhotoData] = useState(null);
   const [results, setResults] = useState(null);
 
   const resetApp = () => {
@@ -1113,6 +1114,7 @@ function App() {
     setOnboardingData({});
     setMbtiAnswers({});
     setCharacterAnswers({});
+    setPhotoData(null);
     setResults(null);
   };
 
@@ -1153,7 +1155,6 @@ function App() {
         console.log('Share cancelled');
       }
     } else {
-      // フォールバック: クリップボードにコピー
       try {
         await navigator.clipboard.writeText(shareText);
         alert('診断結果をクリップボードにコピーしました！');
@@ -1178,6 +1179,231 @@ function App() {
       />
     );
   }
+
+  if (currentScreen === 'mbti') {
+    return (
+      <MBTIScreen
+        onComplete={(answers) => {
+          setMbtiAnswers(answers);
+          setCurrentScreen('character');
+        }}
+      />
+    );
+  }
+
+  if (currentScreen === 'character') {
+    return (
+      <CharacterScreen
+        onComplete={(answers) => {
+          setCharacterAnswers(answers);
+          setCurrentScreen('generating');
+          
+          setTimeout(() => {
+            const calculatedResults = calculateResults(mbtiAnswers, characterAnswers, onboardingData);
+            setResults(calculatedResults);
+            setCurrentScreen('results');
+          }, 3000);
+        }}
+      />
+    );
+  }
+
+  if (currentScreen === 'generating') {
+    return <GeneratingScreen />;
+  }
+
+  if (currentScreen === 'results' && results) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white">
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+              診断結果
+            </h1>
+            <div className="bg-gradient-to-r from-purple-500/20 to-cyan-500/20 rounded-2xl p-6 backdrop-blur-sm border border-white/10">
+              <h2 className="text-2xl font-bold mb-2 text-white">
+                {results.title}
+              </h2>
+              <p className="text-lg text-gray-300">
+                {results.mbtiType} × {results.characterType}
+              </p>
+            </div>
+          </div>
+
+          {/* Character Visualization */}
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-2xl p-6 backdrop-blur-sm border border-white/10">
+              <h3 className="text-xl font-bold mb-4 text-center text-white">あなたのキャラクター</h3>
+              <div className="flex justify-center mb-4">
+                <div className="w-48 h-48 bg-gradient-to-br from-purple-400 to-cyan-400 rounded-full flex items-center justify-center border-4 border-white/20">
+                  {results.characterSvg}
+                </div>
+              </div>
+              <div className="text-center">
+                <p className="text-gray-300 mb-2">このキャラクターがあなたの印象です</p>
+              </div>
+            </div>
+          </div>
+
+          {/* MBTI & Character Analysis */}
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <div className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-2xl p-6 backdrop-blur-sm border border-purple-300/20">
+              <h3 className="text-xl font-bold mb-4 text-purple-200">性格分析 (MBTI)</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-300">タイプ:</span>
+                  <span className="font-bold text-purple-300">{results.mbtiType}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-300">名称:</span>
+                  <span className="font-bold text-purple-300">{results.mbtiInfo.name}</span>
+                </div>
+                <div className="mt-4">
+                  <p className="text-sm text-gray-400">{results.mbtiInfo.description}</p>
+                </div>
+                <div className="mt-4">
+                  <h4 className="font-semibold text-purple-200 mb-2">特徴:</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {results.mbtiInfo.traits.map((trait, index) => (
+                      <div key={index} className="bg-purple-400/20 rounded-lg px-3 py-2 text-center">
+                        <span className="text-sm text-purple-200">{trait}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 rounded-2xl p-6 backdrop-blur-sm border border-cyan-300/20">
+              <h3 className="text-xl font-bold mb-4 text-cyan-200">印象分析 (Character Code)</h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-300">タイプ:</span>
+                  <span className="font-bold text-cyan-300">{results.characterType}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-300">印象:</span>
+                  <span className="font-bold text-cyan-300">{results.characterInfo.name}</span>
+                </div>
+                <div className="mt-4">
+                  <p className="text-sm text-gray-400">{results.characterInfo.description}</p>
+                </div>
+                <div className="mt-4">
+                  <h4 className="font-semibold text-cyan-200 mb-2">特徴:</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {results.characterInfo.traits.map((trait, index) => (
+                      <div key={index} className="bg-cyan-400/20 rounded-lg px-3 py-2 text-center">
+                        <span className="text-sm text-cyan-200">{trait}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Gap Analysis */}
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-2xl p-6 backdrop-blur-sm border border-amber-300/20">
+              <h3 className="text-xl font-bold mb-4 text-amber-200">ギャップ分析</h3>
+              <div className="text-center">
+                <div className="text-4xl font-bold text-amber-300 mb-2">
+                  {results.gapPercentage}%
+                </div>
+                <p className="text-amber-200 mb-4">{results.gapAnalysis.description}</p>
+                <div className="bg-amber-400/10 rounded-lg p-4">
+                  <h4 className="font-semibold text-amber-200 mb-2">分析結果:</h4>
+                  <p className="text-sm text-gray-300">{results.gapAnalysis.interpretation}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Entertainment Scores */}
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-pink-500/20 to-rose-500/20 rounded-2xl p-6 backdrop-blur-sm border border-pink-300/20">
+              <h3 className="text-xl font-bold mb-4 text-pink-200">エンタメ要素</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {Object.entries(results.entertainmentScores).map(([key, value]) => (
+                  <div key={key} className="text-center">
+                    <div className="text-2xl font-bold text-pink-300">{value}%</div>
+                    <div className="text-sm text-gray-300">{getScoreLabel(key)}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Compatibility */}
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-2xl p-6 backdrop-blur-sm border border-green-300/20">
+              <h3 className="text-xl font-bold mb-4 text-green-200">相性分析</h3>
+              <div className="text-center">
+                <p className="text-gray-300 mb-2">あなたと相性が良いのは</p>
+                <div className="text-2xl font-bold text-green-300 mb-2">
+                  {results.compatibility}
+                </div>
+                <p className="text-sm text-gray-400">
+                  このタイプの人との関係性では、お互いの違いが良い刺激となり、
+                  成長し合える関係を築くことができるでしょう。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Share Section */}
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-2xl p-6 backdrop-blur-sm border border-indigo-300/20">
+              <h3 className="text-xl font-bold mb-4 text-indigo-200 text-center">結果をシェアしよう！</h3>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={handleShareX}
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 px-6 py-3 rounded-full font-semibold transition duration-300 transform hover:scale-105"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                  X（旧Twitter）でシェア
+                </button>
+                <button
+                  onClick={handleShareToLine}
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 px-6 py-3 rounded-full font-semibold transition duration-300 transform hover:scale-105"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.032-.2.032-.183 0-.365-.094-.465-.243l-1.49-2.137v2.282c0 .345-.282.63-.631.63-.345 0-.627-.285-.627-.63V8.108c0-.27.173-.51.43-.595.063-.022.136-.033.202-.033.185 0 .366.094.466.243l1.489 2.137V8.108c0-.345.282-.63.63-.63.349 0 .628.285.628.63v4.771zm-5.741 0c0 .345-.282.63-.631.63-.345 0-.627-.285-.627-.63V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
+                  </svg>
+                  LINEでシェア
+                </button>
+                <button
+                  onClick={handleShare}
+                  className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 px-6 py-3 rounded-full font-semibold transition duration-300 transform hover:scale-105"
+                >
+                  <Share2 className="w-5 h-5" />
+                  その他でシェア
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="text-center">
+            <button
+              onClick={resetApp}
+              className="text-gray-400 hover:text-white transition duration-300"
+            >
+              もう一度診断する
+            </button>
+            <div className="text-gray-500 text-sm mt-2">
+              <p>TwinPersona - ツインパーソナ診断</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 
   if (currentScreen === 'mbti') {
     return (
