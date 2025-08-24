@@ -1557,6 +1557,15 @@ const App = () => {
         scores
       });
       setStep('result');
+      
+      // プレミアムユーザーの場合は自動でAI機能を実行
+      if (isPremium && accessToken) {
+        console.log('プレミアムユーザー：AI機能を自動実行');
+        // AI画像生成
+        generateAICharacterImage(mbtiType, characterCode, scores);
+        // AIアドバイス生成
+        generateAIAdvice(mbtiType, characterCode, gapAnalysis);
+      }
     } catch (error) {
       console.error('診断処理中にエラーが発生しました:', error);
       // エラー時はローカルデータで処理続行
@@ -1592,18 +1601,24 @@ const App = () => {
   };;
 
   // GEMINI APIからアドバイス生成
-  const generateAIAdvice = async () => {
-    if (!results) return;
+  const generateAIAdvice = async (mbtiType = null, characterCode = null, gapAnalysis = null) => {
+    // 引数が渡されない場合は既存のresultsを使用
+    const targetMbti = mbtiType || results?.mbti;
+    const targetCharacterCode = characterCode || results?.characterInfo?.code;
+    const targetGapAnalysis = gapAnalysis || results?.gapAnalysis?.level || 'medium';
+    
+    if (!targetMbti || !targetCharacterCode) return;
     
     setAdviceLoading(true);
     setAdviceError(null);
     
     try {
-      // 16タイプ対応：characterCodeを使用
+      // 16タイプ対応：characterCodeを使用、アクセストークンを含める
       const advice = await AdviceService.generateAdvice({
-        mbtiType: results.mbti,
-        characterCode: results.characterInfo.code, // 16タイプのcharacterCode
-        gapAnalysis: results.gapAnalysis.level || 'medium'
+        mbtiType: targetMbti,
+        characterCode: targetCharacterCode, // 16タイプのcharacterCode
+        gapAnalysis: targetGapAnalysis,
+        accessToken: accessToken // プレミアムアクセストークン
       });
       
       if (advice.success) {
@@ -1624,19 +1639,25 @@ const App = () => {
   };;
 
   // DALL-E 3 キャラクター画像生成
-  const generateCharacterImage = async () => {
-    if (!results) return;
+  const generateAICharacterImage = async (mbtiType = null, characterCode = null, scores = null) => {
+    // 引数が渡されない場合は既存のresultsを使用
+    const targetMbti = mbtiType || results?.mbti;
+    const targetCharacterCode = characterCode || results?.characterInfo?.code;
+    const targetScores = scores || results?.scores;
+    
+    if (!targetMbti || !targetCharacterCode) return;
     
     setImageLoading(true);
     setImageError(null);
     
     try {
       const response = await ImageService.generateCharacterImage(
-        results.mbti,
-        results.characterInfo.code,
-        results.scores,
+        targetMbti,
+        targetCharacterCode,
+        targetScores,
         selectedGender === '男性' ? 'male' : selectedGender === '女性' ? 'female' : 'neutral',
-        selectedOccupation
+        selectedOccupation,
+        accessToken // プレミアムアクセストークン
       );
       
       setCharacterImage(response);
@@ -2380,27 +2401,29 @@ const App = () => {
                   )}
                 </h3>
                 
-                {characterImage?.imageUrl ? (
-                  <div className="w-48 h-48 mx-auto mb-4 bg-gradient-to-br from-dark-700/50 to-dark-600/50 rounded-2xl border border-dark-500/50 shadow-glow overflow-hidden">
-                    <img 
-                      src={characterImage.imageUrl} 
-                      alt={`${results.mbti} × ${results.characterInfo.code} キャラクター`}
-                      className="w-full h-full object-cover rounded-2xl"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextSibling.style.display = 'block';
-                      }}
-                    />
-                    {/* フォールバックSVG */}
-                    <div 
-                      style={{ display: 'none' }}
-                      className="w-full h-full flex items-center justify-center"
-                      dangerouslySetInnerHTML={{ 
-                        __html: generateEnhancedCharacterSVG(results.mbti, results.characterInfo.code) 
-                      }}
-                    />
-                  </div>
-                ) : (
+                {isPremium && accessToken ? (
+                  // プレミアム版：AI画像または生成ボタン
+                  characterImage?.imageUrl ? (
+                    <div className="w-48 h-48 mx-auto mb-4 bg-gradient-to-br from-dark-700/50 to-dark-600/50 rounded-2xl border border-dark-500/50 shadow-glow overflow-hidden">
+                      <img 
+                        src={characterImage.imageUrl} 
+                        alt={`${results.mbti} × ${results.characterInfo.code} キャラクター`}
+                        className="w-full h-full object-cover rounded-2xl"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'block';
+                        }}
+                      />
+                      {/* フォールバックSVG */}
+                      <div 
+                        style={{ display: 'none' }}
+                        className="w-full h-full flex items-center justify-center"
+                        dangerouslySetInnerHTML={{ 
+                          __html: generateEnhancedCharacterSVG(results.mbti, results.characterInfo.code) 
+                        }}
+                      />
+                    </div>
+                  ) : (
                   <div className="relative">
                     {/* デフォルトSVGキャラクター */}
                     <div 
@@ -2435,7 +2458,7 @@ const App = () => {
                               キャラクターを生成
                             </p>
                             <button
-                              onClick={generateCharacterImage}
+                              onClick={generateAICharacterImage}
                               disabled={imageLoading}
                               className="bg-gradient-to-r from-explorers-primary to-explorers-accent text-white px-4 py-2 rounded-lg text-xs font-semibold hover:from-explorers-accent hover:to-explorers-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
@@ -2448,6 +2471,38 @@ const App = () => {
                             )}
                           </>
                         )}
+                      </div>
+                    </div>
+                  </div>
+                  )
+                ) : (
+                  // 無料版：ぼかし表示とプレミアムアップグレード
+                  <div className="relative">
+                    {/* ぼかしされたSVGキャラクター */}
+                    <div 
+                      className="w-48 h-48 mx-auto mb-4 p-4 bg-gradient-to-br from-dark-700/50 to-dark-600/50 rounded-2xl border border-dark-500/50 shadow-glow blur-sm select-none pointer-events-none"
+                      dangerouslySetInnerHTML={{ 
+                        __html: generateEnhancedCharacterSVG(results.mbti, results.characterInfo.code) 
+                      }}
+                    />
+                    
+                    {/* プレミアムアップグレードオーバーレイ */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-dark-900/80 backdrop-blur-sm rounded-xl">
+                      <div className="text-center p-4">
+                        <div className="w-12 h-12 bg-gradient-to-r from-explorers-primary to-explorers-accent rounded-full flex items-center justify-center mx-auto mb-3">
+                          <Sparkles className="w-6 h-6 text-white" />
+                        </div>
+                        <h4 className="text-sm font-bold text-white mb-1">AIキャラクター生成</h4>
+                        <p className="text-xs text-dark-300 mb-3">
+                          あなた専用の高品質<br />
+                          キャラクター画像を生成
+                        </p>
+                        <button
+                          onClick={handleSelectPremium}
+                          className="bg-gradient-to-r from-explorers-primary to-explorers-accent text-white px-4 py-2 rounded-lg text-xs font-semibold hover:from-explorers-accent hover:to-explorers-primary transition-all"
+                        >
+                          プレミアムにアップグレード
+                        </button>
                       </div>
                     </div>
                   </div>
