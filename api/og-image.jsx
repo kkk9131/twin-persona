@@ -171,7 +171,7 @@ export default async function handler(request) {
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                  <span style={{ fontSize: '24px', color: colors.textDim }}>印象:</span>
+                  <span style={{ fontSize: '24px', color: colors.textDim }}>charactercode:</span>
                   <span style={{ fontSize: '28px', fontWeight: 'bold', color: colors.secondary }}>
                     {characterCode} {characterName}
                   </span>

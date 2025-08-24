@@ -4,6 +4,7 @@ import PaymentModal from './components/PaymentModal';
 import { CHARACTER_CODE_16_TYPES, CHARACTER_CODE_GROUPS, CHARACTER_CODE_16_QUESTIONS, calculateCharacterCode16Type } from './data/characterCode16Types';
 import { AdviceService } from './services/adviceService';
 import { ImageService } from './services/imageService';
+import { all256Titles } from '../titles-256';
 
 // MBTIグループ別統一カラーパレット
 const unifiedColorPalette = {
@@ -71,10 +72,78 @@ const impressionStyles = {
 };
 
 // 統一されたAI画像生成プロンプト作成
+// 256通りタイトルからキーワードを抽出する関数
+const extractKeywordsFromTitle = (title) => {
+  if (!title) return "";
+  
+  // タイトルから視覚的なキーワードを抽出
+  const visualKeywords = {
+    "信頼できる": "trustworthy confident",
+    "戦略家": "strategic chess-piece",
+    "カリスマ的": "radiant charismatic",
+    "先見者": "visionary crystal-ball",
+    "完璧主義": "perfectionist precise",
+    "指導者": "leadership crown",
+    "穏やか": "calm serene",
+    "洞察": "insightful third-eye",
+    "洗練": "refined elegant",
+    "思考家": "thoughtful brain-symbol",
+    "理想主義": "idealistic star-symbol",
+    "純粋": "pure crystal",
+    "可愛い": "cute heart-shaped",
+    "都会的": "urban geometric",
+    "建築家": "architectural blueprint",
+    "神秘的": "mysterious aura",
+    "意外": "surprising dual-nature",
+    "革新": "innovative gear",
+    "安らぎ": "peaceful zen",
+    "独創的": "original creative",
+    "反抗的": "rebellious edgy",
+    "魅力的": "attractive magnetic",
+    "親しみやすい": "friendly warm",
+    "研究者": "scholarly book",
+    "発明家": "inventive lightbulb",
+    "論理学者": "logical mathematical",
+    "哲学者": "philosophical owl",
+    "天才": "genius spark",
+    "知識": "knowledge scroll",
+    "分析家": "analytical magnifying-glass",
+    "創造": "creative palette",
+    "自由": "freedom wings",
+    "反逆": "rebellious lightning",
+    "温か": "warm sunlight",
+    "提唱者": "advocacy megaphone",
+    "理想": "idealistic mountain-peak",
+    "神秘": "mystical moon",
+    "深さ": "deep ocean",
+    "癒し": "healing lotus",
+    "使命": "mission compass",
+    "感性": "sensitive artistic",
+    "詩人": "poetic feather",
+    "芸術": "artistic brush",
+    "仲介": "mediating balance",
+    "平和": "peaceful dove",
+    "夢見": "dreamy cloud",
+    "創作": "creative studio"
+  };
+  
+  let keywords = "";
+  Object.keys(visualKeywords).forEach(key => {
+    if (title.includes(key)) {
+      keywords += visualKeywords[key] + " ";
+    }
+  });
+  
+  return keywords.trim();
+};
 const createUnifiedAIPrompt = (mbtiType, characterType) => {
   const group = getMBTIGroup(mbtiType);
   const colors = unifiedColorPalette[group];
   const style = impressionStyles[characterType];
+  
+  // 256通りタイトルから個性的な要素を取得
+  const personalizedTitle = all256Titles[mbtiType]?.[characterType];
+  const titleKeywords = personalizedTitle ? extractKeywordsFromTitle(personalizedTitle) : "";
   
   // MBTI特性マッピング
   const personalityTraits = {
@@ -104,15 +173,16 @@ const createUnifiedAIPrompt = (mbtiType, characterType) => {
   };
   
   return `Low poly 3D character design, ${personalityTraits[mbtiType]} personality, 
-${impressionAdjectives[characterType]} impression, exactly 3-head-body proportion,
-unified color palette: ${colors.primary} primary ${colors.secondary} secondary ${colors.accent} accent colors,
+${impressionAdjectives[characterType]} impression, ${titleKeywords}themed elements,
+exactly 3-head-body proportion, unified color palette: ${colors.primary} primary ${colors.secondary} secondary ${colors.accent} accent colors,
 ${style.pattern}, ${style.polygonStyle}, center positioned character,
 isometric 3/4 view angle, 150-200 polygons maximum,
 soft ambient lighting with single directional light source,
 matte finish no reflections, clean minimalist design,
 1024x1024 square format, social media optimized,
-geometric faceted style, smooth edge flow, ${style.expression}`;
-};
+geometric faceted style, smooth edge flow, ${style.expression},
+character embodies "${personalizedTitle}" essence with visual metaphors`;
+};;
 
 // 外部APIからMBTI情報を取得（将来実装）
 const fetchMBTIData = async (mbtiType) => {
@@ -204,19 +274,25 @@ const analyzeCharacterCode = async (answers) => {
       };
     }
     
-    // 16タイプの完全な情報を返す
+    // 16タイプの完全な情報を返す（situationsとpercentageを含む）
     return {
       code: characterInfo.code,
       name: characterInfo.name,
       group: characterInfo.group,
       description: characterInfo.description || '',
-      traits: characterInfo.traits || '',
-      // 追加の分析データ（将来の拡張用）
-      axes: {
-        DN: characterCode[0], // D or N
-        IO: characterCode[1], // I or O
-        FM: characterCode[2], // F or M
-        CT: characterCode[3]  // C or T
+      characteristics: characterInfo.characteristics || [],
+      firstImpression: characterInfo.firstImpression || '',
+      situations: characterInfo.situations || {
+        work: 'データがありません',
+        social: 'データがありません', 
+        romance: 'データがありません'
+      },
+      percentage: characterInfo.percentage || 0,
+      axes: characterInfo.axes || {
+        d_n: characterCode[0], // D or N
+        o_i: characterCode[1], // I or O
+        f_m: characterCode[2], // F or M
+        c_t: characterCode[3]  // C or T
       }
     };
   } catch (error) {
@@ -229,7 +305,7 @@ const analyzeCharacterCode = async (answers) => {
     };
     return defaultType;
   }
-};;
+};;;
 
 // AI画像生成API（将来実装）
 const generateAICharacterImage = async (mbtiType, characterType) => {
@@ -1354,7 +1430,7 @@ const generateAdvice = (mbtiType, characterCode) => {
     友達: `第一印象は${characterInfo.name}でも、深く付き合うと${mbtiInfo.name}の真の魅力が伝わり、本物の友情を築けるでしょう。`,
     恋愛: `${characterInfo.name}の魅力で相手を惹きつけ、${mbtiInfo.name}の深い愛情で長続きする関係を作ることができます。`
   };
-};;
+};;;;
 
 // エンタメスコア生成
 const generateScores = (mbtiType, characterCode) => {
@@ -1524,14 +1600,16 @@ const App = () => {
       const mbtiType = calculateMBTI();
       const characterCode = calculateCharacterType(); // 16タイプコード
       
-      // APIから詳細データを取得
+      // API から詳細データを取得
       const [mbtiInfo, characterInfo] = await Promise.all([
         fetchMBTIData(mbtiType),
         analyzeCharacterCode(characterAnswers)
       ]);
       
+      // 256通りタイトルを取得
+      const personalizedTitle = all256Titles[mbtiType]?.[characterCode] || generateTitle(mbtiType, characterCode);
+      
       // 16タイプ対応の各種生成関数を呼び出し
-      const title = generateTitle(mbtiType, characterCode);
       const gapAnalysis = generateGapAnalysis(mbtiType, characterCode);
       const compatibility = getCompatibility(mbtiType);
       const advice = generateAdvice(mbtiType, characterCode);
@@ -1542,7 +1620,7 @@ const App = () => {
         mbti: mbtiType,
         character: characterCode, // 旧互換性のため
         characterCode: characterCode, // 16タイプコード
-        title,
+        title: personalizedTitle, // 256通りのタイトルを設定
         mbtiInfo: mbtiInfo || mbtiResults[mbtiType], // フォールバック
         characterInfo: characterInfo || CHARACTER_CODE_16_TYPES[characterCode] || { 
           code: characterCode,
@@ -1570,8 +1648,10 @@ const App = () => {
       const mbtiType = calculateMBTI();
       const characterCode = calculateCharacterType(); // 16タイプコード
       
+      // 256通りタイトルを取得（エラー時）
+      const personalizedTitle = all256Titles[mbtiType]?.[characterCode] || generateTitle(mbtiType, characterCode);
+      
       // 16タイプ対応の各種生成関数を呼び出し
-      const title = generateTitle(mbtiType, characterCode);
       const gapAnalysis = generateGapAnalysis(mbtiType, characterCode);
       const compatibility = getCompatibility(mbtiType);
       const advice = generateAdvice(mbtiType, characterCode);
@@ -1582,7 +1662,7 @@ const App = () => {
         mbti: mbtiType,
         character: characterCode, // 旧互換性のため
         characterCode: characterCode, // 16タイプコード
-        title,
+        title: personalizedTitle, // 256通りのタイトルを設定
         mbtiInfo: mbtiResults[mbtiType],
         characterInfo: CHARACTER_CODE_16_TYPES[characterCode] || {
           code: characterCode,
@@ -1596,7 +1676,7 @@ const App = () => {
       });
       setStep('result');
     }
-  };;
+  };;;
 
   // GEMINI APIからアドバイス生成
   const generateAIAdvice = async (mbtiType = null, characterCode = null, gapAnalysis = null) => {
@@ -1701,7 +1781,7 @@ const App = () => {
     ctx.fillText(`(${results.mbtiInfo.name})`, 400, 340);
     
     // Character Code結果（16タイプ）
-    ctx.fillText(`印象: ${results.characterInfo.code} (${results.characterInfo.name})`, 400, 420);
+    ctx.fillText(`charactercode: ${results.characterInfo.code} (${results.characterInfo.name})`, 400, 420);
     
     // グループ情報
     ctx.font = '24px Arial';
@@ -1738,7 +1818,7 @@ const App = () => {
     const shareText = `私の診断結果は「${results.title}」でした！
 
 MBTI: ${results.mbti} ${results.mbtiInfo.name}
-印象: ${results.characterInfo.code} ${results.characterInfo.name}
+charactercode: ${results.characterInfo.code} ${results.characterInfo.name}
 ${topScore.key} ${topScore.value}%でした！
 相性のいいMBTIは${compatibility}です！！
 
@@ -1785,7 +1865,7 @@ ${topScore.key} ${topScore.value}%でした！
     const shareText = `私の診断結果は「${results.title}」でした！
 
 MBTI: ${results.mbti} ${results.mbtiInfo.name}
-印象: ${results.characterInfo.code} ${results.characterInfo.name}
+charactercode: ${results.characterInfo.code} ${results.characterInfo.name}
 ${topScore.key} ${topScore.value}%でした！
 相性のいいMBTIは${compatibility}です！！
 
@@ -1813,7 +1893,7 @@ ${topScore.key} ${topScore.value}%でした！
       // Web Share APIが利用できない場合
       fallbackShare(shareText, shareUrl, ogImageUrl);
     }
-  };
+  };;
 
   // フォールバック共有機能
   const fallbackShare = async (shareText, shareUrl, ogImageUrl) => {
@@ -1881,7 +1961,7 @@ ${topScore.key} ${topScore.value}%でした！
     const shareText = `私の診断結果は「${results.title}」でした！
 
 MBTI: ${results.mbti} ${results.mbtiInfo.name}
-印象: ${results.characterInfo.code} ${results.characterInfo.name}
+charactercode: ${results.characterInfo.code} ${results.characterInfo.name}
 ${topScore.key} ${topScore.value}%でした！
 相性のいいMBTIは${compatibility}です！！
 
@@ -2658,7 +2738,7 @@ ${topScore.key} ${topScore.value}%でした！
                 
                 <div className="text-sm text-dark-300 space-y-1">
                   <p><strong className="text-dark-200">MBTI:</strong> <span className="text-analysts-primary font-semibold">{results.mbti}</span> ({results.mbtiInfo.name})</p>
-                  <p><strong className="text-dark-200">印象:</strong> <span className="text-diplomats-primary font-semibold">{results.characterInfo.code}</span> ({results.characterInfo.name})</p>
+                  <p><strong className="text-dark-200">charactercode:</strong> <span className="text-diplomats-primary font-semibold">{results.characterInfo.code}</span> ({results.characterInfo.name})</p>
                   <p className="text-xs text-dark-400 mt-2">
                     全人口の約{results.mbtiInfo.percentage}%のMBTIタイプ
                   </p>
