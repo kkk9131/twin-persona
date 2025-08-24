@@ -365,84 +365,310 @@ const generateDecorationElements = (characterType, colors) => {
 
 // 肩書き生成ロジック（全16タイプ対応）
 const generateTitle = (mbtiType, characterCode) => {
-  // 16タイプ対応のタイトル生成 - 旧コンビネーション肩書き
-  const combinations = {
-    ENFP: {
-      // 印象的グループ
-      'DOFC': "愛され系アナウンサー",
-      'DOFT': "カリスマアイドル",
-      'DOMC': "情熱的なリーダー",
-      'DOMT': "癒し系クリエイター",
-      // 残像的グループ
-      'DIFC': "優雅な革新者",
-      'NIMC': "天使のような夢想家",
-      'DIMC': "初恋系アーティスト",
-      'NIFC': "都会的インフルエンサー",
-      // 立体的グループ
-      'NOMC': "変幻自在のエンターテイナー",
-      'DIMT': "ギャップ萌えクリエイター",
-      'DIFT': "愛されヒーラー",
-      'NOFC': "唯一無二の表現者",
-      // 感覚的グループ
-      'NIMT': "前衛的アーティスト",
-      'NIFT': "自由奔放な革新者",
-      'NOFT': "情熱的な反逆者",
-      'NOMT': "魅惑のミューズ"
-    },
+  // 256通り完全定義のMBTI×CharacterCode組み合わせタイトル
+  const all256Titles = {
     INTJ: {
-      // 印象的グループ
-      'DOFC': "信頼の戦略家",
-      'DOFT': "カリスマ建築家",
-      'DOMC': "組織のブレイン",
-      'DOMT': "優しき賢者",
-      // 残像的グループ
-      'DIFC': "洗練された知性派",
-      'NIMC': "純粋な理論家",
-      'DIMC': "初恋系天才",
-      'NIFC': "都会的ストラテジスト",
-      // 立体的グループ
-      'NOMC': "謎めいた策士",
-      'DIMT': "ギャップ萌え天才",
-      'DIFT': "可愛い哲学者",
-      'NOFC': "孤高の革新者",
-      // 感覚的グループ
-      'NIMT': "前衛的思想家",
-      'NIFT': "クールな理論家",
-      'NOFT': "反骨の知識人",
-      'NOMT': "魅惑の頭脳派"
+      'DOFC': "信頼できる戦略家",
+      'DOFT': "華やかな建築家", 
+      'DOMC': "統率力のある革新者",
+      'DOMT': "温かい完璧主義者",
+      'DIFC': "上品な洞察家",
+      'NIMC': "純粋な理想家",
+      'DIMC': "初々しい天才",
+      'NIFC': "都会的な戦略家",
+      'NOMC': "神秘的な建築家",
+      'DIMT': "意外性のある革新者", 
+      'DIFT': "可愛い理論家",
+      'NOFC': "個性的な完璧主義者",
+      'NIMT': "芸術的な戦略家",
+      'NIFT': "自由な建築家",
+      'NOFT': "情熱的な革新者",
+      'NOMT': "華やかな理論家"
     },
-    // 他のMBTIタイプも同様に16タイプ対応（デフォルト値を用意）
-    DEFAULT: {
-      'DOFC': "模範的なアナウンサー",
-      'DOFT': "アイドルのセンター",
-      'DOMC': "しっかり者のリーダー",
-      'DOMT': "春の陽だまりのような人",
-      'DIFC': "上品で洗練された人",
-      'NIMC': "天使のような純粋さ",
-      'DIMC': "初恋のときめき",
-      'NIFC': "都会的でカリスマ性",
-      'NOMC': "ミステリアスなカメレオン",
-      'DIMT': "多面的な逆転魅力",
-      'DIFT': "可愛い安心できる人",
-      'NOFC': "ユニークな主人公オーラ",
-      'NIMT': "エッジの効いたアーティスト",
-      'NIFT': "シックな自由人",
-      'NOFT': "反骨精神のロマンチスト",
-      'NOMT': "グラマラスなミューズ"
+    INTP: {
+      'DOFC': "信頼できる論理学者",
+      'DOFT': "華やかな創造家",
+      'DOMC': "統率力のある思考家", 
+      'DOMT': "温かい好奇心家",
+      'DIFC': "上品な論理家",
+      'NIMC': "純粋な探求者",
+      'DIMC': "初々しい天才肌",
+      'NIFC': "都会的な思考家",
+      'NOMC': "神秘的な論理学者",
+      'DIMT': "意外性のある創造家",
+      'DIFT': "可愛い理論家",
+      'NOFC': "個性的な探求者",
+      'NIMT': "芸術的な論理家",
+      'NIFT': "自由な思考家", 
+      'NOFT': "情熱的な創造家",
+      'NOMT': "華やかな探求者"
+    },
+    ENTJ: {
+      'DOFC': "信頼できる指揮官",
+      'DOFT': "華やかなリーダー",
+      'DOMC': "統率力のある幹部",
+      'DOMT': "温かい指導者",
+      'DIFC': "上品な経営者", 
+      'NIMC': "純粋な理想家",
+      'DIMC': "初々しいリーダー",
+      'NIFC': "都会的な指揮官",
+      'NOMC': "神秘的な経営者",
+      'DIMT': "意外性のあるリーダー",
+      'DIFT': "可愛い指導者",
+      'NOFC': "個性的な指揮官",
+      'NIMT': "芸術的な経営者",
+      'NIFT': "自由なリーダー",
+      'NOFT': "情熱的な指導者", 
+      'NOMT': "華やかな指揮官"
+    },
+    ENTP: {
+      'DOFC': "信頼できる討論者",
+      'DOFT': "華やかな革新者",
+      'DOMC': "統率力のある発明家",
+      'DOMT': "温かいアイデアマン",
+      'DIFC': "上品な創造家",
+      'NIMC': "純粋な夢想家",
+      'DIMC': "初々しい革新者", 
+      'NIFC': "都会的な討論者",
+      'NOMC': "神秘的な創造家",
+      'DIMT': "意外性のある発明家",
+      'DIFT': "可愛いアイデアマン",
+      'NOFC': "個性的な討論者",
+      'NIMT': "芸術的な創造家",
+      'NIFT': "自由な革新者",
+      'NOFT': "情熱的な発明家",
+      'NOMT': "華やかなアイデアマン"
+    },
+    INFJ: {
+      'DOFC': "信頼できる提唱者",
+      'DOFT': "華やかな理想家",
+      'DOMC': "統率力のある洞察家",
+      'DOMT': "温かい献身家",
+      'DIFC': "上品な理想主義者",
+      'NIMC': "純粋な夢見人",
+      'DIMC': "初々しい提唱者",
+      'NIFC': "都会的な洞察家", 
+      'NOMC': "神秘的な理想家",
+      'DIMT': "意外性のある献身家",
+      'DIFT': "可愛い癒し手",
+      'NOFC': "個性的な提唱者",
+      'NIMT': "芸術的な理想主義者",
+      'NIFT': "自由な夢見人",
+      'NOFT': "情熱的な洞察家",
+      'NOMT': "華やかな献身家"
+    },
+    INFP: {
+      'DOFC': "信頼できる仲介者",
+      'DOFT': "華やかな芸術家",
+      'DOMC': "統率力のある理想家",
+      'DOMT': "温かい創造家",
+      'DIFC': "上品な芸術家",
+      'NIMC': "純粋な詩人",
+      'DIMC': "初々しい仲介者",
+      'NIFC': "都会的な創造家",
+      'NOMC': "神秘的な芸術家", 
+      'DIMT': "意外性のある理想家",
+      'DIFT': "可愛い詩人",
+      'NOFC': "個性的な仲介者",
+      'NIMT': "芸術的な創造家",
+      'NIFT': "自由な詩人",
+      'NOFT': "情熱的な芸術家",
+      'NOMT': "華やかな理想家"
+    },
+    ENFJ: {
+      'DOFC': "信頼できる主人公",
+      'DOFT': "華やかな指導者",
+      'DOMC': "統率力のある教育者",
+      'DOMT': "温かいカウンセラー",
+      'DIFC': "上品なメンター",
+      'NIMC': "純粋な理想家",
+      'DIMC': "初々しい主人公",
+      'NIFC': "都会的な指導者",
+      'NOMC': "神秘的なメンター",
+      'DIMT': "意外性のある教育者",
+      'DIFT': "可愛いカウンセラー",
+      'NOFC': "個性的な主人公", 
+      'NIMT': "芸術的なメンター",
+      'NIFT': "自由な指導者",
+      'NOFT': "情熱的な教育者",
+      'NOMT': "華やかなカウンセラー"
+    },
+    ENFP: {
+      'DOFC': "信頼できる運動家",
+      'DOFT': "華やかなエンターテイナー",
+      'DOMC': "統率力のある活動家",
+      'DOMT': "温かいムードメーカー",
+      'DIFC': "上品なクリエイター",
+      'NIMC': "純粋な夢追い人",
+      'DIMC': "初々しい運動家", 
+      'NIFC': "都会的なエンターテイナー",
+      'NOMC': "神秘的なクリエイター",
+      'DIMT': "意外性のある活動家",
+      'DIFT': "可愛いムードメーカー",
+      'NOFC': "個性的な運動家",
+      'NIMT': "芸術的なクリエイター",
+      'NIFT': "自由な夢追い人",
+      'NOFT': "情熱的なエンターテイナー",
+      'NOMT': "華やかな活動家"
+    },
+    ISTJ: {
+      'DOFC': "信頼できる管理者",
+      'DOFT': "華やかな責任者",
+      'DOMC': "統率力のある実務家",
+      'DOMT': "温かい世話役",
+      'DIFC': "上品な管理者",
+      'NIMC': "純粋な職人",
+      'DIMC': "初々しい責任者",
+      'NIFC': "都会的な実務家",
+      'NOMC': "神秘的な管理者",
+      'DIMT': "意外性のある責任者",
+      'DIFT': "可愛い世話役",
+      'NOFC': "個性的な職人",
+      'NIMT': "芸術的な管理者", 
+      'NIFT': "自由な責任者",
+      'NOFT': "情熱的な実務家",
+      'NOMT': "華やかな世話役"
+    },
+    ISFJ: {
+      'DOFC': "信頼できる擁護者",
+      'DOFT': "華やかな世話役",
+      'DOMC': "統率力のあるサポーター",
+      'DOMT': "温かい癒し手",
+      'DIFC': "上品な世話役",
+      'NIMC': "純粋な守護者",
+      'DIMC': "初々しい擁護者",
+      'NIFC': "都会的なサポーター",
+      'NOMC': "神秘的な世話役",
+      'DIMT': "意外性のある守護者",
+      'DIFT': "可愛い癒し手",
+      'NOFC': "個性的な擁護者",
+      'NIMT': "芸術的な世話役",
+      'NIFT': "自由なサポーター",
+      'NOFT': "情熱的な守護者",
+      'NOMT': "華やかな癒し手"
+    },
+    ESTJ: {
+      'DOFC': "信頼できる幹部",
+      'DOFT': "華やかな管理職",
+      'DOMC': "統率力のある責任者",
+      'DOMT': "温かいリーダー",
+      'DIFC': "上品な幹部",
+      'NIMC': "純粋な指導者",
+      'DIMC': "初々しい管理職",
+      'NIFC': "都会的な責任者",
+      'NOMC': "神秘的な幹部",
+      'DIMT': "意外性のある指導者", 
+      'DIFT': "可愛いリーダー",
+      'NOFC': "個性的な管理職",
+      'NIMT': "芸術的な幹部",
+      'NIFT': "自由な責任者",
+      'NOFT': "情熱的な指導者",
+      'NOMT': "華やかなリーダー"
+    },
+    ESFJ: {
+      'DOFC': "信頼できる領事",
+      'DOFT': "華やかなホスト",
+      'DOMC': "統率力のあるお世話係",
+      'DOMT': "温かい仲裁者",
+      'DIFC': "上品なホスト",
+      'NIMC': "純粋な世話好き", 
+      'DIMC': "初々しい領事",
+      'NIFC': "都会的なお世話係",
+      'NOMC': "神秘的なホスト",
+      'DIMT': "意外性のある世話好き",
+      'DIFT': "可愛い仲裁者",
+      'NOFC': "個性的な領事",
+      'NIMT': "芸術的なホスト",
+      'NIFT': "自由なお世話係",
+      'NOFT': "情熱的な世話好き",
+      'NOMT': "華やかな仲裁者"
+    },
+    ISTP: {
+      'DOFC': "信頼できる巨匠",
+      'DOFT': "華やかな職人",
+      'DOMC': "統率力のある実務家",
+      'DOMT': "温かい技術者",
+      'DIFC': "上品な職人",
+      'NIMC': "純粋な巨匠",
+      'DIMC': "初々しい実務家",
+      'NIFC': "都会的な技術者",
+      'NOMC': "神秘的な巨匠",
+      'DIMT': "意外性のある職人",
+      'DIFT': "可愛い技術者",
+      'NOFC': "個性的な実務家", 
+      'NIMT': "芸術的な巨匠",
+      'NIFT': "自由な職人",
+      'NOFT': "情熱的な技術者",
+      'NOMT': "華やかな実務家"
+    },
+    ISFP: {
+      'DOFC': "信頼できる冒険家",
+      'DOFT': "華やかなアーティスト",
+      'DOMC': "統率力のある自由人",
+      'DOMT': "温かい芸術家",
+      'DIFC': "上品なアーティスト",
+      'NIMC': "純粋な芸術家",
+      'DIMC': "初々しい冒険家",
+      'NIFC': "都会的な自由人",
+      'NOMC': "神秘的なアーティスト",
+      'DIMT': "意外性のある芸術家",
+      'DIFT': "可愛い自由人",
+      'NOFC': "個性的な冒険家",
+      'NIMT': "芸術的な創造家",
+      'NIFT': "自由な芸術家", 
+      'NOFT': "情熱的なアーティスト",
+      'NOMT': "華やかな冒険家"
+    },
+    ESTP: {
+      'DOFC': "信頼できる起業家",
+      'DOFT': "華やかなエンターテイナー",
+      'DOMC': "統率力のある行動家",
+      'DOMT': "温かいムードメーカー",
+      'DIFC': "上品なエンターテイナー",
+      'NIMC': "純粋な自由人",
+      'DIMC': "初々しい起業家",
+      'NIFC': "都会的な行動家",
+      'NOMC': "神秘的なエンターテイナー",
+      'DIMT': "意外性のある自由人",
+      'DIFT': "可愛いムードメーカー",
+      'NOFC': "個性的な起業家",
+      'NIMT': "芸術的なエンターテイナー",
+      'NIFT': "自由な行動家",
+      'NOFT': "情熱的な自由人",
+      'NOMT': "華やかなムードメーカー"
+    },
+    ESFP: {
+      'DOFC': "信頼できるエンターテイナー",
+      'DOFT': "華やかなパフォーマー",
+      'DOMC': "統率力のある盛り上げ役",
+      'DOMT': "温かい楽しい人",
+      'DIFC': "上品なパフォーマー",
+      'NIMC': "純粋な自由人",
+      'DIMC': "初々しいエンターテイナー", 
+      'NIFC': "都会的な盛り上げ役",
+      'NOMC': "神秘的なパフォーマー",
+      'DIMT': "意外性のある自由人",
+      'DIFT': "可愛い楽しい人",
+      'NOFC': "個性的なエンターテイナー",
+      'NIMT': "芸術的なパフォーマー",
+      'NIFT': "自由な盛り上げ役",
+      'NOFT': "情熱的な自由人",
+      'NOMT': "華やかな楽しい人"
     }
   };
   
-  // MBTIタイプの組み合わせが定義されていない場合はデフォルトを使用
-  const mbtiCombinations = combinations[mbtiType] || combinations.DEFAULT;
-  const combinedTitle = mbtiCombinations[characterCode];
+  // 256通り完全対応
+  const title = all256Titles[mbtiType]?.[characterCode];
   
-  // MBTIの名前とCharacterCodeの名前を取得
-  const mbtiName = mbtiResults[mbtiType]?.name || mbtiType;
-  const characterName = CHARACTER_CODE_16_TYPES[characterCode]?.name || characterCode;
+  // フォールバック（念のため）
+  if (!title) {
+    const mbtiName = mbtiResults[mbtiType]?.name || mbtiType;
+    const characterName = CHARACTER_CODE_16_TYPES[characterCode]?.name || characterCode;
+    return `${mbtiName}×${characterName}`;
+  }
   
-  // タイトルとして「MBTIの名前×CharacterCodeの名前」を返す
-  return `${mbtiName}×${combinedTitle || characterName}`;
-};;
+  return title;
+};;;
 
 // MBTI診断の質問データ（28問 - 各軸7問）
 const mbtiQuestions = [
@@ -1475,441 +1701,908 @@ const generateScores = (mbtiType, characterCode) => {
     希少度: calculateScore(baseScores.rarity, modifiers.rarity, 0),
     モテ度: calculateScore(baseScores.attractive, modifiers.attractive, 0)
   };
-};;
+};
 
-const App = () => {
-  const [step, setStep] = useState('start'); // start, gender, occupation, mbti, character, photo, generating, result
-  const [selectedGender, setSelectedGender] = useState(null); // 男性, 女性, 非公開
-  const [selectedOccupation, setSelectedOccupation] = useState(null); // 職業選択
-  const [mbtiAnswers, setMbtiAnswers] = useState({});
-  const [characterAnswers, setCharacterAnswers] = useState({});
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [uploadedPhoto, setUploadedPhoto] = useState(null);
-  const [results, setResults] = useState(null);
-  const [isPremium, setIsPremium] = useState(false); // 課金状態管理
-  const [showPaymentModal, setShowPaymentModal] = useState(false); // 決済モーダル表示状態
-  const [accessToken, setAccessToken] = useState(null); // プレミアムアクセストークン
-  const [aiAdvice, setAiAdvice] = useState(null); // GEMINI APIからのアドバイス
-  const [adviceLoading, setAdviceLoading] = useState(false); // アドバイス生成中
-  const [adviceError, setAdviceError] = useState(null); // アドバイス生成エラー
-  const [characterImage, setCharacterImage] = useState(null); // DALL-E 3 キャラクター画像
-  const [imageLoading, setImageLoading] = useState(false); // 画像生成中
-  const [imageError, setImageError] = useState(null); // 画像生成エラー
-  const canvasRef = useRef(null);
+export default function App() {
+  const [currentStep, setCurrentStep] = useState('start')
+  const [mbtiAnswers, setMbtiAnswers] = useState({})
+  const [characterAnswers, setCharacterAnswers] = useState({})
+  const [results, setResults] = useState(null)
+  const [selectedGender, setSelectedGender] = useState('')
+  const [selectedOccupation, setSelectedOccupation] = useState('')
+  const [uploadedPhoto, setUploadedPhoto] = useState(null)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [showShareOptions, setShowShareOptions] = useState(false)
 
-  // MBTI結果計算
-  const calculateMBTI = useCallback(() => {
+  // カラーパレット（統一版）
+  const unifiedColorPalette = {
+    Analysts: {
+      primary: '#8B5CF6',
+      secondary: '#A78BFA',
+      accent: '#6D28D9',
+      light: '#DDD6FE',
+      dark: '#581C87'
+    },
+    Diplomats: {
+      primary: '#06B6D4',
+      secondary: '#67E8F9',
+      accent: '#0891B2',
+      light: '#CFFAFE',
+      dark: '#164E63'
+    },
+    Sentinels: {
+      primary: '#10B981',
+      secondary: '#6EE7B7',
+      accent: '#059669',
+      light: '#D1FAE5',
+      dark: '#064E3B'
+    },
+    Explorers: {
+      primary: '#F59E0B',
+      secondary: '#FCD34D',
+      accent: '#D97706',
+      light: '#FEF3C7',
+      dark: '#92400E'
+    }
+  };
+
+  const mbtiGroups = {
+    INTJ: 'Analysts', INTP: 'Analysts', ENTJ: 'Analysts', ENTP: 'Analysts',
+    INFJ: 'Diplomats', INFP: 'Diplomats', ENFJ: 'Diplomats', ENFP: 'Diplomats',
+    ISTJ: 'Sentinels', ISFJ: 'Sentinels', ESTJ: 'Sentinels', ESFJ: 'Sentinels',
+    ISTP: 'Explorers', ISFP: 'Explorers', ESTP: 'Explorers', ESFP: 'Explorers'
+  };
+
+  // 256通りのMBTI×CharacterCode組み合わせタイトル
+  const all256Titles = {
+    INTJ: {
+      'DOFC': "洞察力で親しみやすい人",
+      'DOFT': "洞察力でエネルギッシュ人",
+      'DOMC': "洞察力で整然人",
+      'DOMT': "洞察力で癒し系人",
+      'DIFC': "独立的で洗練人",
+      'NIMC': "独立的で純粋人",
+      'DIMC': "独立的で可愛らしい人",
+      'NIFC': "独立的でカリスマ性人",
+      'NOMC': "洞察力でミステリアス人",
+      'DIMT': "独立的で意外性人",
+      'DIFT': "独立的で安らぎ人",
+      'NOFC': "洞察力でユニーク人",
+      'NIMT': "独立的でエッジ人",
+      'NIFT': "独立的でシック人",
+      'NOFT': "洞察力で反抗的人",
+      'NOMT': "洞察力でインスピレーション人",
+    },
+    INTP: {
+      'DOFC': "好奇心で親しみやすい人",
+      'DOFT': "好奇心でエネルギッシュ人",
+      'DOMC': "好奇心で整然人",
+      'DOMT': "好奇心で癒し系人",
+      'DIFC': "創造的で洗練人",
+      'NIMC': "創造的で純粋人",
+      'DIMC': "創造的で可愛らしい人",
+      'NIFC': "創造的でカリスマ性人",
+      'NOMC': "好奇心でミステリアス人",
+      'DIMT': "創造的で意外性人",
+      'DIFT': "創造的で安らぎ人",
+      'NOFC': "好奇心でユニーク人",
+      'NIMT': "創造的でエッジ人",
+      'NIFT': "創造的でシック人",
+      'NOFT': "好奇心で反抗的人",
+      'NOMT': "好奇心でインスピレーション人",
+    },
+    ENTJ: {
+      'DOFC': "決断力で正統派人",
+      'DOFT': "決断力で魅力的人",
+      'DOMC': "決断力で実直人",
+      'DOMT': "決断力で穏やか人",
+      'DIFC': "効率的でエレガント人",
+      'NIMC': "効率的で夢見がち人",
+      'DIMC': "効率的で純情人",
+      'NIFC': "効率的で都会的人",
+      'NOMC': "決断力で多面的人",
+      'DIMT': "効率的で多面的人",
+      'DIFT': "効率的で居心地良い人",
+      'NOFC': "決断力で主人公人",
+      'NIMT': "効率的で創造的人",
+      'NIFT': "効率的で個性的人",
+      'NOFT': "決断力で情熱的人",
+      'NOMT': "決断力で魅力的人",
+    },
+    ENTP: {
+      'DOFC': "適応性で正統派人",
+      'DOFT': "適応性で魅力的人",
+      'DOMC': "適応性で実直人",
+      'DOMT': "適応性で穏やか人",
+      'DIFC': "機知でエレガント人",
+      'NIMC': "機知で夢見がち人",
+      'DIMC': "機知で純情人",
+      'NIFC': "機知で都会的人",
+      'NOMC': "適応性で多面的人",
+      'DIMT': "機知で多面的人",
+      'DIFT': "機知で居心地良い人",
+      'NOFC': "適応性で主人公人",
+      'NIMT': "機知で創造的人",
+      'NIFT': "機知で個性的人",
+      'NOFT': "適応性で情熱的人",
+      'NOMT': "適応性で魅力的人",
+    },
+    INFJ: {
+      'DOFC': "思いやりで親しみやすい人",
+      'DOFT': "思いやりでエネルギッシュ人",
+      'DOMC': "思いやりで整然人",
+      'DOMT': "思いやりで癒し系人",
+      'DIFC': "洞察力で洗練人",
+      'NIMC': "洞察力で純粋人",
+      'DIMC': "洞察力で可愛らしい人",
+      'NIFC': "洞察力でカリスマ性人",
+      'NOMC': "思いやりでミステリアス人",
+      'DIMT': "洞察力で意外性人",
+      'DIFT': "洞察力で安らぎ人",
+      'NOFC': "思いやりでユニーク人",
+      'NIMT': "洞察力でエッジ人",
+      'NIFT': "洞察力でシック人",
+      'NOFT': "思いやりで反抗的人",
+      'NOMT': "思いやりでインスピレーション人",
+    },
+    INFP: {
+      'DOFC': "理想主義で親しみやすい人",
+      'DOFT': "理想主義でエネルギッシュ人",
+      'DOMC': "理想主義で整然人",
+      'DOMT': "理想主義で癒し系人",
+      'DIFC': "共感的で洗練人",
+      'NIMC': "共感的で純粋人",
+      'DIMC': "共感的で可愛らしい人",
+      'NIFC': "共感的でカリスマ性人",
+      'NOMC': "理想主義でミステリアス人",
+      'DIMT': "共感的で意外性人",
+      'DIFT': "共感的で安らぎ人",
+      'NOFC': "理想主義でユニーク人",
+      'NIMT': "共感的でエッジ人",
+      'NIFT': "共感的でシック人",
+      'NOFT': "理想主義で反抗的人",
+      'NOMT': "理想主義でインスピレーション人",
+    },
+    ENFJ: {
+      'DOFC': "組織的で正統派人",
+      'DOFT': "組織的で魅力的人",
+      'DOMC': "組織的で実直人",
+      'DOMT': "組織的で穏やか人",
+      'DIFC': "共感的でエレガント人",
+      'NIMC': "共感的で夢見がち人",
+      'DIMC': "共感的で純情人",
+      'NIFC': "共感的で都会的人",
+      'NOMC': "組織的で多面的人",
+      'DIMT': "共感的で多面的人",
+      'DIFT': "共感的で居心地良い人",
+      'NOFC': "組織的で主人公人",
+      'NIMT': "共感的で創造的人",
+      'NIFT': "共感的で個性的人",
+      'NOFT': "組織的で情熱的人",
+      'NOMT': "組織的で魅力的人",
+    },
+    ENFP: {
+      'DOFC': "社交的で正統派人",
+      'DOFT': "社交的で魅力的人",
+      'DOMC': "社交的で実直人",
+      'DOMT': "社交的で穏やか人",
+      'DIFC': "創造的でエレガント人",
+      'NIMC': "創造的で夢見がち人",
+      'DIMC': "創造的で純情人",
+      'NIFC': "創造的で都会的人",
+      'NOMC': "社交的で多面的人",
+      'DIMT': "創造的で多面的人",
+      'DIFT': "創造的で居心地良い人",
+      'NOFC': "社交的で主人公人",
+      'NIMT': "創造的で創造的人",
+      'NIFT': "創造的で個性的人",
+      'NOFT': "社交的で情熱的人",
+      'NOMT': "社交的で魅力的人",
+    },
+    ISTJ: {
+      'DOFC': "組織的で親しみやすい人",
+      'DOFT': "組織的でエネルギッシュ人",
+      'DOMC': "組織的で整然人",
+      'DOMT': "組織的で癒し系人",
+      'DIFC': "実用的で洗練人",
+      'NIMC': "実用的で純粋人",
+      'DIMC': "実用的で可愛らしい人",
+      'NIFC': "実用的でカリスマ性人",
+      'NOMC': "組織的でミステリアス人",
+      'DIMT': "実用的で意外性人",
+      'DIFT': "実用的で安らぎ人",
+      'NOFC': "組織的でユニーク人",
+      'NIMT': "実用的でエッジ人",
+      'NIFT': "実用的でシック人",
+      'NOFT': "組織的で反抗的人",
+      'NOMT': "組織的でインスピレーション人",
+    },
+    ISFJ: {
+      'DOFC': "実用的で親しみやすい人",
+      'DOFT': "実用的でエネルギッシュ人",
+      'DOMC': "実用的で整然人",
+      'DOMT': "実用的で癒し系人",
+      'DIFC': "責任感で洗練人",
+      'NIMC': "責任感で純粋人",
+      'DIMC': "責任感で可愛らしい人",
+      'NIFC': "責任感でカリスマ性人",
+      'NOMC': "実用的でミステリアス人",
+      'DIMT': "責任感で意外性人",
+      'DIFT': "責任感で安らぎ人",
+      'NOFC': "実用的でユニーク人",
+      'NIMT': "責任感でエッジ人",
+      'NIFT': "責任感でシック人",
+      'NOFT': "実用的で反抗的人",
+      'NOMT': "実用的でインスピレーション人",
+    },
+    ESTJ: {
+      'DOFC': "決断力で正統派人",
+      'DOFT': "決断力で魅力的人",
+      'DOMC': "決断力で実直人",
+      'DOMT': "決断力で穏やか人",
+      'DIFC': "実用的でエレガント人",
+      'NIMC': "実用的で夢見がち人",
+      'DIMC': "実用的で純情人",
+      'NIFC': "実用的で都会的人",
+      'NOMC': "決断力で多面的人",
+      'DIMT': "実用的で多面的人",
+      'DIFT': "実用的で居心地良い人",
+      'NOFC': "決断力で主人公人",
+      'NIMT': "実用的で創造的人",
+      'NIFT': "実用的で個性的人",
+      'NOFT': "決断力で情熱的人",
+      'NOMT': "決断力で魅力的人",
+    },
+    ESFJ: {
+      'DOFC': "責任感で正統派人",
+      'DOFT': "責任感で魅力的人",
+      'DOMC': "責任感で実直人",
+      'DOMT': "責任感で穏やか人",
+      'DIFC': "思いやりでエレガント人",
+      'NIMC': "思いやりで夢見がち人",
+      'DIMC': "思いやりで純情人",
+      'NIFC': "思いやりで都会的人",
+      'NOMC': "責任感で多面的人",
+      'DIMT': "思いやりで多面的人",
+      'DIFT': "思いやりで居心地良い人",
+      'NOFC': "責任感で主人公人",
+      'NIMT': "思いやりで創造的人",
+      'NIFT': "思いやりで個性的人",
+      'NOFT': "責任感で情熱的人",
+      'NOMT': "責任感で魅力的人",
+    },
+    ISTP: {
+      'DOFC': "独立的で親しみやすい人",
+      'DOFT': "独立的でエネルギッシュ人",
+      'DOMC': "独立的で整然人",
+      'DOMT': "独立的で癒し系人",
+      'DIFC': "適応性で洗練人",
+      'NIMC': "適応性で純粋人",
+      'DIMC': "適応性で可愛らしい人",
+      'NIFC': "適応性でカリスマ性人",
+      'NOMC': "独立的でミステリアス人",
+      'DIMT': "適応性で意外性人",
+      'DIFT': "適応性で安らぎ人",
+      'NOFC': "独立的でユニーク人",
+      'NIMT': "適応性でエッジ人",
+      'NIFT': "適応性でシック人",
+      'NOFT': "独立的で反抗的人",
+      'NOMT': "独立的でインスピレーション人",
+    },
+    ISFP: {
+      'DOFC': "思いやりで親しみやすい人",
+      'DOFT': "思いやりでエネルギッシュ人",
+      'DOMC': "思いやりで整然人",
+      'DOMT': "思いやりで癒し系人",
+      'DIFC': "柔軟性で洗練人",
+      'NIMC': "柔軟性で純粋人",
+      'DIMC': "柔軟性で可愛らしい人",
+      'NIFC': "柔軟性でカリスマ性人",
+      'NOMC': "思いやりでミステリアス人",
+      'DIMT': "柔軟性で意外性人",
+      'DIFT': "柔軟性で安らぎ人",
+      'NOFC': "思いやりでユニーク人",
+      'NIMT': "柔軟性でエッジ人",
+      'NIFT': "柔軟性でシック人",
+      'NOFT': "思いやりで反抗的人",
+      'NOMT': "思いやりでインスピレーション人",
+    },
+    ESTP: {
+      'DOFC': "適応性で正統派人",
+      'DOFT': "適応性で魅力的人",
+      'DOMC': "適応性で実直人",
+      'DOMT': "適応性で穏やか人",
+      'DIFC': "現実的でエレガント人",
+      'NIMC': "現実的で夢見がち人",
+      'DIMC': "現実的で純情人",
+      'NIFC': "現実的で都会的人",
+      'NOMC': "適応性で多面的人",
+      'DIMT': "現実的で多面的人",
+      'DIFT': "現実的で居心地良い人",
+      'NOFC': "適応性で主人公人",
+      'NIMT': "現実的で創造的人",
+      'NIFT': "現実的で個性的人",
+      'NOFT': "適応性で情熱的人",
+      'NOMT': "適応性で魅力的人",
+    },
+    ESFP: {
+      'DOFC': "柔軟性で正統派人",
+      'DOFT': "柔軟性で魅力的人",
+      'DOMC': "柔軟性で実直人",
+      'DOMT': "柔軟性で穏やか人",
+      'DIFC': "楽観的でエレガント人",
+      'NIMC': "楽観的で夢見がち人",
+      'DIMC': "楽観的で純情人",
+      'NIFC': "楽観的で都会的人",
+      'NOMC': "柔軟性で多面的人",
+      'DIMT': "楽観的で多面的人",
+      'DIFT': "楽観的で居心地良い人",
+      'NOFC': "柔軟性で主人公人",
+      'NIMT': "楽観的で創造的人",
+      'NIFT': "楽観的で個性的人",
+      'NOFT': "柔軟性で情熱的人",
+      'NOMT': "柔軟性で魅力的人",
+    },
+  };
+
+  // generateTitle関数を新しい256通りタイトルに更新
+  const generateTitle = (mbtiType, characterType) => {
+    return all256Titles[mbtiType]?.[characterType] || `${mbtiType} × ${characterType}`;
+  };
+
+  const mbtiTypes = {
+    INTJ: { name: '建築家', traits: ['戦略的', '独立的', '洞察力', '革新的', '完璧主義'] },
+    INTP: { name: '論理学者', traits: ['論理的', '創造的', '好奇心', '客観的', '柔軟性'] },
+    ENTJ: { name: '指揮官', traits: ['指導力', '効率的', '決断力', '組織的', '野心的'] },
+    ENTP: { name: '討論者', traits: ['革新的', '機知', '適応性', 'エネルギッシュ', '創造的'] },
+    INFJ: { name: '提唱者', traits: ['理想主義', '洞察力', '思いやり', '直感的', '献身的'] },
+    INFP: { name: '仲介者', traits: ['創造的', '共感的', '理想主義', '柔軟性', '価値観'] },
+    ENFJ: { name: '主人公', traits: ['カリスマ的', '共感的', '組織的', '励まし', '責任感'] },
+    ENFP: { name: '運動家', traits: ['熱狂的', '創造的', '社交的', '直感的', '柔軟性'] },
+    ISTJ: { name: '管理者', traits: ['責任感', '実用的', '組織的', '伝統的', '信頼性'] },
+    ISFJ: { name: '擁護者', traits: ['思いやり', '責任感', '実用的', '協調的', '献身的'] },
+    ESTJ: { name: '幹部', traits: ['組織的', '実用的', '決断力', '責任感', '効率的'] },
+    ESFJ: { name: '領事', traits: ['協調的', '思いやり', '責任感', '社交的', '伝統的'] },
+    ISTP: { name: '巨匠', traits: ['実用的', '適応性', '独立的', '論理的', '冷静'] },
+    ISFP: { name: '冒険家', traits: ['芸術的', '柔軟性', '思いやり', '価値観', '控えめ'] },
+    ESTP: { name: '起業家', traits: ['活動的', '現実的', '適応性', '社交的', '実用的'] },
+    ESFP: { name: 'エンターテイナー', traits: ['社交的', '楽観的', '柔軟性', '共感的', 'エネルギッシュ'] }
+  };
+
+  const characterTypes = {
+    // 印象的グループ
+    DOFC: { name: '模範的なアナウンサー', traits: ['信頼できる', '親しみやすい', '正統派', '安心感', '品格'] },
+    DOFT: { name: '元気なアイドルセンター', traits: ['華やか', 'エネルギッシュ', '魅力的', '輝く', '人気'] },
+    DOMC: { name: '整理されたリーダー', traits: ['統率力', '整然', '実直', '責任感', '頼れる'] },
+    DOMT: { name: '優しい春の陽光', traits: ['温かい', '癒し系', '穏やか', '優しい', '安らぎ'] },
+    
+    // 残像的グループ
+    DIFC: { name: '穏やかな洗練美', traits: ['上品', '洗練', 'エレガント', '知的', '品のある'] },
+    NIMC: { name: '夢幻的な清楚美', traits: ['清楚', '純粋', '夢見がち', '透明感', '神秘的'] },
+    DIMC: { name: 'ドキドキの初恋', traits: ['初々しい', '可愛らしい', '純情', '心躍る', '甘い'] },
+    NIFC: { name: '都会的なカリスマ', traits: ['洗練', 'カリスマ性', '都会的', 'クール', '魅力的'] },
+    
+    // 立体的グループ
+    NOMC: { name: '神秘的なカメレオン', traits: ['変幻自在', 'ミステリアス', '多面的', '神秘的', '不思議'] },
+    DIMT: { name: '多面的な逆転魅力', traits: ['ギャップ', '意外性', '多面的', '驚き', '魅力的'] },
+    DIFT: { name: 'かわいい安らぎの場所', traits: ['可愛い', '安らぎ', '居心地良い', '癒し', '温かい'] },
+    NOFC: { name: '独特な主人公', traits: ['個性的', 'ユニーク', '主人公', '特別', '印象的'] },
+    
+    // 感覚的グループ
+    NIMT: { name: 'エッジの効いたアーティスト', traits: ['アーティスティック', 'エッジ', '創造的', '感性的', '独創的'] },
+    NIFT: { name: 'シックな自由人', traits: ['自由', 'シック', '個性的', '洗練', '独立的'] },
+    NOFT: { name: '反抗的なロマンチスト', traits: ['ロマンチック', '反抗的', '情熱的', '自由', '魅力的'] },
+    NOMT: { name: '華やかなミューズ', traits: ['華やか', 'インスピレーション', '魅力的', '芸術的', '輝く'] }
+  };
+
+  const mbtiQuestions = [
+    // E vs I (外向性 vs 内向性) - 7問
+    {
+      id: 'ei_1',
+      question: '週末の過ごし方は？',
+      options: [
+        { text: '友人とアクティブに出かける', value: 'E' },
+        { text: '家でリラックスして過ごす', value: 'I' }
+      ]
+    },
+    {
+      id: 'ei_2',
+      question: 'エネルギーを得る時間は？',
+      options: [
+        { text: '人と話している時', value: 'E' },
+        { text: '一人で考えている時', value: 'I' }
+      ]
+    },
+    {
+      id: 'ei_3',
+      question: 'パーティーでのあなたは？',
+      options: [
+        { text: '積極的に多くの人と話す', value: 'E' },
+        { text: '少数の人と深く話す', value: 'I' }
+      ]
+    },
+    {
+      id: 'ei_4',
+      question: '新しい環境に対して',
+      options: [
+        { text: 'すぐに馴染める', value: 'E' },
+        { text: '時間をかけて慣れる', value: 'I' }
+      ]
+    },
+    {
+      id: 'ei_5',
+      question: '仕事の進め方は？',
+      options: [
+        { text: 'チームで協力しながら', value: 'E' },
+        { text: '集中して個人で進める', value: 'I' }
+      ]
+    },
+    {
+      id: 'ei_6',
+      question: '会話スタイルは？',
+      options: [
+        { text: '思ったことをすぐ話す', value: 'E' },
+        { text: '考えてから話す', value: 'I' }
+      ]
+    },
+    {
+      id: 'ei_7',
+      question: '友人関係は？',
+      options: [
+        { text: '広く浅く多くの友人', value: 'E' },
+        { text: '狭く深く親しい友人', value: 'I' }
+      ]
+    },
+    
+    // S vs N (現実主義 vs 直感) - 7問
+    {
+      id: 'sn_1',
+      question: '情報を得る時、重視するのは？',
+      options: [
+        { text: '具体的な事実やデータ', value: 'S' },
+        { text: '可能性やアイデア', value: 'N' }
+      ]
+    },
+    {
+      id: 'sn_2',
+      question: '学習スタイルは？',
+      options: [
+        { text: '段階的に着実に学ぶ', value: 'S' },
+        { text: '全体像を理解してから詳細', value: 'N' }
+      ]
+    },
+    {
+      id: 'sn_3',
+      question: '未来について',
+      options: [
+        { text: '現実的な計画を立てる', value: 'S' },
+        { text: '理想やビジョンを描く', value: 'N' }
+      ]
+    },
+    {
+      id: 'sn_4',
+      question: '仕事で大切にするのは？',
+      options: [
+        { text: '実用性と効率性', value: 'S' },
+        { text: '創造性と革新性', value: 'N' }
+      ]
+    },
+    {
+      id: 'sn_5',
+      question: '問題解決のアプローチ',
+      options: [
+        { text: '過去の経験を活用', value: 'S' },
+        { text: '新しい方法を模索', value: 'N' }
+      ]
+    },
+    {
+      id: 'sn_6',
+      question: '会話で興味を持つのは？',
+      options: [
+        { text: '具体的な体験や出来事', value: 'S' },
+        { text: '抽象的な概念やアイデア', value: 'N' }
+      ]
+    },
+    {
+      id: 'sn_7',
+      question: '変化に対して',
+      options: [
+        { text: '慎重に段階的に対応', value: 'S' },
+        { text: '積極的に新しい可能性を探る', value: 'N' }
+      ]
+    },
+    
+    // T vs F (論理 vs 感情) - 7問
+    {
+      id: 'tf_1',
+      question: '決断をする時の基準は？',
+      options: [
+        { text: '論理的な分析と客観性', value: 'T' },
+        { text: '価値観と人への影響', value: 'F' }
+      ]
+    },
+    {
+      id: 'tf_2',
+      question: '批判を受けた時',
+      options: [
+        { text: '内容を客観的に検討', value: 'T' },
+        { text: '感情的に受け止めがち', value: 'F' }
+      ]
+    },
+    {
+      id: 'tf_3',
+      question: '他人との関係で重視するのは？',
+      options: [
+        { text: '公平性と一貫性', value: 'T' },
+        { text: '調和と思いやり', value: 'F' }
+      ]
+    },
+    {
+      id: 'tf_4',
+      question: '仕事での評価軸は？',
+      options: [
+        { text: '効率性と成果', value: 'T' },
+        { text: '協調性と貢献', value: 'F' }
+      ]
+    },
+    {
+      id: 'tf_5',
+      question: '問題が起きた時',
+      options: [
+        { text: '原因を分析し解決策を考える', value: 'T' },
+        { text: 'まず関係者の気持ちを考慮', value: 'F' }
+      ]
+    },
+    {
+      id: 'tf_6',
+      question: '議論スタイルは？',
+      options: [
+        { text: '論点を整理し理論的に', value: 'T' },
+        { text: '相手の立場を理解しながら', value: 'F' }
+      ]
+    },
+    {
+      id: 'tf_7',
+      question: '成功の定義は？',
+      options: [
+        { text: '目標達成と能力向上', value: 'T' },
+        { text: '人間関係と個人の成長', value: 'F' }
+      ]
+    },
+    
+    // J vs P (計画性 vs 柔軟性) - 7問
+    {
+      id: 'jp_1',
+      question: '日常生活のスタイルは？',
+      options: [
+        { text: 'スケジュールに従って規則的', value: 'J' },
+        { text: 'その時の状況に合わせて柔軟', value: 'P' }
+      ]
+    },
+    {
+      id: 'jp_2',
+      question: '旅行の計画は？',
+      options: [
+        { text: '詳細に計画を立てる', value: 'J' },
+        { text: '大まかに決めて現地で決める', value: 'P' }
+      ]
+    },
+    {
+      id: 'jp_3',
+      question: '締切に対する態度',
+      options: [
+        { text: '早めに完了させる', value: 'J' },
+        { text: 'ギリギリまで調整する', value: 'P' }
+      ]
+    },
+    {
+      id: 'jp_4',
+      question: '部屋の状態は？',
+      options: [
+        { text: '整理整頓されている', value: 'J' },
+        { text: '必要な時に片付ける', value: 'P' }
+      ]
+    },
+    {
+      id: 'jp_5',
+      question: '意思決定について',
+      options: [
+        { text: 'できるだけ早く決めたい', value: 'J' },
+        { text: '選択肢を残しておきたい', value: 'P' }
+      ]
+    },
+    {
+      id: 'jp_6',
+      question: '変更や中断に対して',
+      options: [
+        { text: 'ストレスを感じる', value: 'J' },
+        { text: '柔軟に対応できる', value: 'P' }
+      ]
+    },
+    {
+      id: 'jp_7',
+      question: '目標達成のアプローチ',
+      options: [
+        { text: '段階的に着実に進める', value: 'J' },
+        { text: '状況に応じて調整しながら', value: 'P' }
+      ]
+    }
+  ];
+
+  const characterQuestions = [
+    {
+      id: 'impression_1',
+      question: '初対面の印象を決める要素は？',
+      options: [
+        { text: '清潔感と身だしなみ', value: 'D', type: 'approach' },
+        { text: '独特な個性と魅力', value: 'N', type: 'approach' }
+      ]
+    },
+    {
+      id: 'impression_2',
+      question: '人とのコミュニケーションスタイルは？',
+      options: [
+        { text: '相手に合わせて調和を重視', value: 'O', type: 'interaction' },
+        { text: '自分らしさを大切に表現', value: 'I', type: 'interaction' }
+      ]
+    },
+    {
+      id: 'impression_3',
+      question: '感情表現の仕方は？',
+      options: [
+        { text: 'ストレートに表現する', value: 'F', type: 'expression' },
+        { text: '控えめで上品に表現', value: 'M', type: 'expression' }
+      ]
+    },
+    {
+      id: 'impression_4',
+      question: '困難な状況での対応は？',
+      options: [
+        { text: '冷静で論理的に対処', value: 'C', type: 'response' },
+        { text: '情熱的でエネルギッシュに対応', value: 'T', type: 'response' }
+      ]
+    },
+    {
+      id: 'impression_5',
+      question: 'ファッションセンスの特徴は？',
+      options: [
+        { text: 'トレンドを取り入れた華やかさ', value: 'F', type: 'style' },
+        { text: '上品で洗練されたスタイル', value: 'M', type: 'style' }
+      ]
+    },
+    {
+      id: 'impression_6',
+      question: '会話での存在感は？',
+      options: [
+        { text: '中心となって場を盛り上げる', value: 'F', type: 'presence' },
+        { text: '落ち着いて上品に参加', value: 'M', type: 'presence' }
+      ]
+    },
+    {
+      id: 'impression_7',
+      question: '新しい環境での印象は？',
+      options: [
+        { text: '親しみやすく馴染みやすい', value: 'C', type: 'adaptation' },
+        { text: '個性的で印象に残る', value: 'T', type: 'adaptation' }
+      ]
+    },
+    {
+      id: 'impression_8',
+      question: '写真を撮られる時の表情は？',
+      options: [
+        { text: '自然で親しみやすい笑顔', value: 'C', type: 'expression' },
+        { text: 'クールで洗練された表情', value: 'T', type: 'expression' }
+      ]
+    },
+    {
+      id: 'impression_9',
+      question: '人からよく言われる言葉は？',
+      options: [
+        { text: '「優しそう」「親しみやすい」', value: 'C', type: 'perception' },
+        { text: '「個性的」「印象的」', value: 'T', type: 'perception' }
+      ]
+    },
+    {
+      id: 'impression_10',
+      question: '理想の印象は？',
+      options: [
+        { text: '安心感を与える存在', value: 'C', type: 'ideal' },
+        { text: '刺激的で魅力的な存在', value: 'T', type: 'ideal' }
+      ]
+    },
+    {
+      id: 'impression_11',
+      question: '色の好みは？',
+      options: [
+        { text: 'パステル調の優しい色合い', value: 'M', type: 'preference' },
+        { text: 'ビビッドで鮮やかな色合い', value: 'F', type: 'preference' }
+      ]
+    },
+    {
+      id: 'impression_12',
+      question: '音楽の好みは？',
+      options: [
+        { text: '穏やかで心地よいメロディ', value: 'M', type: 'taste' },
+        { text: 'エネルギッシュでリズミカル', value: 'F', type: 'taste' }
+      ]
+    }
+  ];
+
+  const calculateMbtiType = (answers) => {
     const scores = { E: 0, I: 0, S: 0, N: 0, T: 0, F: 0, J: 0, P: 0 };
-    Object.values(mbtiAnswers).forEach(answer => {
+    
+    Object.values(answers).forEach(answer => {
       scores[answer]++;
     });
     
-    const result = 
-      (scores.E >= scores.I ? 'E' : 'I') +
-      (scores.S >= scores.N ? 'S' : 'N') +
-      (scores.T >= scores.F ? 'T' : 'F') +
-      (scores.J >= scores.P ? 'J' : 'P');
+    const type = [
+      scores.E >= scores.I ? 'E' : 'I',
+      scores.S >= scores.N ? 'S' : 'N',
+      scores.T >= scores.F ? 'T' : 'F',
+      scores.J >= scores.P ? 'J' : 'P'
+    ].join('');
     
-    return result;
-  }, [mbtiAnswers]);
+    return type;
+  };
 
-  // Character Code 16タイプ結果計算
-  const calculateCharacterType = useCallback(() => {
-    return calculateCharacterCode16Type(characterAnswers);
-  }, [characterAnswers]);
+  const calculateCharacterType = (answers) => {
+    const scores = {
+      DOFC: 0, DOFT: 0, DOMC: 0, DOMT: 0,
+      DIFC: 0, DIFT: 0, DIMC: 0, DIMT: 0,
+      NOFC: 0, NOFT: 0, NOMC: 0, NOMT: 0,
+      NIFC: 0, NIFT: 0, NIMC: 0, NIMT: 0
+    };
 
-  // 診断完了処理（API統合版）
-  const completeDiagnosis = async () => {
-    try {
-      const mbtiType = calculateMBTI();
-      const characterCode = calculateCharacterType(); // 16タイプコード
-      
-      // APIから詳細データを取得
-      const [mbtiInfo, characterInfo] = await Promise.all([
-        fetchMBTIData(mbtiType),
-        analyzeCharacterCode(characterAnswers)
-      ]);
-      
-      // 16タイプ対応の各種生成関数を呼び出し
-      const title = generateTitle(mbtiType, characterCode);
-      const gapAnalysis = generateGapAnalysis(mbtiType, characterCode);
-      const compatibility = getCompatibility(mbtiType);
-      const advice = generateAdvice(mbtiType, characterCode);
-      const scores = generateScores(mbtiType, characterCode);
-      
-      // 結果データ構造を統一（16タイプ対応）
-      setResults({
-        mbti: mbtiType,
-        character: characterCode, // 旧互換性のため
-        characterCode: characterCode, // 16タイプコード
-        title,
-        mbtiInfo: mbtiInfo || mbtiResults[mbtiType], // フォールバック
-        characterInfo: characterInfo || CHARACTER_CODE_16_TYPES[characterCode] || { 
-          code: characterCode,
-          name: CHARACTER_CODE_16_TYPES[characterCode]?.name || characterCode,
-          group: CHARACTER_CODE_16_TYPES[characterCode]?.group || '特別'
-        },
-        gapAnalysis,
-        compatibility,
-        advice,
-        scores
-      });
-      setStep('result');
-      
-      // プレミアムユーザーの場合は自動でAI機能を実行
-      if (isPremium && accessToken) {
-        console.log('プレミアムユーザー：AI機能を自動実行');
-        // AI画像生成
-        generateAICharacterImage(mbtiType, characterCode, scores);
-        // AIアドバイス生成
-        generateAIAdvice(mbtiType, characterCode, gapAnalysis);
-      }
-    } catch (error) {
-      console.error('診断処理中にエラーが発生しました:', error);
-      // エラー時はローカルデータで処理続行
-      const mbtiType = calculateMBTI();
-      const characterCode = calculateCharacterType(); // 16タイプコード
-      
-      // 16タイプ対応の各種生成関数を呼び出し
-      const title = generateTitle(mbtiType, characterCode);
-      const gapAnalysis = generateGapAnalysis(mbtiType, characterCode);
-      const compatibility = getCompatibility(mbtiType);
-      const advice = generateAdvice(mbtiType, characterCode);
-      const scores = generateScores(mbtiType, characterCode);
-      
-      // 結果データ構造を統一（16タイプ対応）
-      setResults({
-        mbti: mbtiType,
-        character: characterCode, // 旧互換性のため
-        characterCode: characterCode, // 16タイプコード
-        title,
-        mbtiInfo: mbtiResults[mbtiType],
-        characterInfo: CHARACTER_CODE_16_TYPES[characterCode] || {
-          code: characterCode,
-          name: CHARACTER_CODE_16_TYPES[characterCode]?.name || characterCode,
-          group: CHARACTER_CODE_16_TYPES[characterCode]?.group || '特別'
-        },
-        gapAnalysis,
-        compatibility,
-        advice,
-        scores
-      });
-      setStep('result');
-    }
-  };;
-
-  // GEMINI APIからアドバイス生成
-  const generateAIAdvice = async (mbtiType = null, characterCode = null, gapAnalysis = null) => {
-    // 引数が渡されない場合は既存のresultsを使用
-    const targetMbti = mbtiType || results?.mbti;
-    const targetCharacterCode = characterCode || results?.characterInfo?.code;
-    const targetGapAnalysis = gapAnalysis || results?.gapAnalysis?.level || 'medium';
-    
-    if (!targetMbti || !targetCharacterCode) return;
-    
-    setAdviceLoading(true);
-    setAdviceError(null);
-    
-    try {
-      // 16タイプ対応：characterCodeを使用、アクセストークンを含める
-      const advice = await AdviceService.generateAdvice({
-        mbtiType: targetMbti,
-        characterCode: targetCharacterCode, // 16タイプのcharacterCode
-        gapAnalysis: targetGapAnalysis,
-        accessToken: accessToken // プレミアムアクセストークン
-      });
-      
-      if (advice.success) {
-        setAiAdvice(advice.advice);
-      } else {
-        setAdviceError(advice.error || 'アドバイス生成に失敗しました');
-        // エラー時でもフォールバックアドバイスがある場合は表示
-        if (advice.advice) {
-          setAiAdvice(advice.advice);
+    Object.entries(answers).forEach(([questionId, answer]) => {
+      if (questionId.includes('impression')) {
+        const question = characterQuestions.find(q => q.id === questionId);
+        if (question) {
+          const selectedOption = question.options.find(opt => opt.value === answer);
+          if (selectedOption) {
+            switch(selectedOption.value) {
+              case 'D':
+                scores.DOFC += 1; scores.DOFT += 1; scores.DOMC += 1; scores.DOMT += 1;
+                scores.DIFC += 1; scores.DIFT += 1; scores.DIMC += 1; scores.DIMT += 1;
+                break;
+              case 'N':
+                scores.NOFC += 1; scores.NOFT += 1; scores.NOMC += 1; scores.NOMT += 1;
+                scores.NIFC += 1; scores.NIFT += 1; scores.NIMC += 1; scores.NIMT += 1;
+                break;
+              case 'O':
+                scores.DOFC += 1; scores.DOFT += 1; scores.DOMC += 1; scores.DOMT += 1;
+                scores.NOFC += 1; scores.NOFT += 1; scores.NOMC += 1; scores.NOMT += 1;
+                break;
+              case 'I':
+                scores.DIFC += 1; scores.DIFT += 1; scores.DIMC += 1; scores.DIMT += 1;
+                scores.NIFC += 1; scores.NIFT += 1; scores.NIMC += 1; scores.NIMT += 1;
+                break;
+              case 'F':
+                scores.DOFC += 1; scores.DOFT += 1; scores.DIFC += 1; scores.DIFT += 1;
+                scores.NOFC += 1; scores.NOFT += 1; scores.NIFC += 1; scores.NIFT += 1;
+                break;
+              case 'M':
+                scores.DOMC += 1; scores.DOMT += 1; scores.DIMC += 1; scores.DIMT += 1;
+                scores.NOMC += 1; scores.NOMT += 1; scores.NIMC += 1; scores.NIMT += 1;
+                break;
+              case 'C':
+                scores.DOFC += 1; scores.DOMC += 1; scores.DIFC += 1; scores.DIMC += 1;
+                scores.NOFC += 1; scores.NOMC += 1; scores.NIFC += 1; scores.NIMC += 1;
+                break;
+              case 'T':
+                scores.DOFT += 1; scores.DOMT += 1; scores.DIFT += 1; scores.DIMT += 1;
+                scores.NOFT += 1; scores.NOMT += 1; scores.NIFT += 1; scores.NIMT += 1;
+                break;
+            }
+          }
         }
       }
-    } catch (error) {
-      console.error('AI advice generation failed:', error);
-      setAdviceError(error.message || 'アドバイス生成に失敗しました');
-    } finally {
-      setAdviceLoading(false);
-    }
-  };;
-
-  // DALL-E 3 キャラクター画像生成
-  const generateAICharacterImage = async (mbtiType = null, characterCode = null, scores = null) => {
-    // 引数が渡されない場合は既存のresultsを使用
-    const targetMbti = mbtiType || results?.mbti;
-    const targetCharacterCode = characterCode || results?.characterInfo?.code;
-    const targetScores = scores || results?.scores;
-    
-    if (!targetMbti || !targetCharacterCode) return;
-    
-    setImageLoading(true);
-    setImageError(null);
-    
-    try {
-      const response = await ImageService.generateCharacterImage(
-        targetMbti,
-        targetCharacterCode,
-        targetScores,
-        selectedGender === '男性' ? 'male' : selectedGender === '女性' ? 'female' : 'neutral',
-        selectedOccupation,
-        accessToken // プレミアムアクセストークン
-      );
-      
-      setCharacterImage(response);
-    } catch (error) {
-      console.error('Character image generation failed:', error);
-      setImageError(error.message || 'キャラクター画像生成に失敗しました');
-    } finally {
-      setImageLoading(false);
-    }
-  };
-
-  // シェア画像生成
-  const generateShareImage = useCallback(() => {
-    if (!results || !canvasRef.current) return;
-    
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    
-    // キャンバスサイズ設定
-    canvas.width = 800;
-    canvas.height = 800;
-    
-    // 背景
-    const gradient = ctx.createLinearGradient(0, 0, 800, 800);
-    gradient.addColorStop(0, '#667eea');
-    gradient.addColorStop(1, '#764ba2');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 800, 800);
-    
-    // タイトル
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 48px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText(results.title, 400, 150);
-    
-    // ギャップ分析
-    ctx.font = '28px Arial';
-    ctx.fillText(results.gapAnalysis.statement, 400, 220);
-    
-    // MBTI結果
-    ctx.font = '32px Arial';
-    ctx.fillText(`MBTI: ${results.mbti}`, 400, 300);
-    ctx.fillText(`(${results.mbtiInfo.name})`, 400, 340);
-    
-    // Character Code結果（16タイプ）
-    ctx.fillText(`印象: ${results.characterInfo.code} (${results.characterInfo.name})`, 400, 420);
-    
-    // グループ情報
-    ctx.font = '24px Arial';
-    ctx.fillText(`${CHARACTER_CODE_GROUPS[results.characterInfo.group]?.name}グループ`, 400, 460);
-    
-    // スコア表示
-    const scores = Object.entries(results.scores);
-    scores.forEach(([key, value], index) => {
-      const y = 520 + index * 35;
-      ctx.fillText(`${key}: ${value}%`, 400, y);
-    });
-    
-    // フッター
-    ctx.font = '20px Arial';
-    ctx.fillText('TwinPersona診断', 400, 750);
-  }, [results]);;
-
-  // X（Twitter）シェア機能
-  const handleShareX = () => {
-    if (!results) return;
-    
-    // 最高スコアを取得
-    const scores = results.scores || {};
-    const scoreEntries = Object.entries(scores);
-    const topScore = scoreEntries.reduce((max, [key, value]) => 
-      value > max.value ? { key, value } : max, 
-      { key: '', value: 0 }
-    );
-
-    // 相性の良いMBTIを取得
-    const compatibility = results.compatibility?.most_compatible || 'INFJ';
-
-    // 新しい統一フォーマット
-    const shareText = `私の診断結果は「${results.title}」でした！
-
-MBTI: ${results.mbti} ${results.mbtiInfo.name}
-印象: ${results.characterInfo.code} ${results.characterInfo.name}
-${topScore.key} ${topScore.value}%でした！
-相性のいいMBTIは${compatibility}です！！
-
-#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbti} #${results.characterInfo.code}`;
-
-    const shareUrl = window.location.href;
-    const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
-    
-    window.open(xUrl, '_blank', 'width=550,height=420');
-  };;;
-
-  // 汎用シェア機能（Web Share API）
-  const handleShare = async () => {
-    if (!results) return;
-
-    // 最高スコアを取得
-    const scores = results.scores || {};
-    const scoreEntries = Object.entries(scores);
-    const topScore = scoreEntries.reduce((max, [key, value]) => 
-      value > max.value ? { key, value } : max, 
-      { key: '', value: 0 }
-    );
-
-    // 相性の良いMBTIを取得
-    const compatibility = results.compatibility?.most_compatible || 'INFJ';
-
-    // OGP画像生成用のパラメータを構築
-    const ogParams = new URLSearchParams({
-      mbti: results.mbti,
-      mbtiName: results.mbtiInfo.name,
-      characterCode: results.characterInfo.code,
-      characterName: results.characterInfo.name,
-      topScore: topScore.key,
-      topScoreValue: topScore.value.toString(),
-      compatibility: compatibility,
-      // キャラクター画像がある場合は追加（プレミアム機能）
-      ...(results.characterImage?.imageUrl && { characterImage: results.characterImage.imageUrl })
     });
 
-    // OGP画像URL
-    const ogImageUrl = `${window.location.origin}/api/og-image?${ogParams.toString()}`;
-
-    // シェア用テキスト
-    const shareText = `私の診断結果は「${results.title}」でした！
-
-MBTI: ${results.mbti} ${results.mbtiInfo.name}
-印象: ${results.characterInfo.code} ${results.characterInfo.name}
-${topScore.key} ${topScore.value}%でした！
-相性のいいMBTIは${compatibility}です！！
-
-#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbti} #${results.characterInfo.code}`;
-
-    // シェアURL（結果ページ）
-    const shareUrl = window.location.href;
+    const maxScore = Math.max(...Object.values(scores));
+    const topTypes = Object.entries(scores).filter(([_, score]) => score === maxScore);
     
-    if (navigator.share) {
-      try {
-        // Web Share API（モバイル対応）
-        await navigator.share({
-          title: 'TwinPersona診断結果',
-          text: shareText,
-          url: shareUrl,
-        });
-      } catch (err) {
-        if (err.name !== 'AbortError') {
-          console.error('シェアに失敗しました:', err);
-          // フォールバック：クリップボードコピー
-          fallbackShare(shareText, shareUrl, ogImageUrl);
-        }
-      }
-    } else {
-      // Web Share APIが利用できない場合
-      fallbackShare(shareText, shareUrl, ogImageUrl);
-    }
+    return topTypes[0][0];
   };
 
-  // フォールバック共有機能
-  const fallbackShare = async (shareText, shareUrl, ogImageUrl) => {
-    try {
-      // OGP画像をダウンロード
-      const response = await fetch(ogImageUrl);
-      const blob = await response.blob();
-      
-      // 一時的なダウンロードリンクを作成
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'twin-persona-result.png';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-
-      // テキストをクリップボードにコピー
-      await navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}`);
-      
-      alert('画像がダウンロードされ、テキストがクリップボードにコピーされました！\nSNSに投稿してください。');
-    } catch (err) {
-      console.error('フォールバック共有に失敗しました:', err);
-      // 最終フォールバック：テキストのみコピー
-      try {
-        await navigator.clipboard.writeText(`${shareText}\n\n${shareUrl}\n\nOGP画像: ${ogImageUrl}`);
-        alert('テキストとOGP画像URLがクリップボードにコピーされました！');
-      } catch (clipboardErr) {
-        console.error('クリップボードコピーに失敗しました:', clipboardErr);
-        // 手動コピー用のプロンプト表示
-        prompt('以下のテキストをコピーしてください:', `${shareText}\n\n${shareUrl}\n\nOGP画像: ${ogImageUrl}`);
-      }
-    }
-  };;;
-  // LINEシェア機能
-  const handleShareToLine = async () => {
-    if (!results) return;
-
-    // 最高スコアを取得
-    const scores = results.scores || {};
-    const scoreEntries = Object.entries(scores);
-    const topScore = scoreEntries.reduce((max, [key, value]) => 
-      value > max.value ? { key, value } : max, 
-      { key: '', value: 0 }
-    );
-
-    // 相性の良いMBTIを取得
-    const compatibility = results.compatibility?.most_compatible || 'INFJ';
-
-    // OGP画像生成用のパラメータを構築
-    const ogParams = new URLSearchParams({
-      mbti: results.mbti,
-      mbtiName: results.mbtiInfo.name,
-      characterCode: results.characterInfo.code,
-      characterName: results.characterInfo.name,
-      topScore: topScore.key,
-      topScoreValue: topScore.value.toString(),
-      compatibility: compatibility,
-      // キャラクター画像がある場合は追加（プレミアム機能）
-      ...(results.characterImage?.imageUrl && { characterImage: results.characterImage.imageUrl })
-    });
-
-    // シェア用テキスト
-    const shareText = `私の診断結果は「${results.title}」でした！
-
-MBTI: ${results.mbti} ${results.mbtiInfo.name}
-印象: ${results.characterInfo.code} ${results.characterInfo.name}
-${topScore.key} ${topScore.value}%でした！
-相性のいいMBTIは${compatibility}です！！
-
-#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbti} #${results.characterInfo.code}`;
-
-    // シェアURL（OGPパラメータ付き）
-    const shareUrl = `${window.location.origin}${window.location.pathname}?${ogParams.toString()}`;
-
-    // LINEシェアURL
-    const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
-    
-    // 新しいウィンドウでLINEシェアを開く
-    window.open(lineUrl, '_blank');
+  const calculateCompatibility = (mbtiType) => {
+    const compatibility = {
+      INTJ: 'ENFP', INTP: 'ESFJ', ENTJ: 'INFP', ENTP: 'ISFJ',
+      INFJ: 'ESTP', INFP: 'ESTJ', ENFJ: 'ISTP', ENFP: 'ISTJ',
+      ISTJ: 'ENFP', ISFJ: 'ENTP', ESTJ: 'INFP', ESFJ: 'INTP',
+      ISTP: 'ENFJ', ISFP: 'ENTJ', ESTP: 'INFJ', ESFP: 'INTJ'
+    };
+    return compatibility[mbtiType] || 'ENFP';
   };
 
-  // 画像ダウンロード
-  const handleDownload = () => {
-    generateShareImage();
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const link = document.createElement('a');
-      link.download = `twinpersona-${results.mbti}-${results.characterInfo.code}.png`;
-      link.href = canvas.toDataURL();
-      link.click();
-    }
-  };;
+  const calculateGapPercentage = (mbtiType, characterType) => {
+    const mbtiGroup = mbtiGroups[mbtiType];
+    
+    const gapMatrix = {
+      'Analysts-DOFC': 45, 'Analysts-DOFT': 65, 'Analysts-DOMC': 35, 'Analysts-DOMT': 75,
+      'Analysts-DIFC': 25, 'Analysts-DIFT': 85, 'Analysts-DIMC': 80, 'Analysts-DIMT': 60,
+      'Analysts-NOFC': 70, 'Analysts-NOFT': 90, 'Analysts-NOMC': 55, 'Analysts-NOMT': 85,
+      'Analysts-NIFC': 40, 'Analysts-NIFT': 65, 'Analysts-NIMC': 85, 'Analysts-NIMT': 45,
+      
+      'Diplomats-DOFC': 60, 'Diplomats-DOFT': 40, 'Diplomats-DOMC': 70, 'Diplomats-DOMT': 35,
+      'Diplomats-DIFC': 45, 'Diplomats-DIFT': 30, 'Diplomats-DIMC': 25, 'Diplomats-DIMT': 85,
+      'Diplomats-NOFC': 55, 'Diplomats-NOFT': 75, 'Diplomats-NOMC': 40, 'Diplomats-NOMT': 60,
+      'Diplomats-NIFC': 80, 'Diplomats-NIFT': 70, 'Diplomats-NIMC': 35, 'Diplomats-NIMT': 90,
+      
+      'Sentinels-DOFC': 25, 'Sentinels-DOFT': 70, 'Sentinels-DOMC': 30, 'Sentinels-DOMT': 45,
+      'Sentinels-DIFC': 85, 'Sentinels-DIFT': 60, 'Sentinels-DIMC': 75, 'Sentinels-DIMT': 95,
+      'Sentinels-NOFC': 90, 'Sentinels-NOFT': 95, 'Sentinels-NOMC': 80, 'Sentinels-NOMT': 85,
+      'Sentinels-NIFC': 75, 'Sentinels-NIFT': 90, 'Sentinels-NIMC': 65, 'Sentinels-NIMT': 80,
+      
+      'Explorers-DOFC': 80, 'Explorers-DOFT': 35, 'Explorers-DOMC': 85, 'Explorers-DOMT': 60,
+      'Explorers-DIFC': 70, 'Explorers-DIFT': 45, 'Explorers-DIMC': 55, 'Explorers-DIMT': 40,
+      'Explorers-NOFC': 30, 'Explorers-NOFT': 25, 'Explorers-NOMC': 45, 'Explorers-NOMT': 35,
+      'Explorers-NIFC': 50, 'Explorers-NIFT': 40, 'Explorers-NIMC': 75, 'Explorers-NIMT': 30
+    };
+    
+    const key = `${mbtiGroup}-${characterType}`;
+    return gapMatrix[key] || Math.floor(Math.random() * 40) + 30;
+  };
 
-  // 写真アップロード処理
+  const calculateEntertainmentScores = (mbtiType, characterType, gapPercentage) => {
+    const baseScores = {
+      charisma: Math.floor(Math.random() * 30) + 70,
+      friendliness: Math.floor(Math.random() * 25) + 75,  
+      mystery: Math.floor(Math.random() * 40) + 60,
+      gap: gapPercentage,
+      rarity: Math.floor(Math.random() * 35) + 65,
+      attractiveness: Math.floor(Math.random() * 25) + 75
+    };
+
+    if (mbtiType.startsWith('E')) {
+      baseScores.charisma += 5;
+      baseScores.friendliness += 5;
+    }
+    
+    if (characterType.includes('N')) {
+      baseScores.mystery += 10;
+      baseScores.rarity += 5;
+    }
+
+    return baseScores;
+  };
+
+  const analyzeResults = () => {
+    const mbtiType = calculateMbtiType(mbtiAnswers);
+    const characterType = calculateCharacterType(characterAnswers);
+    const compatibility = calculateCompatibility(mbtiType);
+    const gapPercentage = calculateGapPercentage(mbtiType, characterType);
+    const entertainmentScores = calculateEntertainmentScores(mbtiType, characterType, gapPercentage);
+    const title = generateTitle(mbtiType, characterType);
+
+    const results = {
+      mbtiType,
+      characterType,
+      mbtiInfo: mbtiTypes[mbtiType],
+      characterInfo: characterTypes[characterType],
+      compatibility,
+      gapPercentage,
+      entertainmentScores,
+      title,
+      colors: unifiedColorPalette[mbtiGroups[mbtiType]]
+    };
+
+    setResults(results);
+  };
+
+  const handleMbtiAnswer = (questionId, answer) => {
+    setMbtiAnswers(prev => ({
+      ...prev,
+      [questionId]: answer
+    }));
+  };
+
+  const handleCharacterAnswer = (questionId, answer) => {
+    setCharacterAnswers(prev => ({
+      ...prev,
+      [questionId]: answer
+    }));
+  };
+
   const handlePhotoUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -1921,1290 +2614,1421 @@ ${topScore.key} ${topScore.value}%でした！
     }
   };
 
-  // 前の質問に戻る処理
-  const handlePreviousQuestion = () => {
-    if (step === 'mbti') {
-      if (currentQuestion > 0) {
-        setCurrentQuestion(currentQuestion - 1);
-        // 前の回答を削除
-        setMbtiAnswers(prev => {
-          const newAnswers = { ...prev };
-          delete newAnswers[currentQuestion];
-          return newAnswers;
-        });
-      } else {
-        // 最初の質問の場合は職業選択画面に戻る
-        setStep('occupation');
-        setMbtiAnswers({});
-        setCurrentQuestion(0);
-      }
-    } else if (step === 'character') {
-      if (currentQuestion > 0) {
-        setCurrentQuestion(currentQuestion - 1);
-        // 前の回答を削除
-        setCharacterAnswers(prev => {
-          const newAnswers = { ...prev };
-          delete newAnswers[currentQuestion];
-          return newAnswers;
-        });
-      } else {
-        // Character診断の最初の質問の場合はMBTI診断の最後に戻る
-        setStep('mbti');
-        setCurrentQuestion(mbtiQuestions.length - 1);
-        setCharacterAnswers({});
-      }
-    } else if (step === 'photo') {
-      // 写真アップロード画面からCharacter診断の最後に戻る
-      setStep('character');
-      setCurrentQuestion(CHARACTER_CODE_16_QUESTIONS.length - 1);
-      setUploadedPhoto(null);
-    }
-  };
-
-  // MBTI質問の回答処理
-  const handleMbtiAnswer = (questionIndex, answerType) => {
-    setMbtiAnswers(prev => ({ ...prev, [questionIndex]: answerType }));
+  const generateAIImage = async () => {
+    setIsGenerating(true);
     
-    if (questionIndex < mbtiQuestions.length - 1) {
-      setCurrentQuestion(questionIndex + 1);
-    } else {
-      setStep('character');
-      setCurrentQuestion(0);
-    }
-  };
-
-  // Character質問の回答処理（16タイプ対応）
-  const handleCharacterAnswer = (questionIndex, answer) => {
-    setCharacterAnswers(prev => ({ ...prev, [questionIndex]: answer }));
+    await new Promise(resolve => setTimeout(resolve, 3000));
     
-    if (questionIndex < CHARACTER_CODE_16_QUESTIONS.length - 1) {
-      setCurrentQuestion(questionIndex + 1);
+    setIsGenerating(false);
+    setCurrentStep('results');
+    analyzeResults();
+  };
+
+  // タイトルからビジュアル要素を抽出するヘルパー関数
+  const extractVisualElements = (title, mbtiType, characterType) => {
+    const titleAnalysis = {
+      '洞察力で親しみやすい人': {
+        description: 'A person who combines deep insight with approachable warmth',
+        specificElements: 'Thoughtful eyes with a gentle smile, intellectual accessories with warm colors, books or analytical tools with friendly aura'
+      },
+      '洞察力でエネルギッシュ人': {
+        description: 'An energetic person with analytical depth',
+        specificElements: 'Dynamic pose with focused expression, bright colors with sharp geometric patterns, energy emanating from eyes'
+      },
+      '独立的で洗練人': {
+        description: 'A refined person with strong independence',
+        specificElements: 'Elegant posture with confident stance, sophisticated color palette, minimalist but high-quality accessories'
+      },
+      '創造的で洗練人': {
+        description: 'An elegant person with creative flair',
+        specificElements: 'Artistic tools or symbols, refined posture, creative yet sophisticated styling, palette of artistic colors'
+      },
+      '適応性で正統派人': {
+        description: 'A traditional person with remarkable adaptability',
+        specificElements: 'Classic styling with modern touches, flexible pose suggesting readiness to adapt, balanced traditional-modern elements'
+      },
+      '機知でエレガント人': {
+        description: 'An elegant person with sharp wit',
+        specificElements: 'Clever expression with refined styling, smart accessories, subtle smirk showing intelligence and sophistication'
+      },
+      '思いやりで親しみやすい人': {
+        description: 'A caring person with natural approachability',
+        specificElements: 'Warm, caring expression with open posture, soft colors, heart-warming aura, gentle gestures'
+      },
+      '理想主義で親しみやすい人': {
+        description: 'An idealistic person with welcoming nature',
+        specificElements: 'Dreamy yet warm expression, soft flowing elements, inspirational symbols, approachable stance'
+      },
+      '組織的で正統派人': {
+        description: 'A traditional person with strong organizational skills',
+        specificElements: 'Professional posture, structured accessories, leadership symbols, orderly background elements'
+      },
+      '社交的で正統派人': {
+        description: 'A traditional person with strong social skills',
+        specificElements: 'Friendly professional appearance, social symbols, welcoming gestures, community-oriented elements'
+      },
+      '組織的で親しみやすい人': {
+        description: 'An organized person with natural warmth',
+        specificElements: 'Structured but friendly appearance, organizational tools with warm colors, approachable leadership aura'
+      },
+      '実用的で親しみやすい人': {
+        description: 'A practical person with genuine warmth',
+        specificElements: 'Functional yet welcoming styling, practical tools with friendly design, reliable and warm aura'
+      },
+      '決断力で正統派人': {
+        description: 'A traditional person with strong decision-making skills',
+        specificElements: 'Confident stance with authoritative presence, decisive gestures, leadership symbols, traditional professional attire'
+      },
+      '責任感で正統派人': {
+        description: 'A traditional person with strong sense of responsibility',
+        specificElements: 'Reliable posture with caring expression, symbols of duty and care, protective aura, trustworthy appearance'
+      },
+      '独立的で親しみやすい人': {
+        description: 'An independent person with natural friendliness',
+        specificElements: 'Self-assured but welcoming stance, individual style with warm touches, confident yet approachable expression'
+      }
+    };
+
+    return titleAnalysis[title] || {
+      description: `A unique personality combining ${mbtiType} analytical depth with ${characterType} visual appeal`,
+      specificElements: 'Balanced elements reflecting both personality and impression traits, unique combination of intellectual and aesthetic elements'
+    };
+  };
+
+  // MBTIグループ別のスタイル特性
+  const getMbtiGroupStyle = (mbtiGroup) => {
+    const mbtiGroupStyles = {
+      'Analysts': {
+        pose: 'thoughtful, analytical pose with hand on chin or crossed arms',
+        expression: 'intelligent, focused expression with slightly narrowed eyes',
+        accessories: 'glasses, books, technological elements, or analytical tools',
+        environment: 'modern, minimalist setting with geometric patterns'
+      },
+      'Diplomats': {
+        pose: 'open, welcoming pose with arms slightly extended',
+        expression: 'warm, empathetic expression with gentle smile',
+        accessories: 'flowing elements, nature motifs, or artistic tools',
+        environment: 'organic, harmonious setting with soft curves'
+      },
+      'Sentinels': {
+        pose: 'confident, stable stance with shoulders back',
+        expression: 'reliable, steady expression with direct gaze',
+        accessories: 'structured elements, badges, or organizational tools',
+        environment: 'orderly, professional setting with clear structures'
+      },
+      'Explorers': {
+        pose: 'dynamic, action-ready pose with slight movement',
+        expression: 'adventurous, energetic expression with bright eyes',
+        accessories: 'sports equipment, tools, or adventure gear',
+        environment: 'dynamic, vibrant setting with movement elements'
+      }
+    };
+    return mbtiGroupStyles[mbtiGroup];
+  };
+
+  // CharacterCode別の印象要素
+  const getCharacterVisualElements = (characterType) => {
+    const characterVisualElements = {
+      'DOFC': { style: 'trustworthy, approachable', clothing: 'professional, neat attire', aura: 'reliable, warm glow' },
+      'DOFT': { style: 'energetic, charismatic', clothing: 'bright, trendy outfit', aura: 'vibrant, sparkling effect' },
+      'DOMC': { style: 'organized, leadership', clothing: 'formal, structured wear', aura: 'authoritative, steady light' },
+      'DOMT': { style: 'gentle, healing', clothing: 'soft, comfortable attire', aura: 'soothing, pastel glow' },
+      'DIFC': { style: 'elegant, refined', clothing: 'sophisticated, tasteful outfit', aura: 'sophisticated, subtle shimmer' },
+      'NIMC': { style: 'pure, dreamy', clothing: 'ethereal, flowing garments', aura: 'mystical, soft radiance' },
+      'DIMC': { style: 'cute, innocent', clothing: 'adorable, youthful style', aura: 'sweet, heart-shaped sparkles' },
+      'NIFC': { style: 'charismatic, urban', clothing: 'stylish, metropolitan fashion', aura: 'cool, crystal-like gleam' },
+      'NOMC': { style: 'mysterious, multifaceted', clothing: 'enigmatic, layered outfit', aura: 'shifting, aurora-like colors' },
+      'DIMT': { style: 'surprising, gap-moe', clothing: 'unexpected style combination', aura: 'dual-toned, contrasting light' },
+      'DIFT': { style: 'comforting, cozy', clothing: 'warm, relaxing attire', aura: 'gentle, home-like warmth' },
+      'NOFC': { style: 'unique, protagonist', clothing: 'distinctive, memorable outfit', aura: 'spotlight-like radiance' },
+      'NIMT': { style: 'artistic, edgy', clothing: 'creative, avant-garde fashion', aura: 'artistic, paint-like swirls' },
+      'NIFT': { style: 'chic, independent', clothing: 'stylish, individualistic wear', aura: 'sophisticated, monochrome glow' },
+      'NOFT': { style: 'rebellious, romantic', clothing: 'bold, expressive outfit', aura: 'passionate, flame-like energy' },
+      'NOMT': { style: 'glamorous, inspiring', clothing: 'dazzling, show-stopping attire', aura: 'brilliant, star-like sparkle' }
+    };
+    return characterVisualElements[characterType] || {
+      style: 'balanced, appealing',
+      clothing: 'well-fitted, stylish attire',
+      aura: 'pleasant, harmonious glow'
+    };
+  };
+
+  // AI画像生成プロンプト（改善版）
+  const generateAIPrompt = (results) => {
+    const { mbtiType, characterType, mbtiInfo, characterInfo, title, colors } = results;
+    
+    const visualElements = extractVisualElements(title, mbtiType, characterType);
+    
+    const mbtiGroup = mbtiGroups[mbtiType];
+    const groupStyle = getMbtiGroupStyle(mbtiGroup);
+    const characterVisual = getCharacterVisualElements(characterType);
+
+    return `Create a stunning low-poly 3D character embodying "${title}":
+
+CORE CONCEPT:
+- Personality: ${mbtiType} ${mbtiInfo.name} (${mbtiInfo.traits.join(', ')})
+- Visual Impression: ${characterType} ${characterInfo.name} (${characterInfo.traits.join(', ')})
+- Title Essence: ${title} - ${visualElements.description}
+
+CHARACTER DESIGN:
+- Pose: ${groupStyle.pose}
+- Expression: ${groupStyle.expression} 
+- Style: ${characterVisual.style}
+- Clothing: ${characterVisual.clothing}
+- Aura/Effect: ${characterVisual.aura}
+- Accessories: ${groupStyle.accessories}
+
+VISUAL STYLE:
+- Art Style: Modern low-poly 3D, clean geometric forms, professional mobile game quality
+- Colors: Primary ${colors.primary}, Secondary ${colors.secondary}, Accent ${colors.accent}
+- Lighting: Professional studio lighting with ${characterVisual.aura}
+- Background: ${groupStyle.environment}, minimalist but thematic
+- Quality: High-resolution render, smooth surfaces, vibrant but harmonious colors
+
+SPECIFIC ELEMENTS:
+${visualElements.specificElements}
+
+MOOD & ATMOSPHERE:
+The character should perfectly embody the gap between ${mbtiInfo.name} personality and ${characterInfo.name} impression, creating a compelling visual that represents "${title}".`;
+  };
+
+  // SVGキャラクター生成
+  const generateSVGCharacter = (results) => {
+    const { colors, characterType, mbtiType } = results;
+    
+    const shapePatterns = {
+      DOFC: 'circle', DOFT: 'star', DOMC: 'square', DOMT: 'heart',
+      DIFC: 'diamond', DIFT: 'flower', DIMC: 'butterfly', DIMT: 'wave',
+      NIFC: 'crystal', NIFT: 'leaf', NIMC: 'cloud', NIMT: 'flame',
+      NOFC: 'polygon', NOFT: 'spiral', NOMC: 'maze', NOMT: 'aurora',
+    };
+    
+    const shape = shapePatterns[characterType] || 'circle';
+    
+    const svgElements = {
+      circle: `<circle cx="200" cy="200" r="80" fill="${colors.primary}" opacity="0.8"/>`,
+      star: `<path d="M200,140 L220,180 L260,180 L230,210 L240,250 L200,230 L160,250 L170,210 L140,180 L180,180 Z" fill="${colors.primary}" opacity="0.8"/>`,
+      square: `<rect x="140" y="140" width="120" height="120" fill="${colors.primary}" opacity="0.8" rx="10"/>`,
+      heart: `<path d="M200,250 C200,250 130,200 130,160 C130,140 150,120 170,120 C185,120 200,130 200,130 C200,130 215,120 230,120 C250,120 270,140 270,160 C270,200 200,250 200,250 Z" fill="${colors.primary}" opacity="0.8"/>`,
+      diamond: `<path d="M200,140 L260,200 L200,260 L140,200 Z" fill="${colors.primary}" opacity="0.8"/>`,
+      flower: `<g transform="translate(200,200)">
+                 <circle r="15" fill="${colors.primary}"/>
+                 <circle cx="0" cy="-30" r="20" fill="${colors.secondary}" opacity="0.8"/>
+                 <circle cx="25" cy="15" r="20" fill="${colors.secondary}" opacity="0.8"/>
+                 <circle cx="-25" cy="15" r="20" fill="${colors.secondary}" opacity="0.8"/>
+               </g>`,
+      polygon: `<polygon points="200,140 240,170 240,230 200,260 160,230 160,170" fill="${colors.primary}" opacity="0.8"/>`
+    };
+    
+    return `
+      <svg width="400" height="400" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:${colors.light};stop-opacity:1" />
+            <stop offset="100%" style="stop-color:${colors.secondary};stop-opacity:0.3" />
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+            <feMerge> 
+              <feMergeNode in="coloredBlur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+        
+        <rect width="400" height="400" fill="url(#bg-gradient)" rx="20"/>
+        
+        <g filter="url(#glow)">
+          ${svgElements[shape] || svgElements.circle}
+        </g>
+        
+        <circle cx="200" cy="200" r="100" fill="none" stroke="${colors.accent}" stroke-width="2" opacity="0.5"/>
+        
+        <text x="200" y="340" text-anchor="middle" fill="${colors.dark}" font-family="sans-serif" font-size="14" font-weight="bold">
+          ${mbtiType} × ${characterType}
+        </text>
+      </svg>
+    `;
+  };
+
+  // 共有機能
+  const handleShare = async () => {
+    const shareData = {
+      title: 'TwinPersona診断結果',
+      text: `${results.title}\nMBTI: ${results.mbtiType} ${results.mbtiInfo.name}\nCharacterCode: ${results.characterType} ${results.characterInfo.name}\nギャップ度 ${results.gapPercentage}%でした！相性のいいMBTIは${results.compatibility}です！！\n\n#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbtiType} #${results.characterType}`,
+      url: 'https://twin-persona.vercel.app'
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        console.log('Share cancelled or failed:', err);
+        copyToClipboard(shareData.text);
+      }
     } else {
-      setStep('photo');
+      copyToClipboard(shareData.text);
     }
-  };;
-
-  // 写真アップロード後の処理
-  const handlePhotoNext = () => {
-    setStep('generating');
-    // 3秒後に結果表示（非同期処理対応）
-    setTimeout(async () => {
-      await completeDiagnosis();
-    }, 3000);
   };
 
-  // 最初からやり直し
-  const handleRestart = () => {
-    setStep('start');
-    setSelectedGender(null);
-    setSelectedOccupation(null);
-    setMbtiAnswers({});
-    setCharacterAnswers({});
-    setCurrentQuestion(0);
-    setUploadedPhoto(null);
-    setResults(null);
-    setCharacterImage(null);
-    setAiAdvice(null);
+  const handleShareX = () => {
+    const text = `${results.title}\nMBTI: ${results.mbtiType} ${results.mbtiInfo.name}\nCharacterCode: ${results.characterType} ${results.characterInfo.name}\nギャップ度 ${results.gapPercentage}%でした！相性のいいMBTIは${results.compatibility}です！！\n\n#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbtiType} #${results.characterType}`;
+    
+    const url = 'https://twin-persona.vercel.app';
+    const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    window.open(xUrl, '_blank');
   };
 
-  // 性別選択処理
-  const handleGenderSelect = (gender) => {
-    setSelectedGender(gender);
-    setStep('occupation');
+  const handleShareToLine = () => {
+    const text = `${results.title}\nMBTI: ${results.mbtiType} ${results.mbtiInfo.name}\nCharacterCode: ${results.characterType} ${results.characterInfo.name}\nギャップ度 ${results.gapPercentage}%でした！相性のいいMBTIは${results.compatibility}です！！\n\n#TwinPersona #ツインパーソナ #MBTI #CharacterCode #${results.mbtiType} #${results.characterType}`;
+    
+    const url = 'https://twin-persona.vercel.app';
+    const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+    window.open(lineUrl, '_blank');
   };
 
-  // 職業選択処理
-  const handleOccupationSelect = (occupation) => {
-    setSelectedOccupation(occupation);
-    setStep('mbti');
-    setCurrentQuestion(0);
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      alert('結果をクリップボードにコピーしました！');
+    });
   };
 
-  // 決済関連の処理
-  const handleSelectPremium = () => {
-    console.log('プレミアムプラン選択');
-    setIsPremium(true);
-    setShowPaymentModal(true);
+  const downloadImage = () => {
+    const svgString = generateSVGCharacter(results);
+    const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+    const svgUrl = URL.createObjectURL(svgBlob);
+    
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.onload = () => {
+      canvas.width = 800;
+      canvas.height = 800;
+      ctx.drawImage(img, 0, 0, 800, 800);
+      
+      const link = document.createElement('a');
+      link.download = `twin-persona-${results.mbtiType}-${results.characterType}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+      
+      URL.revokeObjectURL(svgUrl);
+    };
+    
+    img.src = svgUrl;
   };
 
-  const handlePaymentSuccess = (paymentIntentId) => {
-    console.log('決済成功:', paymentIntentId);
-    setAccessToken(`premium_${paymentIntentId}_${Date.now()}`);
-    setShowPaymentModal(false);
-    setStep('gender');
-  };
+  const currentMbtiQuestion = mbtiQuestions.find((_, index) => 
+    index === Object.keys(mbtiAnswers).length
+  );
+  
+  const currentCharacterQuestion = characterQuestions.find((_, index) => 
+    index === Object.keys(characterAnswers).length
+  );
 
-  const handleStartDiagnosis = () => {
-    console.log('診断開始:', { isPremium, hasToken: !!accessToken });
-    if (isPremium && !accessToken) {
-      // プレミアムプランだが決済未完了の場合、モーダルを表示
-      setShowPaymentModal(true);
-      return;
-    }
-    setStep('gender');
-  };
+  const mbtiProgress = (Object.keys(mbtiAnswers).length / mbtiQuestions.length) * 100;
+  const characterProgress = (Object.keys(characterAnswers).length / characterQuestions.length) * 100;
 
-  // レンダリング
-  return (
-    <div className="min-h-screen bg-rich-gradient font-sans particle-bg">
-      {/* 開始画面 */}
-      {step === 'start' && (
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 text-center">
-          <div className="max-w-2xl mx-auto">
-            <div className="animate-float mb-8">
-              <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-gradient mb-4">
-                TwinPersona
-              </h1>
-              <p className="text-base sm:text-lg text-dark-300 mb-2">
-                あなたの内面と外見のギャップを発見
-              </p>
-              <p className="text-xs sm:text-sm text-dark-400">
-                MBTI診断 × Character Code診断
+  if (currentStep === 'start') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+        <div className="max-w-md w-full space-y-8 text-center">
+          <div className="space-y-4">
+            <h1 className="text-4xl font-bold text-white mb-2">
+              Twin<span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">Persona</span>
+            </h1>
+            <p className="text-xl text-gray-300">ツインパーソナ診断</p>
+            <div className="space-y-2">
+              <p className="text-gray-400">あなたの内面と外見の</p>
+              <p className="text-gray-400">ギャップを発見しよう</p>
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 space-y-2">
+              <div className="flex items-center justify-center space-x-2">
+                <span className="text-2xl">🧠</span>
+                <span className="text-white font-semibold">MBTI診断</span>
+              </div>
+              <p className="text-gray-300 text-sm">あなたの内面的な性格を分析</p>
+            </div>
+            
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 space-y-2">
+              <div className="flex items-center justify-center space-x-2">
+                <span className="text-2xl">✨</span>
+                <span className="text-white font-semibold">印象診断</span>
+              </div>
+              <p className="text-gray-300 text-sm">他人から見たあなたの印象を分析</p>
+            </div>
+          </div>
+          
+          <button
+            onClick={() => setCurrentStep('onboarding')}
+            className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 text-white font-bold py-4 px-6 rounded-lg hover:from-purple-700 hover:to-cyan-700 transition duration-300 transform hover:scale-105"
+          >
+            診断を開始する
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentStep === 'onboarding') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+        <div className="max-w-md w-full space-y-6">
+          <div className="text-center space-y-4">
+            <h2 className="text-3xl font-bold text-white">基本情報</h2>
+            <p className="text-gray-300">より正確な診断のために教えてください</p>
+          </div>
+          
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <label className="block text-white font-semibold">性別</label>
+              <div className="grid grid-cols-2 gap-3">
+                {['男性', '女性'].map((gender) => (
+                  <button
+                    key={gender}
+                    onClick={() => setSelectedGender(gender)}
+                    className={`p-3 rounded-lg border-2 transition-all ${
+                      selectedGender === gender
+                        ? 'border-purple-400 bg-purple-400/20 text-white'
+                        : 'border-gray-600 bg-white/10 text-gray-300 hover:border-gray-500'
+                    }`}
+                  >
+                    {gender}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <label className="block text-white font-semibold">職業・立場</label>
+              <div className="grid grid-cols-2 gap-3">
+                {['学生', '会社員', 'フリーランス', '公務員', '専業主婦/主夫', 'その他'].map((occupation) => (
+                  <button
+                    key={occupation}
+                    onClick={() => setSelectedOccupation(occupation)}
+                    className={`p-3 rounded-lg border-2 transition-all text-sm ${
+                      selectedOccupation === occupation
+                        ? 'border-cyan-400 bg-cyan-400/20 text-white'
+                        : 'border-gray-600 bg-white/10 text-gray-300 hover:border-gray-500'
+                    }`}
+                  >
+                    {occupation}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <button
+            onClick={() => setCurrentStep('mbti')}
+            disabled={!selectedGender || !selectedOccupation}
+            className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 text-white font-bold py-4 px-6 rounded-lg hover:from-purple-700 hover:to-cyan-700 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            性格診断へ進む
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentStep === 'mbti') {
+    if (Object.keys(mbtiAnswers).length < mbtiQuestions.length) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 flex items-center justify-center p-4">
+          <div className="max-w-2xl w-full space-y-6">
+            <div className="text-center space-y-4">
+              <div className="flex items-center justify-center space-x-2">
+                <span className="text-3xl">🧠</span>
+                <h2 className="text-3xl font-bold text-white">性格診断</h2>
+              </div>
+              <div className="w-full bg-white/20 rounded-full h-2">
+                <div 
+                  className="bg-gradient-to-r from-purple-400 to-cyan-400 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${mbtiProgress}%` }}
+                ></div>
+              </div>
+              <p className="text-gray-300">
+                {Object.keys(mbtiAnswers).length + 1} / {mbtiQuestions.length}
               </p>
             </div>
             
-            <div className="glass-strong rounded-2xl shadow-rich p-6 sm:p-8 mb-8 hover-lift">
-              <h2 className="text-xl sm:text-2xl font-bold text-dark-100 mb-4">
-                隠れた二面性を発見しよう
-              </h2>
-              <p className="text-sm sm:text-base text-dark-300 mb-6 leading-relaxed">
-                28問のMBTI診断と20問のCharacter Code診断で、<br className="hidden sm:block" />
-                <span className="sm:hidden">　</span>あなたの内面の性格と外見の印象のギャップを可視化します。
+            {currentMbtiQuestion && (
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 space-y-6">
+                <h3 className="text-xl font-semibold text-white text-center">
+                  {currentMbtiQuestion.question}
+                </h3>
+                
+                <div className="space-y-4">
+                  {currentMbtiQuestion.options.map((option, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleMbtiAnswer(currentMbtiQuestion.id, option.value)}
+                      className="w-full p-4 text-left bg-white/10 hover:bg-white/20 rounded-lg border border-white/20 hover:border-white/40 text-white transition-all duration-200 hover:transform hover:scale-105"
+                    >
+                      {option.text}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 flex items-center justify-center p-4">
+          <div className="max-w-md w-full text-center space-y-8">
+            <div className="space-y-4">
+              <div className="text-6xl">✅</div>
+              <h2 className="text-3xl font-bold text-white">性格診断完了！</h2>
+              <p className="text-gray-300">
+                続いて、あなたの印象を分析します
               </p>
-              
-              <div className="grid sm:grid-cols-2 gap-4 mb-6 text-xs sm:text-sm">
-                <div className="bg-gradient-to-br from-analysts-primary/20 to-analysts-accent/10 p-5 rounded-xl border border-analysts-primary/30 backdrop-blur-sm">
-                  <h3 className="font-semibold text-analysts-primary mb-2">🧠 内面分析</h3>
-                  <p className="text-dark-300">MBTI理論による本質的な性格タイプを診断</p>
-                </div>
-                <div className="bg-gradient-to-br from-diplomats-primary/20 to-diplomats-accent/10 p-5 rounded-xl border border-diplomats-primary/30 backdrop-blur-sm">
-                  <h3 className="font-semibold text-diplomats-primary mb-2">✨ 印象分析</h3>
-                  <p className="text-dark-300">他者から見た第一印象のタイプを分析</p>
-                </div>
-              </div>
-              
-              {/* プラン選択 */}
-              <div className="mb-6">
-                <h3 className="text-lg font-semibold text-dark-100 mb-4">診断プランを選択</h3>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {/* 無料プラン */}
-                  <div 
-                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                      !isPremium 
-                        ? 'border-sentinels-primary bg-sentinels-primary/10' 
-                        : 'border-dark-500 bg-dark-700/30 hover:border-dark-400'
-                    }`}
-                    onClick={() => setIsPremium(false)}
-                  >
-                    <div className="text-center">
-                      <h4 className="font-bold text-dark-100 mb-2">無料プラン</h4>
-                      <p className="text-2xl font-bold text-sentinels-primary mb-2">¥0</p>
-                      <div className="text-xs text-dark-300 space-y-1">
-                        <div>✅ MBTI診断結果</div>
-                        <div>✅ Character Code診断</div>
-                        <div>✅ エンタメスコア</div>
-                        <div>✅ 相性分析</div>
-                        <div className="text-dark-500">❌ AI詳細分析</div>
-                        <div className="text-dark-500">❌ 実用的アドバイス</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* プレミアムプラン */}
-                  <div 
-                    className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                      isPremium 
-                        ? 'border-explorers-primary bg-explorers-primary/10' 
-                        : 'border-dark-500 bg-dark-700/30 hover:border-dark-400'
-                    }`}
-                    onClick={handleSelectPremium}
-                  >
-                    <div className="text-center">
-                      <h4 className="font-bold text-dark-100 mb-2">プレミアムプラン</h4>
-                      <p className="text-2xl font-bold text-explorers-primary mb-2">¥500</p>
-                      <div className="text-xs text-dark-300 space-y-1">
-                        <div>✅ すべての無料機能</div>
-                        <div className="text-explorers-primary">✨ AI詳細分析</div>
-                        <div className="text-explorers-primary">✨ 実用的アドバイス</div>
-                        <div className="text-explorers-primary">✨ 個人化された洞察</div>
-                        <div className="text-explorers-primary">✨ 高品質な結果</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            </div>
+            
+            <button
+              onClick={() => setCurrentStep('character')}
+              className="w-full bg-gradient-to-r from-cyan-600 to-purple-600 text-white font-bold py-4 px-6 rounded-lg hover:from-cyan-700 hover:to-purple-700 transition duration-300"
+            >
+              印象診断へ進む
+            </button>
+          </div>
+        </div>
+      );
+    }
+  }
 
-              <button
-                onClick={handleStartDiagnosis}
-                className="btn-primary text-lg px-8 py-4"
+  if (currentStep === 'character') {
+    if (Object.keys(characterAnswers).length < characterQuestions.length) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-cyan-900 via-blue-900 to-purple-900 flex items-center justify-center p-4">
+          <div className="max-w-2xl w-full space-y-6">
+            <div className="text-center space-y-4">
+              <div className="flex items-center justify-center space-x-2">
+                <span className="text-3xl">✨</span>
+                <h2 className="text-3xl font-bold text-white">印象診断</h2>
+              </div>
+              <div className="w-full bg-white/20 rounded-full h-2">
+                <div 
+                  className="bg-gradient-to-r from-cyan-400 to-purple-400 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${characterProgress}%` }}
+                ></div>
+              </div>
+              <p className="text-gray-300">
+                {Object.keys(characterAnswers).length + 1} / {characterQuestions.length}
+              </p>
+            </div>
+            
+            {currentCharacterQuestion && (
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 space-y-6">
+                <h3 className="text-xl font-semibold text-white text-center">
+                  {currentCharacterQuestion.question}
+                </h3>
+                
+                <div className="space-y-4">
+                  {currentCharacterQuestion.options.map((option, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleCharacterAnswer(currentCharacterQuestion.id, option.value)}
+                      className="w-full p-4 text-left bg-white/10 hover:bg-white/20 rounded-lg border border-white/20 hover:border-white/40 text-white transition-all duration-200 hover:transform hover:scale-105"
+                    >
+                      {option.text}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-cyan-900 via-blue-900 to-purple-900 flex items-center justify-center p-4">
+          <div className="max-w-md w-full text-center space-y-8">
+            <div className="space-y-4">
+              <div className="text-6xl">✅</div>
+              <h2 className="text-3xl font-bold text-white">印象診断完了！</h2>
+              <p className="text-gray-300">
+                最後にお顔の写真をアップロードしてください（任意）
+              </p>
+            </div>
+            
+            <div className="space-y-4">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="hidden"
+                id="photo-upload"
+              />
+              <label
+                htmlFor="photo-upload"
+                className="w-full bg-white/10 border-2 border-dashed border-white/30 text-white font-semibold py-8 px-6 rounded-lg hover:bg-white/20 hover:border-white/50 transition duration-300 cursor-pointer block"
               >
-                <Sparkles className="w-5 h-5 inline mr-2" />
-                {isPremium ? 'プレミアム診断を始める' : '無料診断を始める'}
-              </button>
+                {uploadedPhoto ? (
+                  <div className="space-y-2">
+                    <div className="text-2xl">📸</div>
+                    <div>写真がアップロードされました</div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="text-2xl">📷</div>
+                    <div>写真をアップロード</div>
+                    <div className="text-sm text-gray-400">（スキップ可能）</div>
+                  </div>
+                )}
+              </label>
             </div>
             
-            <p className="text-xs text-dark-400">
-              所要時間: 約8-15分 | データは保存されません
-              {isPremium && <span className="text-explorers-primary ml-2">| プレミアム機能でより詳細な分析</span>}
+            <button
+              onClick={() => setCurrentStep('generating')}
+              className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 text-white font-bold py-4 px-6 rounded-lg hover:from-purple-700 hover:to-cyan-700 transition duration-300"
+            >
+              結果を見る
+            </button>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  if (currentStep === 'generating') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 flex items-center justify-center p-4">
+        <div className="max-w-md w-full text-center space-y-8">
+          <div className="space-y-4">
+            <div className="text-6xl animate-spin">⚡</div>
+            <h2 className="text-3xl font-bold text-white">AI分析中...</h2>
+            <p className="text-gray-300">
+              あなたの診断結果を分析して<br />
+              パーソナライズされたキャラクターを生成しています
             </p>
           </div>
-        </div>
-      )}
-
-      {/* 性別選択画面 */}
-      {step === 'gender' && (
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="max-w-xl mx-auto">
-            <div className="bg-dark-800/80 backdrop-blur-md rounded-3xl p-8 border border-dark-700/50 shadow-2xl">
-              {/* ヘッダー */}
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-analysts-primary to-diplomats-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Camera className="w-8 h-8 text-white" />
-                </div>
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  基本情報
-                </h2>
-                <p className="text-dark-300 text-sm">
-                  より正確なキャラクター生成のため<br />
-                  性別を教えてください
-                </p>
+          
+          <div className="space-y-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-white">性格分析 完了</span>
               </div>
-
-              {/* 性別選択 */}
-              <div className="space-y-4 mb-8">
-                {[
-                  { value: '男性', icon: '♂', color: 'from-blue-500 to-blue-600' },
-                  { value: '女性', icon: '♀', color: 'from-pink-500 to-pink-600' },
-                  { value: '非公開', icon: '○', color: 'from-gray-500 to-gray-600' }
-                ].map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => handleGenderSelect(option.value)}
-                    className={`w-full p-4 rounded-xl border-2 text-left transition-all hover:scale-105 ${
-                      selectedGender === option.value
-                        ? 'border-analysts-primary bg-analysts-primary/10'
-                        : 'border-dark-600 bg-dark-700/50 hover:border-dark-500'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className={`w-12 h-12 bg-gradient-to-br ${option.color} rounded-xl flex items-center justify-center text-white text-xl font-bold`}>
-                        {option.icon}
-                      </div>
-                      <div>
-                        <h3 className="text-white font-semibold">{option.value}</h3>
-                        <p className="text-dark-400 text-sm">
-                          {option.value === '男性' && 'Male character generation'}
-                          {option.value === '女性' && 'Female character generation'} 
-                          {option.value === '非公開' && 'Gender-neutral character'}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-white">印象分析 完了</span>
               </div>
-
-              {/* 戻るボタン */}
-              <button
-                onClick={() => setStep('start')}
-                className="w-full bg-dark-700 text-white py-3 rounded-xl hover:bg-dark-600 transition-colors flex items-center justify-center space-x-2"
-              >
-                <ChevronLeft className="w-5 h-5" />
-                <span>戻る</span>
-              </button>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-4 h-4 bg-yellow-500 rounded-full animate-pulse"></div>
+                <span className="text-white">キャラクター生成中...</span>
+              </div>
             </div>
           </div>
+
+          {setTimeout(() => {
+            generateAIImage();
+          }, 100)}
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {/* 職業選択画面 */}
-      {step === 'occupation' && (
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="max-w-xl mx-auto">
-            <div className="bg-dark-800/80 backdrop-blur-md rounded-3xl p-8 border border-dark-700/50 shadow-2xl">
-              {/* ヘッダー */}
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-sentinels-primary to-explorers-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
-                  <Sparkles className="w-8 h-8 text-white" />
-                </div>
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  職業・役割
-                </h2>
-                <p className="text-dark-300 text-sm">
-                  キャラクターの衣装に反映される<br />
-                  職業や役割を選択してください
-                </p>
-              </div>
-
-              {/* 職業選択 */}
-              <div className="grid grid-cols-2 gap-3 mb-8">
-                {[
-                  { value: 'ビジネス', icon: '💼', desc: 'スーツ・フォーマル' },
-                  { value: 'クリエイティブ', icon: '🎨', desc: 'アーティスト・デザイナー' },
-                  { value: 'テック', icon: '💻', desc: 'IT・エンジニア' },
-                  { value: '医療', icon: '🏥', desc: '医師・看護師' },
-                  { value: '教育', icon: '📚', desc: '教師・講師' },
-                  { value: 'サービス', icon: '🤝', desc: '接客・サービス業' },
-                  { value: '学生', icon: '🎓', desc: '学生・制服' },
-                  { value: 'アーティスト', icon: '🎭', desc: '芸術・表現者' },
-                  { value: 'スポーツ', icon: '⚽', desc: 'アスリート・トレーナー' },
-                  { value: 'その他', icon: '👤', desc: 'カジュアル・私服' }
-                ].map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => handleOccupationSelect(option.value)}
-                    className={`p-4 rounded-xl border-2 text-center transition-all hover:scale-105 ${
-                      selectedOccupation === option.value
-                        ? 'border-sentinels-primary bg-sentinels-primary/10'
-                        : 'border-dark-600 bg-dark-700/50 hover:border-dark-500'
-                    }`}
-                  >
-                    <div className="text-2xl mb-2">{option.icon}</div>
-                    <h3 className="text-white font-semibold text-sm mb-1">{option.value}</h3>
-                    <p className="text-dark-400 text-xs">{option.desc}</p>
-                  </button>
-                ))}
-              </div>
-
-              {/* 戻るボタン */}
-              <button
-                onClick={handleStartDiagnosis}
-                className="w-full bg-dark-700 text-white py-3 rounded-xl hover:bg-dark-600 transition-colors flex items-center justify-center space-x-2"
-              >
-                <ChevronLeft className="w-5 h-5" />
-                <span>戻る</span>
-              </button>
+  if (currentStep === 'results' && results) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-4">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* ヘッダー */}
+          <div className="text-center space-y-4 pt-4">
+            <h1 className="text-4xl font-bold text-white">診断結果</h1>
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-bold text-white">{results.title}</h2>
+              <p className="text-lg text-gray-300">{results.mbtiType} × {results.characterType}</p>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* MBTI診断画面 */}
-      {step === 'mbti' && (
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="max-w-2xl mx-auto">
-            {/* プログレスバー */}
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-dark-300">MBTI診断</span>
-                <span className="text-sm text-dark-300">
-                  {currentQuestion + 1} / {mbtiQuestions.length}
-                </span>
-              </div>
-              <div className="progress-bar">
+          {/* メインコンテンツ */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* キャラクター表示 */}
+            <div className="space-y-4">
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-white mb-4 text-center">あなたのキャラクター</h3>
                 <div 
-                  className="progress-fill"
-                  style={{ width: `${((currentQuestion + 1) / mbtiQuestions.length) * 100}%` }}
-                ></div>
+                  className="w-full max-w-sm mx-auto"
+                  dangerouslySetInnerHTML={{ __html: generateSVGCharacter(results) }}
+                />
+                <details className="mt-4 text-xs">
+                  <summary className="text-gray-400 cursor-pointer">AI生成プロンプト（開発用）</summary>
+                  <pre className="text-gray-500 mt-2 whitespace-pre-wrap text-xs bg-black/20 p-2 rounded">
+                    {generateAIPrompt(results)}
+                  </pre>
+                </details>
               </div>
-            </div>
 
-            <div className="question-card">
-              <h2 className="text-xl font-bold text-dark-100 mb-6">
-                {mbtiQuestions[currentQuestion].question}
-              </h2>
-              
-              <div className="space-y-4">
-                {mbtiQuestions[currentQuestion].options.map((option, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleMbtiAnswer(currentQuestion, option.type)}
-                    className="option-button"
-                  >
-                    <span className="block text-dark-200">{option.text}</span>
-                  </button>
-                ))}
-              </div>
-              
-              {/* 戻るボタン */}
-              <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3 sm:gap-0">
-                <button
-                  onClick={handlePreviousQuestion}
-                  className="btn-secondary flex items-center gap-2 w-full sm:w-auto"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  戻る
-                </button>
-                <span className="text-xs text-dark-400 text-center">
-                  {currentQuestion === 0 ? 'スタート画面に戻ります' : '前の質問に戻ります'}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Character Code診断画面 */}
-      {step === 'character' && (
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="max-w-2xl mx-auto">
-            {/* プログレスバー */}
-            <div className="mb-8">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-dark-300">Character Code診断</span>
-                <span className="text-sm text-dark-300">
-                  {currentQuestion + 1} / {CHARACTER_CODE_16_QUESTIONS.length}
-                </span>
-              </div>
-              <div className="progress-bar">
-                <div 
-                  className="progress-fill"
-                  style={{ 
-                    width: `${((currentQuestion + 1) / CHARACTER_CODE_16_QUESTIONS.length) * 100}%`,
-                    background: 'linear-gradient(90deg, #4fd1c7, #81e6d9, #319795)'
-                  }}
-                ></div>
-              </div>
-            </div>
-
-            <div className="question-card">
-              <h2 className="text-xl font-bold text-dark-100 mb-6">
-                {CHARACTER_CODE_16_QUESTIONS[currentQuestion].question}
-              </h2>
-              
-              <div className="space-y-4">
-                {CHARACTER_CODE_16_QUESTIONS[currentQuestion].options.map((option, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleCharacterAnswer(currentQuestion, option)}
-                    className="option-button"
-                  >
-                    <span className="block text-dark-200">{option.text}</span>
-                  </button>
-                ))}
-              </div>
-              
-              {/* 戻るボタン */}
-              <div className="flex flex-col sm:flex-row justify-between items-center mt-6 gap-3 sm:gap-0">
-                <button
-                  onClick={handlePreviousQuestion}
-                  className="btn-secondary flex items-center gap-2 w-full sm:w-auto"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  戻る
-                </button>
-                <span className="text-xs text-dark-400 text-center">
-                  {currentQuestion === 0 ? 'MBTI診断に戻ります' : '前の質問に戻ります'}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 写真アップロード画面 */}
-      {step === 'photo' && (
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="question-card">
-              <h2 className="text-2xl font-bold text-dark-100 mb-4">
-                顔写真のアップロード（任意）
-                {!isPremium && (
-                  <span className="ml-2 text-xs bg-explorers-primary/20 text-explorers-primary px-2 py-1 rounded-full">
-                    プレミアム
-                  </span>
-                )}
-              </h2>
-              <p className="text-dark-300 mb-6 leading-relaxed">
-                Character Code診断の精度向上のため、お顔の写真をアップロードできます。<br />
-                <span className="text-sm text-explorers-primary">※AI分析により、より正確な印象診断が可能になります</span>
-              </p>
-              
-              <div className="mb-6">
-                {isPremium && accessToken ? (
-                  // プレミアム版：写真アップロード可能
-                  <div className="border-2 border-dashed border-dark-500 rounded-xl p-8 mb-4 bg-dark-700/30 backdrop-blur-sm hover:border-dark-400 transition-all duration-300">
-                    <Camera className="w-12 h-12 text-dark-400 mx-auto mb-4" />
-                    {uploadedPhoto ? (
-                      <div>
-                        <img 
-                          src={uploadedPhoto} 
-                          alt="アップロード済み" 
-                          className="w-32 h-32 object-cover rounded-xl mx-auto mb-4 border-2 border-sentinels-primary shadow-glow-green"
-                        />
-                        <p className="text-sentinels-primary font-medium">写真がアップロードされました</p>
-                      </div>
-                    ) : (
-                      <div>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handlePhotoUpload}
-                          className="hidden"
-                          id="photo-upload"
-                        />
-                        <label
-                          htmlFor="photo-upload"
-                          className="btn-secondary cursor-pointer inline-block"
-                        >
-                          写真を選択
-                        </label>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  // 無料版：ぼかし表示
-                  <div className="relative">
-                    <div className="border-2 border-dashed border-dark-500 rounded-xl p-8 mb-4 bg-dark-700/30 backdrop-blur-sm blur-sm select-none pointer-events-none">
-                      <Camera className="w-12 h-12 text-dark-400 mx-auto mb-4" />
-                      <div className="btn-secondary cursor-pointer inline-block">
-                        写真を選択
-                      </div>
-                    </div>
-                    
-                    {/* プレミアム機能表示 */}
-                    <div className="absolute inset-0 flex items-center justify-center bg-dark-900/80 backdrop-blur-sm rounded-xl">
-                      <div className="text-center p-4">
-                        <Camera className="w-8 h-8 text-explorers-primary mx-auto mb-2" />
-                        <p className="text-sm text-dark-300">
-                          この機能はプレミアムのみ
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <button
-                  onClick={handlePreviousQuestion}
-                  className="btn-secondary flex items-center gap-2 w-full sm:w-auto order-2 sm:order-1"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  戻る
-                </button>
-                
-                <button
-                  onClick={handlePhotoNext}
-                  className="btn-primary flex items-center gap-2 w-full sm:w-auto order-1 sm:order-2"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                  診断結果を生成
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* AI生成待機画面 */}
-      {step === 'generating' && (
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-2xl mx-auto text-center">
-            <div className="question-card">
-              <div className="animate-pulse-soft mb-6">
-                <Sparkles className="w-16 h-16 text-analysts-primary mx-auto mb-4 drop-shadow-lg" style={{filter: 'drop-shadow(0 0 10px rgba(157, 116, 232, 0.5))'}} />
-              </div>
-              <h2 className="text-2xl font-bold text-dark-100 mb-4">
-                あなたの二面性を分析中...
-              </h2>
-              <p className="text-dark-300 mb-6 leading-relaxed">
-                AIがあなたの回答を分析して、<br />
-                ユニークなキャラクターを生成しています
-              </p>
-              
-              <div className="bg-gradient-to-r from-dark-700/50 to-dark-600/50 rounded-xl p-6 mb-6 border border-dark-500/50 backdrop-blur-sm">
-                <div className="text-sm text-dark-300 space-y-3">
-                  <p className="flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 bg-analysts-primary rounded-full animate-pulse"></span>
-                    🧠 性格タイプを解析中...
-                  </p>
-                  <p className="flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 bg-diplomats-primary rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></span>
-                    ✨ 印象パターンを分析中...
-                  </p>
-                  <p className="flex items-center justify-center gap-2">
-                    <span className="w-2 h-2 bg-sentinels-primary rounded-full animate-pulse" style={{animationDelay: '1s'}}></span>
-                    🎨 専用キャラクターを生成中...
-                  </p>
-                </div>
-              </div>
-              
-              <div className="progress-bar">
-                <div className="progress-fill animate-pulse" style={{width: '100%', background: 'linear-gradient(90deg, #9d74e8, #4fd1c7, #48bb78, #ed8936)'}}></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 結果表示画面 */}
-      {step === 'result' && results && (
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="max-w-4xl mx-auto">
-            {/* メインタイトル */}
-            <div className="text-center mb-8">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gradient mb-2">
-                {results.title}
-              </h1>
-              <div className="text-lg sm:text-xl font-semibold text-dark-200 mb-2">
-                <span className="text-analysts-primary">{results.mbti}</span> × <span className="text-diplomats-primary">{results.characterInfo.code}</span>
-              </div>
-              <p className="text-sm sm:text-base lg:text-lg text-dark-300">
-                {results.gapAnalysis.statement}
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-              {/* キャラクター表示 */}
-              <div className="result-card text-center hover-lift relative">
-                <h3 className="text-xl font-bold text-dark-100 mb-4">
-                  あなたのキャラクター
-                  {!isPremium && (
-                    <span className="ml-2 text-xs bg-explorers-primary/20 text-explorers-primary px-2 py-1 rounded-full">
-                      プレミアム
+              {/* ギャップ分析 */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-white mb-4">ギャップ分析</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white">内面と外見のギャップ</span>
+                    <span className="text-2xl font-bold" style={{ color: results.colors.primary }}>
+                      {results.gapPercentage}%
                     </span>
-                  )}
-                </h3>
-                
-                {isPremium && accessToken ? (
-                  // プレミアム版：AI画像または生成ボタン
-                  characterImage?.imageUrl ? (
-                    <div className="w-48 h-48 mx-auto mb-4 bg-gradient-to-br from-dark-700/50 to-dark-600/50 rounded-2xl border border-dark-500/50 shadow-glow overflow-hidden">
-                      <img 
-                        src={characterImage.imageUrl} 
-                        alt={`${results.mbti} × ${results.characterInfo.code} キャラクター`}
-                        className="w-full h-full object-cover rounded-2xl"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'block';
-                        }}
-                      />
-                      {/* フォールバックSVG */}
-                      <div 
-                        style={{ display: 'none' }}
-                        className="w-full h-full flex items-center justify-center"
-                        dangerouslySetInnerHTML={{ 
-                          __html: generateEnhancedCharacterSVG(results.mbti, results.characterInfo.code) 
-                        }}
-                      />
-                    </div>
-                  ) : (
-                  <div className="relative">
-                    {/* デフォルトSVGキャラクター */}
-                    <div 
-                      className="w-48 h-48 mx-auto mb-4 p-4 bg-gradient-to-br from-dark-700/50 to-dark-600/50 rounded-2xl border border-dark-500/50 shadow-glow"
-                      dangerouslySetInnerHTML={{ 
-                        __html: generateEnhancedCharacterSVG(results.mbti, results.characterInfo.code) 
-                      }}
-                    />
-                    
-                    {/* AI生成オーバーレイ */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center p-4">
-                        {imageLoading ? (
-                          <>
-                            <div className="w-12 h-12 bg-gradient-to-r from-explorers-primary to-explorers-accent rounded-full flex items-center justify-center mx-auto mb-3 animate-pulse">
-                              <RefreshCw className="w-6 h-6 text-white animate-spin" />
-                            </div>
-                            <h4 className="text-sm font-bold text-white mb-1">AI生成中...</h4>
-                            <p className="text-xs text-dark-300">
-                              あなた専用の<br />
-                              キャラクターを作成中
-                            </p>
-                          </>
-                        ) : (
-                          <>
-                            <div className="w-12 h-12 bg-gradient-to-r from-explorers-primary to-explorers-accent rounded-full flex items-center justify-center mx-auto mb-3">
-                              <Sparkles className="w-6 h-6 text-white" />
-                            </div>
-                            <h4 className="text-sm font-bold text-white mb-1">AIキャラクター</h4>
-                            <p className="text-xs text-dark-300 mb-3">
-                              あなた専用の<br />
-                              キャラクターを生成
-                            </p>
-                            <button
-                              onClick={generateAICharacterImage}
-                              disabled={imageLoading}
-                              className="bg-gradient-to-r from-explorers-primary to-explorers-accent text-white px-4 py-2 rounded-lg text-xs font-semibold hover:from-explorers-accent hover:to-explorers-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                              キャラクターを生成
-                            </button>
-                            {imageError && (
-                              <p className="text-xs text-red-400 mt-2">
-                                {imageError}
-                              </p>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
                   </div>
-                  )
-                ) : (
-                  // 無料版：ぼかし表示とプレミアムアップグレード
-                  <div className="relative">
-                    {/* ぼかしされたSVGキャラクター */}
+                  <div className="w-full bg-gray-700 rounded-full h-3">
                     <div 
-                      className="w-48 h-48 mx-auto mb-4 p-4 bg-gradient-to-br from-dark-700/50 to-dark-600/50 rounded-2xl border border-dark-500/50 shadow-glow blur-sm select-none pointer-events-none"
-                      dangerouslySetInnerHTML={{ 
-                        __html: generateEnhancedCharacterSVG(results.mbti, results.characterInfo.code) 
+                      className="h-3 rounded-full transition-all duration-1000"
+                      style={{ 
+                        width: `${results.gapPercentage}%`,
+                        backgroundColor: results.colors.primary
                       }}
-                    />
-                    
-                    {/* プレミアムアップグレードオーバーレイ */}
-                    <div className="absolute inset-0 flex items-center justify-center bg-dark-900/80 backdrop-blur-sm rounded-xl">
-                      <div className="text-center p-4">
-                        <div className="w-12 h-12 bg-gradient-to-r from-explorers-primary to-explorers-accent rounded-full flex items-center justify-center mx-auto mb-3">
-                          <Sparkles className="w-6 h-6 text-white" />
-                        </div>
-                        <h4 className="text-sm font-bold text-white mb-1">AIキャラクター生成</h4>
-                        <p className="text-sm text-dark-300">
-                          この機能はプレミアムのみ
-                        </p>
-                      </div>
-                    </div>
+                    ></div>
                   </div>
-                )}
-                
-                <div className="text-sm text-dark-300 space-y-1">
-                  <p><strong className="text-dark-200">MBTI:</strong> <span className="text-analysts-primary font-semibold">{results.mbti}</span> ({results.mbtiInfo.name})</p>
-                  <p><strong className="text-dark-200">印象:</strong> <span className="text-diplomats-primary font-semibold">{results.characterInfo.code}</span> ({results.characterInfo.name})</p>
-                  <p className="text-xs text-dark-400 mt-2">
-                    全人口の約{results.mbtiInfo.percentage}%のMBTIタイプ
+                  <p className="text-gray-300 text-sm">
+                    {results.gapPercentage >= 70 ? 'かなり大きなギャップがあります！意外性のある魅力的な人です。' :
+                     results.gapPercentage >= 50 ? 'ほど良いギャップがあります。バランスの取れた印象です。' :
+                     '内面と外見が一致しています。安定感のある印象を与えます。'}
                   </p>
                 </div>
               </div>
+            </div>
 
-              {/* MBTI詳細分析 */}
-              <div className="result-card hover-lift">
-                <h3 className="text-xl font-bold text-dark-100 mb-4">
-                  🧠 性格詳細分析 ({results.mbti})
-                </h3>
-                
-                {/* MBTIタイプ情報 - 印象詳細と同じレイアウト */}
-                <div className="bg-gradient-to-r from-analysts-primary/20 to-analysts-accent/10 rounded-lg p-4 mb-4 border border-analysts-primary/30">
-                  <h4 className="font-semibold text-analysts-primary mb-2 text-sm flex items-center gap-2">
-                    🏷️ {results.mbtiInfo.name}タイプ
-                  </h4>
-                  <p className="text-dark-300 text-xs mb-3 leading-relaxed">
-                    {results.mbtiInfo.description}
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    {(results.mbtiInfo.characteristics || []).map((char, index) => (
-                      <span key={index} className="px-2 py-1 bg-analysts-primary/20 text-analysts-primary rounded-md text-xs">
-                        {char}
+            {/* 詳細情報 */}
+            <div className="space-y-4">
+              {/* MBTI詳細 */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-white mb-4">性格詳細 (MBTI)</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white font-semibold">{results.mbtiType}</span>
+                    <span className="px-3 py-1 rounded-full text-sm font-semibold text-white" 
+                          style={{ backgroundColor: results.colors.primary }}>
+                      {results.mbtiInfo.name}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {results.mbtiInfo.traits.map((trait, index) => (
+                      <span 
+                        key={index}
+                        className="px-3 py-1 rounded-full text-sm border text-white"
+                        style={{ borderColor: results.colors.secondary }}
+                      >
+                        {trait}
                       </span>
                     ))}
                   </div>
-                  
-                  {/* 第一印象 */}
-                  <div className="mt-3">
-                    <h5 className="font-medium text-dark-200 text-xs mb-2">第一印象</h5>
-                    <div className="bg-dark-700/30 rounded px-2 py-1">
-                      <p className="text-dark-300 text-xs leading-relaxed">
-                        {results.mbtiInfo.firstImpression}
-                      </p>
-                    </div>
+                </div>
+              </div>
+
+              {/* 印象詳細 */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-white mb-4">印象詳細 (CharacterCode)</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white font-semibold">{results.characterType}</span>
+                    <span className="px-3 py-1 rounded-full text-sm font-semibold text-white" 
+                          style={{ backgroundColor: results.colors.accent }}>
+                      {results.characterInfo.name}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {results.characterInfo.traits.map((trait, index) => (
+                      <span 
+                        key={index}
+                        className="px-3 py-1 rounded-full text-sm border text-white"
+                        style={{ borderColor: results.colors.secondary }}
+                      >
+                        {trait}
+                      </span>
+                    ))}
                   </div>
                 </div>
+              </div>
 
-                {/* MBTI 4軸分析 */}
-                <div className="bg-dark-700/50 rounded-lg p-4 mb-4">
-                  <h4 className="font-semibold text-dark-200 mb-2 text-sm">MBTI 4軸分析</h4>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <span className="text-analysts-primary font-medium">
-                        {results.mbtiInfo.axes.e_i === 'E' ? 'E (Extrovert)' : 'I (Introvert)'}
-                      </span>
-                      <span className="text-dark-400 ml-1">
-                        {results.mbtiInfo.axes.e_i === 'E' ? '外向的・社交的' : '内向的・思慮深い'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-analysts-primary font-medium">
-                        {results.mbtiInfo.axes.s_n === 'S' ? 'S (Sensing)' : 'N (iNtuition)'}
-                      </span>
-                      <span className="text-dark-400 ml-1">
-                        {results.mbtiInfo.axes.s_n === 'S' ? '現実的・実践的' : '直感的・理論的'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-analysts-primary font-medium">
-                        {results.mbtiInfo.axes.t_f === 'T' ? 'T (Thinking)' : 'F (Feeling)'}
-                      </span>
-                      <span className="text-dark-400 ml-1">
-                        {results.mbtiInfo.axes.t_f === 'T' ? '論理的・客観的' : '感情的・共感的'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-analysts-primary font-medium">
-                        {results.mbtiInfo.axes.j_p === 'J' ? 'J (Judging)' : 'P (Perceiving)'}
-                      </span>
-                      <span className="text-dark-400 ml-1">
-                        {results.mbtiInfo.axes.j_p === 'J' ? '計画的・組織的' : '柔軟・適応的'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* シーン別の性格 */}
+              {/* 相性分析 */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-white mb-4">相性分析</h3>
                 <div className="space-y-3">
-                  <h4 className="font-semibold text-dark-200 text-sm">シーン別の性格</h4>
-                  
-                  <div className="bg-dark-700/30 p-3 rounded-lg">
-                    <h5 className="font-medium text-explorers-primary text-xs mb-1">💼 仕事場面</h5>
-                    <p className="text-dark-300 text-xs">{results.mbtiInfo.situations?.work || 'データがありません'}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-white">相性の良いタイプ</span>
+                    <span className="text-xl font-bold" style={{ color: results.colors.secondary }}>
+                      {results.compatibility}
+                    </span>
                   </div>
-                  
-                  <div className="bg-dark-700/30 p-3 rounded-lg">
-                    <h5 className="font-medium text-sentinels-primary text-xs mb-1">👥 社交場面</h5>
-                    <p className="text-dark-300 text-xs">{results.mbtiInfo.situations?.social || 'データがありません'}</p>
-                  </div>
-                  
-                  <div className="bg-dark-700/30 p-3 rounded-lg">
-                    <h5 className="font-medium text-analysts-primary text-xs mb-1">💕 恋愛場面</h5>
-                    <p className="text-dark-300 text-xs">{results.mbtiInfo.situations?.romance || 'データがありません'}</p>
-                  </div>
-                </div>
-                
-                <p className="text-xs text-dark-400 text-center mt-4">
-                  このMBTIタイプは全体の約{results.mbtiInfo.percentage}%
-                </p>
-              </div>
-
-              {/* Character Code詳細分析 */}
-              <div className="result-card hover-lift">
-                <h3 className="text-xl font-bold text-dark-100 mb-4">
-                  ✨ 印象詳細分析 ({results.characterInfo.code})
-                </h3>
-                
-                {/* 16タイプグループ情報 */}
-                <div className="bg-gradient-to-r from-diplomats-primary/20 to-diplomats-accent/10 rounded-lg p-4 mb-4 border border-diplomats-primary/30">
-                  <h4 className="font-semibold text-diplomats-primary mb-2 text-sm flex items-center gap-2">
-                    🏷️ {CHARACTER_CODE_GROUPS[results.characterInfo.group]?.name}グループ
-                  </h4>
-                  <p className="text-dark-300 text-xs mb-3 leading-relaxed">
-                    {CHARACTER_CODE_GROUPS[results.characterInfo.group]?.description}
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    {(CHARACTER_CODE_GROUPS[results.characterInfo.group]?.characteristics || []).map((char, index) => (
-                      <span key={index} className="px-2 py-1 bg-diplomats-primary/20 text-diplomats-primary rounded-md text-xs">
-                        {char}
-                      </span>
-                    ))}
-                  </div>
-                  
-                  {/* 同じグループの他のタイプ */}
-                  <div className="mt-3">
-                    <h5 className="font-medium text-dark-200 text-xs mb-2">同じグループの他のタイプ</h5>
-                    <div className="grid grid-cols-2 gap-1 text-xs">
-                      {CHARACTER_CODE_GROUPS[results.characterInfo.group]?.types
-                        .filter(typeCode => typeCode !== results.characterInfo.code)
-                        ?.map((typeCode) => (
-                          <div key={typeCode} className="bg-dark-700/30 rounded px-2 py-1">
-                            <span className="text-diplomats-primary font-medium">{typeCode}</span>
-                            <span className="text-dark-400 ml-1">
-                              {CHARACTER_CODE_16_TYPES[typeCode]?.name}
-                            </span>
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Character Code軸の説明 */}
-                <div className="bg-dark-700/50 rounded-lg p-4 mb-4">
-                  <h4 className="font-semibold text-dark-200 mb-2 text-sm">Character Code 4軸分析</h4>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <span className="text-diplomats-primary font-medium">
-                        {results.characterInfo.axes.d_n === 'N' ? 'N (Neutral)' : 'D (Deep)'}
-                      </span>
-                      <span className="text-dark-400 ml-1">
-                        {results.characterInfo.axes.d_n === 'N' ? '中性的・洗練' : '深い・包容力'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-diplomats-primary font-medium">
-                        {results.characterInfo.axes.o_i === 'I' ? 'I (Intense)' : 'O (Open)'}
-                      </span>
-                      <span className="text-dark-400 ml-1">
-                        {results.characterInfo.axes.o_i === 'I' ? '強烈・印象的' : '開放的・親しみ'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-diplomats-primary font-medium">
-                        {results.characterInfo.axes.f_m === 'F' ? 'F (Formal)' : 'M (Mild)'}
-                      </span>
-                      <span className="text-dark-400 ml-1">
-                        {results.characterInfo.axes.f_m === 'F' ? '正式・上品' : '穏やか・自然'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-diplomats-primary font-medium">
-                        {results.characterInfo.axes.c_t === 'C' ? 'C (Clear)' : 'T (Tender)'}
-                      </span>
-                      <span className="text-dark-400 ml-1">
-                        {results.characterInfo.axes.c_t === 'C' ? '明確・親切' : '優しい・魅力的'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4 text-sm">
-                  <div>
-                    <h4 className="font-semibold text-dark-200 mb-2">第一印象の特徴</h4>
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {(results.characterInfo.characteristics || []).map((char, index) => (
-                        <span key={index} className="px-2 py-1 bg-diplomats-primary/20 text-diplomats-primary rounded-md text-xs">
-                          {char}
-                        </span>
-                      ))}
-                    </div>
-                    <p className="text-dark-300 text-xs leading-relaxed">
-                      {results.characterInfo.firstImpression}
-                    </p>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <h4 className="font-semibold text-dark-200">シーン別の印象</h4>
-                    
-                    <div className="bg-dark-700/30 p-3 rounded-lg">
-                      <h5 className="font-medium text-explorers-primary text-xs mb-1">💼 仕事場面</h5>
-                      <p className="text-dark-300 text-xs">{results.characterInfo.situations?.work || 'データがありません'}</p>
-                    </div>
-                    
-                    <div className="bg-dark-700/30 p-3 rounded-lg">
-                      <h5 className="font-medium text-sentinels-primary text-xs mb-1">👥 社交場面</h5>
-                      <p className="text-dark-300 text-xs">{results.characterInfo.situations?.social || 'データがありません'}</p>
-                    </div>
-                    
-                    <div className="bg-dark-700/30 p-3 rounded-lg">
-                      <h5 className="font-medium text-analysts-primary text-xs mb-1">💕 恋愛場面</h5>
-                      <p className="text-dark-300 text-xs">{results.characterInfo.situations?.romance || 'データがありません'}</p>
-                    </div>
-                  </div>
-                  
-                  <p className="text-xs text-dark-400 text-center">
-                    この印象タイプは全体の約{results.characterInfo.percentage}%
+                  <p className="text-gray-300 text-sm">
+                    {results.compatibility} タイプとの相性が特に良いです。お互いを補完し合える関係を築けます。
                   </p>
                 </div>
               </div>
 
               {/* エンタメスコア */}
-              <div className="result-card hover-lift">
-                <h3 className="text-xl font-bold text-dark-100 mb-4">
-                  エンタメスコア
-                </h3>
-                <div className="space-y-5">
-                  {Object.entries(results.scores).map(([key, value]) => (
-                    <div key={key}>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-medium text-dark-200">{key}</span>
-                        <span className="text-sm font-bold text-dark-100 bg-dark-600 px-2 py-1 rounded-md">{value}%</span>
-                      </div>
-                      <div className="score-bar">
-                        <div 
-                          className="score-fill"
-                          style={{ width: `${value}%` }}
-                        ></div>
-                      </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-white mb-4">エンタメスコア</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold" style={{ color: results.colors.primary }}>
+                      {results.entertainmentScores.charisma}
                     </div>
+                    <div className="text-gray-300 text-sm">カリスマ度</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold" style={{ color: results.colors.secondary }}>
+                      {results.entertainmentScores.friendliness}
+                    </div>
+                    <div className="text-gray-300 text-sm">親しみやすさ</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold" style={{ color: results.colors.accent }}>
+                      {results.entertainmentScores.mystery}
+                    </div>
+                    <div className="text-gray-300 text-sm">ミステリアス度</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold" style={{ color: results.colors.primary }}>
+                      {results.entertainmentScores.attractiveness}
+                    </div>
+                    <div className="text-gray-300 text-sm">魅力度</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* シェアボタン */}
+          <div className="space-y-4">
+            <div className="text-center">
+              <button
+                onClick={() => setShowShareOptions(!showShareOptions)}
+                className="bg-gradient-to-r from-purple-600 to-cyan-600 text-white font-bold py-4 px-8 rounded-lg hover:from-purple-700 hover:to-cyan-700 transition duration-300"
+              >
+                結果をシェアする
+              </button>
+            </div>
+
+            {showShareOptions && (
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 space-y-4">
+                <h3 className="text-xl font-semibold text-white text-center mb-4">シェア方法を選択</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <button
+                    onClick={handleShareX}
+                    className="bg-black text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <span>𝕏</span>
+                    <span>Xでシェア</span>
+                  </button>
+                  
+                  <button
+                    onClick={handleShareToLine}
+                    className="bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 transition duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <span>📱</span>
+                    <span>LINEでシェア</span>
+                  </button>
+                  
+                  <button
+                    onClick={downloadImage}
+                    className="bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <span>💾</span>
+                    <span>画像保存</span>
+                  </button>
+                </div>
+                
+                <button
+                  onClick={handleShare}
+                  className="w-full bg-gray-600 text-white py-3 px-4 rounded-lg hover:bg-gray-700 transition duration-300"
+                >
+                  その他の方法でシェア
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* フッター */}
+          <div className="text-center space-y-4 py-8">
+            <button
+              onClick={() => {
+                setCurrentStep('start');
+                setMbtiAnswers({});
+                setCharacterAnswers({});
+                setResults(null);
+                setSelectedGender('');
+                setSelectedOccupation('');
+                setUploadedPhoto(null);
+                setShowShareOptions(false);
+              }}
+              className="text-gray-400 hover:text-white transition duration-300"
+            >
+              もう一度診断する
+            </button>
+            <div className="text-gray-500 text-sm">
+              <p>TwinPersona - ツインパーソナ診断</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+  if (currentStep === 'onboarding') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center p-4">
+        <div className="max-w-md w-full space-y-6">
+          <div className="text-center space-y-4">
+            <h2 className="text-3xl font-bold text-white">基本情報</h2>
+            <p className="text-gray-300">より正確な診断のために教えてください</p>
+          </div>
+          
+          <div className="space-y-6">
+            <div className="space-y-3">
+              <label className="block text-white font-semibold">性別</label>
+              <div className="grid grid-cols-2 gap-3">
+                {['男性', '女性'].map((gender) => (
+                  <button
+                    key={gender}
+                    onClick={() => setSelectedGender(gender)}
+                    className={`p-3 rounded-lg border-2 transition-all ${
+                      selectedGender === gender
+                        ? 'border-purple-400 bg-purple-400/20 text-white'
+                        : 'border-gray-600 bg-white/10 text-gray-300 hover:border-gray-500'
+                    }`}
+                  >
+                    {gender}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <label className="block text-white font-semibold">職業・立場</label>
+              <div className="grid grid-cols-2 gap-3">
+                {['学生', '会社員', 'フリーランス', '公務員', '専業主婦/主夫', 'その他'].map((occupation) => (
+                  <button
+                    key={occupation}
+                    onClick={() => setSelectedOccupation(occupation)}
+                    className={`p-3 rounded-lg border-2 transition-all text-sm ${
+                      selectedOccupation === occupation
+                        ? 'border-cyan-400 bg-cyan-400/20 text-white'
+                        : 'border-gray-600 bg-white/10 text-gray-300 hover:border-gray-500'
+                    }`}
+                  >
+                    {occupation}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <button
+            onClick={() => setCurrentStep('mbti')}
+            disabled={!selectedGender || !selectedOccupation}
+            className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 text-white font-bold py-4 px-6 rounded-lg hover:from-purple-700 hover:to-cyan-700 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            性格診断へ進む
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentStep === 'mbti') {
+    if (Object.keys(mbtiAnswers).length < mbtiQuestions.length) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 flex items-center justify-center p-4">
+          <div className="max-w-2xl w-full space-y-6">
+            <div className="text-center space-y-4">
+              <div className="flex items-center justify-center space-x-2">
+                <span className="text-3xl">🧠</span>
+                <h2 className="text-3xl font-bold text-white">性格診断</h2>
+              </div>
+              <div className="w-full bg-white/20 rounded-full h-2">
+                <div 
+                  className="bg-gradient-to-r from-purple-400 to-cyan-400 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${mbtiProgress}%` }}
+                ></div>
+              </div>
+              <p className="text-gray-300">
+                {Object.keys(mbtiAnswers).length + 1} / {mbtiQuestions.length}
+              </p>
+            </div>
+            
+            {currentMbtiQuestion && (
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 space-y-6">
+                <h3 className="text-xl font-semibold text-white text-center">
+                  {currentMbtiQuestion.question}
+                </h3>
+                
+                <div className="space-y-4">
+                  {currentMbtiQuestion.options.map((option, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleMbtiAnswer(currentMbtiQuestion.id, option.value)}
+                      className="w-full p-4 text-left bg-white/10 hover:bg-white/20 rounded-lg border border-white/20 hover:border-white/40 text-white transition-all duration-200 hover:transform hover:scale-105"
+                    >
+                      {option.text}
+                    </button>
                   ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 flex items-center justify-center p-4">
+          <div className="max-w-md w-full text-center space-y-8">
+            <div className="space-y-4">
+              <div className="text-6xl">✅</div>
+              <h2 className="text-3xl font-bold text-white">性格診断完了！</h2>
+              <p className="text-gray-300">
+                続いて、あなたの印象を分析します
+              </p>
+            </div>
+            
+            <button
+              onClick={() => setCurrentStep('character')}
+              className="w-full bg-gradient-to-r from-cyan-600 to-purple-600 text-white font-bold py-4 px-6 rounded-lg hover:from-cyan-700 hover:to-purple-700 transition duration-300"
+            >
+              印象診断へ進む
+            </button>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  if (currentStep === 'character') {
+    if (Object.keys(characterAnswers).length < characterQuestions.length) {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-cyan-900 via-blue-900 to-purple-900 flex items-center justify-center p-4">
+          <div className="max-w-2xl w-full space-y-6">
+            <div className="text-center space-y-4">
+              <div className="flex items-center justify-center space-x-2">
+                <span className="text-3xl">✨</span>
+                <h2 className="text-3xl font-bold text-white">印象診断</h2>
+              </div>
+              <div className="w-full bg-white/20 rounded-full h-2">
+                <div 
+                  className="bg-gradient-to-r from-cyan-400 to-purple-400 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${characterProgress}%` }}
+                ></div>
+              </div>
+              <p className="text-gray-300">
+                {Object.keys(characterAnswers).length + 1} / {characterQuestions.length}
+              </p>
+            </div>
+            
+            {currentCharacterQuestion && (
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-8 space-y-6">
+                <h3 className="text-xl font-semibold text-white text-center">
+                  {currentCharacterQuestion.question}
+                </h3>
+                
+                <div className="space-y-4">
+                  {currentCharacterQuestion.options.map((option, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleCharacterAnswer(currentCharacterQuestion.id, option.value)}
+                      className="w-full p-4 text-left bg-white/10 hover:bg-white/20 rounded-lg border border-white/20 hover:border-white/40 text-white transition-all duration-200 hover:transform hover:scale-105"
+                    >
+                      {option.text}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    } else {
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-cyan-900 via-blue-900 to-purple-900 flex items-center justify-center p-4">
+          <div className="max-w-md w-full text-center space-y-8">
+            <div className="space-y-4">
+              <div className="text-6xl">✅</div>
+              <h2 className="text-3xl font-bold text-white">印象診断完了！</h2>
+              <p className="text-gray-300">
+                最後にお顔の写真をアップロードしてください（任意）
+              </p>
+            </div>
+            
+            <div className="space-y-4">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="hidden"
+                id="photo-upload"
+              />
+              <label
+                htmlFor="photo-upload"
+                className="w-full bg-white/10 border-2 border-dashed border-white/30 text-white font-semibold py-8 px-6 rounded-lg hover:bg-white/20 hover:border-white/50 transition duration-300 cursor-pointer block"
+              >
+                {uploadedPhoto ? (
+                  <div className="space-y-2">
+                    <div className="text-2xl">📸</div>
+                    <div>写真がアップロードされました</div>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="text-2xl">📷</div>
+                    <div>写真をアップロード</div>
+                    <div className="text-sm text-gray-400">（スキップ可能）</div>
+                  </div>
+                )}
+              </label>
+            </div>
+            
+            <button
+              onClick={() => setCurrentStep('generating')}
+              className="w-full bg-gradient-to-r from-purple-600 to-cyan-600 text-white font-bold py-4 px-6 rounded-lg hover:from-purple-700 hover:to-cyan-700 transition duration-300"
+            >
+              結果を見る
+            </button>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  if (currentStep === 'generating') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 flex items-center justify-center p-4">
+        <div className="max-w-md w-full text-center space-y-8">
+          <div className="space-y-4">
+            <div className="text-6xl animate-spin">⚡</div>
+            <h2 className="text-3xl font-bold text-white">AI分析中...</h2>
+            <p className="text-gray-300">
+              あなたの診断結果を分析して<br />
+              パーソナライズされたキャラクターを生成しています
+            </p>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-white">性格分析 完了</span>
+              </div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-white">印象分析 完了</span>
+              </div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-4 h-4 bg-yellow-500 rounded-full animate-pulse"></div>
+                <span className="text-white">キャラクター生成中...</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 自動で結果画面に遷移 */}
+          <div className="hidden">
+            {setTimeout(() => {
+              generateAIImage();
+            }, 100)}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (currentStep === 'results' && results) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-blue-900 p-4">
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* ヘッダー */}
+          <div className="text-center space-y-4 pt-4">
+            <h1 className="text-4xl font-bold text-white">診断結果</h1>
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-bold text-white">{results.title}</h2>
+              <p className="text-lg text-gray-300">{results.mbtiType} × {results.characterType}</p>
+            </div>
+          </div>
+
+          {/* メインコンテンツ */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* キャラクター表示 */}
+            <div className="space-y-4">
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-white mb-4 text-center">あなたのキャラクター</h3>
+                <div 
+                  className="w-full max-w-sm mx-auto"
+                  dangerouslySetInnerHTML={{ __html: generateSVGCharacter(results) }}
+                />
+                {/* AI生成プロンプト（開発用 - 本番では非表示） */}
+                <details className="mt-4 text-xs">
+                  <summary className="text-gray-400 cursor-pointer">AI生成プロンプト（開発用）</summary>
+                  <pre className="text-gray-500 mt-2 whitespace-pre-wrap text-xs bg-black/20 p-2 rounded">
+                    {generateAIPrompt(results)}
+                  </pre>
+                </details>
+              </div>
+
+              {/* ギャップ分析 */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-white mb-4">ギャップ分析</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white">内面と外見のギャップ</span>
+                    <span className="text-2xl font-bold" style={{ color: results.colors.primary }}>
+                      {results.gapPercentage}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-3">
+                    <div 
+                      className="h-3 rounded-full transition-all duration-1000"
+                      style={{ 
+                        width: `${results.gapPercentage}%`,
+                        backgroundColor: results.colors.primary
+                      }}
+                    ></div>
+                  </div>
+                  <p className="text-gray-300 text-sm">
+                    {results.gapPercentage >= 70 ? 'かなり大きなギャップがあります！意外性のある魅力的な人です。' :
+                     results.gapPercentage >= 50 ? 'ほど良いギャップがあります。バランスの取れた印象です。' :
+                     '内面と外見が一致しています。安定感のある印象を与えます。'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 詳細情報 */}
+            <div className="space-y-4">
+              {/* MBTI詳細 */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-white mb-4">性格詳細 (MBTI)</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white font-semibold">{results.mbtiType}</span>
+                    <span className="px-3 py-1 rounded-full text-sm font-semibold text-white" 
+                          style={{ backgroundColor: results.colors.primary }}>
+                      {results.mbtiInfo.name}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {results.mbtiInfo.traits.map((trait, index) => (
+                      <span 
+                        key={index}
+                        className="px-3 py-1 rounded-full text-sm border text-white"
+                        style={{ borderColor: results.colors.secondary }}
+                      >
+                        {trait}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* 印象詳細 */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-white mb-4">印象詳細 (CharacterCode)</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white font-semibold">{results.characterType}</span>
+                    <span className="px-3 py-1 rounded-full text-sm font-semibold text-white" 
+                          style={{ backgroundColor: results.colors.accent }}>
+                      {results.characterInfo.name}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {results.characterInfo.traits.map((trait, index) => (
+                      <span 
+                        key={index}
+                        className="px-3 py-1 rounded-full text-sm border text-white"
+                        style={{ borderColor: results.colors.secondary }}
+                      >
+                        {trait}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
 
               {/* 相性分析 */}
-              <div className="result-card hover-lift">
-                <h3 className="text-xl font-bold text-dark-100 mb-4">
-                  相性分析
-                </h3>
-                <div className="space-y-5">
-                  {Object.entries(results.compatibility).map(([key, types]) => (
-                    <div key={key}>
-                      <h4 className="font-medium text-dark-200 mb-3">{key}</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {(types || []).map((type, index) => (
-                          <span 
-                            key={index}
-                            className="px-3 py-2 bg-gradient-to-r from-sentinels-primary/20 to-sentinels-accent/10 text-sentinels-primary border border-sentinels-primary/30 rounded-full text-sm font-medium backdrop-blur-sm"
-                          >
-                            {type}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-white mb-4">相性分析</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-white">相性の良いタイプ</span>
+                    <span className="text-xl font-bold" style={{ color: results.colors.secondary }}>
+                      {results.compatibility}
+                    </span>
+                  </div>
+                  <p className="text-gray-300 text-sm">
+                    {results.compatibility} タイプとの相性が特に良いです。お互いを補完し合える関係を築けます。
+                  </p>
                 </div>
               </div>
 
-              {/* アドバイス */}
-              <div className="result-card hover-lift relative">
-                <h3 className="text-xl font-bold text-dark-100 mb-4">
-                  実用的アドバイス
-                  {!isPremium && (
-                    <span className="ml-2 text-xs bg-explorers-primary/20 text-explorers-primary px-2 py-1 rounded-full">
-                      プレミアム
-                    </span>
-                  )}
-                </h3>
-                
-                {isPremium ? (
-                  <div className="space-y-5">
-                    {!aiAdvice && !adviceLoading ? (
-                      <div className="text-center py-8">
-                        <button
-                          onClick={generateAIAdvice}
-                          disabled={adviceLoading}
-                          className="btn-primary"
-                        >
-                          <Sparkles className="w-5 h-5 inline mr-2" />
-                          AIアドバイスを生成する
-                        </button>
-                      </div>
-                    ) : adviceLoading ? (
-                      <div className="text-center py-8">
-                        <RefreshCw className="w-6 h-6 animate-spin mx-auto text-blue-400 mb-3" />
-                        <p className="text-dark-300">AIがあなた専用のアドバイスを生成中...</p>
-                      </div>
-                    ) : adviceError ? (
-                      <div className="text-center py-8">
-                        <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg mb-4">
-                          <p className="text-red-400 text-sm mb-3">{adviceError}</p>
-                          <button 
-                            onClick={generateAIAdvice}
-                            className="text-red-400 hover:text-red-300 text-sm underline"
-                          >
-                            もう一度試す
-                          </button>
-                        </div>
-                      </div>
-                    ) : aiAdvice ? (
-                      <>
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="text-sm text-dark-300 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                            <span className="text-blue-400 font-semibold">{results.mbti}</span> × <span className="text-purple-400 font-semibold">{results.characterInfo.code}</span> 専用のAIアドバイス
-                          </div>
-                          <button
-                            onClick={generateAIAdvice}
-                            disabled={adviceLoading}
-                            className="text-dark-400 hover:text-dark-200 transition-colors text-sm flex items-center"
-                            title="新しいアドバイスを生成"
-                          >
-                            <RefreshCw className={`w-4 h-4 mr-1 ${adviceLoading ? 'animate-spin' : ''}`} />
-                            更新
-                          </button>
-                        </div>
-                        
-                        {/* キャリア */}
-                        <div className="p-4 bg-gradient-to-r from-dark-700/30 to-dark-600/30 rounded-xl border border-dark-500/30 backdrop-blur-sm">
-                          <h4 className="font-medium text-dark-200 mb-3 flex items-center gap-2">
-                            <span className="text-lg">💼</span>
-                            <span className="text-explorers-primary">仕事・キャリア</span>
-                          </h4>
-                          <div className="space-y-2">
-                            {(aiAdvice.career || []).map((tip, index) => (
-                              <p key={index} className="text-sm text-dark-300 leading-relaxed">
-                                • {tip}
-                              </p>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* 人間関係 */}
-                        <div className="p-4 bg-gradient-to-r from-dark-700/30 to-dark-600/30 rounded-xl border border-dark-500/30 backdrop-blur-sm">
-                          <h4 className="font-medium text-dark-200 mb-3 flex items-center gap-2">
-                            <span className="text-lg">🤝</span>
-                            <span className="text-explorers-primary">人間関係</span>
-                          </h4>
-                          <div className="space-y-2">
-                            {(aiAdvice.relationships || []).map((tip, index) => (
-                              <p key={index} className="text-sm text-dark-300 leading-relaxed">
-                                • {tip}
-                              </p>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* 恋愛 */}
-                        <div className="p-4 bg-gradient-to-r from-dark-700/30 to-dark-600/30 rounded-xl border border-dark-500/30 backdrop-blur-sm">
-                          <h4 className="font-medium text-dark-200 mb-3 flex items-center gap-2">
-                            <span className="text-lg">💕</span>
-                            <span className="text-explorers-primary">恋愛・パートナーシップ</span>
-                          </h4>
-                          <div className="space-y-2">
-                            {(aiAdvice.romance || []).map((tip, index) => (
-                              <p key={index} className="text-sm text-dark-300 leading-relaxed">
-                                • {tip}
-                              </p>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* 自己成長 */}
-                        <div className="p-4 bg-gradient-to-r from-dark-700/30 to-dark-600/30 rounded-xl border border-dark-500/30 backdrop-blur-sm">
-                          <h4 className="font-medium text-dark-200 mb-3 flex items-center gap-2">
-                            <span className="text-lg">🌱</span>
-                            <span className="text-explorers-primary">自己成長</span>
-                          </h4>
-                          <div className="space-y-2">
-                            {(aiAdvice.growth || []).map((tip, index) => (
-                              <p key={index} className="text-sm text-dark-300 leading-relaxed">
-                                • {tip}
-                              </p>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* ライフスタイル */}
-                        <div className="p-4 bg-gradient-to-r from-dark-700/30 to-dark-600/30 rounded-xl border border-dark-500/30 backdrop-blur-sm">
-                          <h4 className="font-medium text-dark-200 mb-3 flex items-center gap-2">
-                            <span className="text-lg">🎨</span>
-                            <span className="text-explorers-primary">ライフスタイル</span>
-                          </h4>
-                          <div className="space-y-2">
-                            {(aiAdvice.lifestyle || []).map((tip, index) => (
-                              <p key={index} className="text-sm text-dark-300 leading-relaxed">
-                                • {tip}
-                              </p>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* ストレス管理 */}
-                        <div className="p-4 bg-gradient-to-r from-dark-700/30 to-dark-600/30 rounded-xl border border-dark-500/30 backdrop-blur-sm">
-                          <h4 className="font-medium text-dark-200 mb-3 flex items-center gap-2">
-                            <span className="text-lg">🧘</span>
-                            <span className="text-explorers-primary">ストレス管理</span>
-                          </h4>
-                          <div className="space-y-2">
-                            {(aiAdvice.stress || []).map((tip, index) => (
-                              <p key={index} className="text-sm text-dark-300 leading-relaxed">
-                                • {tip}
-                              </p>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="mt-6 p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-lg">
-                          <p className="text-dark-300 text-xs text-center">
-                            💡 このアドバイスは AI によって生成されており、参考情報として活用してください
-                          </p>
-                        </div>
-                      </>
-                    ) : null}
-                  </div>
-                ) : (
-                  <div className="relative">
-                    {/* ぼかしコンテンツ */}
-                    <div className="space-y-5 blur-sm select-none pointer-events-none">
-                      <div className="p-4 bg-gradient-to-r from-dark-700/30 to-dark-600/30 rounded-xl border border-dark-500/30 backdrop-blur-sm">
-                        <h4 className="font-medium text-dark-200 mb-3 flex items-center gap-2">
-                          <span className="text-lg">💼</span>
-                          <span className="text-explorers-primary">仕事</span>
-                        </h4>
-                        <p className="text-sm text-dark-300 leading-relaxed">
-                          あなたの特性を活かした仕事でのアプローチ方法や、同僚との効果的なコミュニケーションの取り方について、AIが詳細に分析したアドバイスをお届けします。
-                        </p>
-                      </div>
-                      <div className="p-4 bg-gradient-to-r from-dark-700/30 to-dark-600/30 rounded-xl border border-dark-500/30 backdrop-blur-sm">
-                        <h4 className="font-medium text-dark-200 mb-3 flex items-center gap-2">
-                          <span className="text-lg">👥</span>
-                          <span className="text-explorers-primary">友達</span>
-                        </h4>
-                        <p className="text-sm text-dark-300 leading-relaxed">
-                          あなたの性格と印象のギャップを理解した上で、より良い友人関係を築くための具体的なコミュニケーション戦略をAIが提案します。
-                        </p>
-                      </div>
-                      <div className="p-4 bg-gradient-to-r from-dark-700/30 to-dark-600/30 rounded-xl border border-dark-500/30 backdrop-blur-sm">
-                        <h4 className="font-medium text-dark-200 mb-3 flex items-center gap-2">
-                          <span className="text-lg">💕</span>
-                          <span className="text-explorers-primary">恋愛</span>
-                        </h4>
-                        <p className="text-sm text-dark-300 leading-relaxed">
-                          恋愛関係において、あなたの内面と外見のギャップを魅力として活用する方法や、理想的なパートナーシップを築くためのアドバイスを提供します。
-                        </p>
-                      </div>
+              {/* エンタメスコア */}
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6">
+                <h3 className="text-xl font-semibold text-white mb-4">エンタメスコア</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold" style={{ color: results.colors.primary }}>
+                      {results.entertainmentScores.charisma}
                     </div>
-                    
-                    {/* アップグレードオーバーレイ */}
-                    <div className="absolute inset-0 flex items-center justify-center bg-dark-900/80 backdrop-blur-sm rounded-xl">
-                      <div className="text-center p-6">
-                        <div className="mb-4">
-                          <div className="w-16 h-16 bg-gradient-to-r from-explorers-primary to-explorers-accent rounded-full flex items-center justify-center mx-auto mb-3">
-                            <Sparkles className="w-8 h-8 text-white" />
-                          </div>
-                          <h4 className="text-lg font-bold text-white mb-2">実用的アドバイス</h4>
-                          <p className="text-sm text-dark-300">
-                            この機能はプレミアムのみ
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                    <div className="text-gray-300 text-sm">カリスマ度</div>
                   </div>
-                )}
-              </div>
-            </div>
-
-            {/* アクションボタン */}
-            <div className="mt-8">
-              {/* シェアボタン群 */}
-              <div className="flex flex-col sm:flex-row justify-center gap-3 mb-4">
-                <button
-                  onClick={handleShareX}
-                  className="bg-black text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-800 transition-all flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                  </svg>
-                  Xでシェア
-                </button>
-                
-                <button
-                  onClick={handleShareToLine}
-                  className="bg-[#00B900] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#009900] transition-all flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.349 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
-                  </svg>
-                  LINEでシェア
-                </button>
-                
-                <button
-                  onClick={handleShare}
-                  className="btn-primary"
-                >
-                  <Share2 className="w-5 h-5 inline mr-2" />
-                  その他でシェア
-                </button>
-              </div>
-              
-              {/* その他のアクション */}
-              <div className="flex flex-col sm:flex-row justify-center gap-3">
-                <button
-                  onClick={() => {
-                    generateShareImage();
-                    setTimeout(handleDownload, 100);
-                  }}
-                  className="btn-secondary"
-                >
-                  <Download className="w-5 h-5 inline mr-2" />
-                  画像をダウンロード
-                </button>
-                
-                <button
-                  onClick={handleRestart}
-                  className="btn-secondary"
-                >
-                  もう一度診断
-                </button>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold" style={{ color: results.colors.secondary }}>
+                      {results.entertainmentScores.friendliness}
+                    </div>
+                    <div className="text-gray-300 text-sm">親しみやすさ</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold" style={{ color: results.colors.accent }}>
+                      {results.entertainmentScores.mystery}
+                    </div>
+                    <div className="text-gray-300 text-sm">ミステリアス度</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold" style={{ color: results.colors.primary }}>
+                      {results.entertainmentScores.attractiveness}
+                    </div>
+                    <div className="text-gray-300 text-sm">魅力度</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+
+          {/* シェアボタン */}
+          <div className="space-y-4">
+            <div className="text-center">
+              <button
+                onClick={() => setShowShareOptions(!showShareOptions)}
+                className="bg-gradient-to-r from-purple-600 to-cyan-600 text-white font-bold py-4 px-8 rounded-lg hover:from-purple-700 hover:to-cyan-700 transition duration-300"
+              >
+                結果をシェアする
+              </button>
+            </div>
+
+            {showShareOptions && (
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 space-y-4">
+                <h3 className="text-xl font-semibold text-white text-center mb-4">シェア方法を選択</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <button
+                    onClick={handleShareX}
+                    className="bg-black text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <span>𝕏</span>
+                    <span>Xでシェア</span>
+                  </button>
+                  
+                  <button
+                    onClick={handleShareToLine}
+                    className="bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 transition duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <span>📱</span>
+                    <span>LINEでシェア</span>
+                  </button>
+                  
+                  <button
+                    onClick={downloadImage}
+                    className="bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <span>💾</span>
+                    <span>画像保存</span>
+                  </button>
+                </div>
+                
+                <button
+                  onClick={handleShare}
+                  className="w-full bg-gray-600 text-white py-3 px-4 rounded-lg hover:bg-gray-700 transition duration-300"
+                >
+                  その他の方法でシェア
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* シェアボタン */}
+          <div className="space-y-4">
+            <div className="text-center">
+              <button
+                onClick={() => setShowShareOptions(!showShareOptions)}
+                className="bg-gradient-to-r from-purple-600 to-cyan-600 text-white font-bold py-4 px-8 rounded-lg hover:from-purple-700 hover:to-cyan-700 transition duration-300"
+              >
+                結果をシェアする
+              </button>
+            </div>
+
+            {showShareOptions && (
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 space-y-4">
+                <h3 className="text-xl font-semibold text-white text-center mb-4">シェア方法を選択</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <button
+                    onClick={handleShareX}
+                    className="bg-black text-white py-3 px-4 rounded-lg hover:bg-gray-800 transition duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <span>𝕏</span>
+                    <span>Xでシェア</span>
+                  </button>
+                  
+                  <button
+                    onClick={handleShareToLine}
+                    className="bg-green-500 text-white py-3 px-4 rounded-lg hover:bg-green-600 transition duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <span>📱</span>
+                    <span>LINEでシェア</span>
+                  </button>
+                  
+                  <button
+                    onClick={downloadImage}
+                    className="bg-blue-500 text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition duration-300 flex items-center justify-center space-x-2"
+                  >
+                    <span>💾</span>
+                    <span>画像保存</span>
+                  </button>
+                </div>
+                
+                <button
+                  onClick={handleShare}
+                  className="w-full bg-gray-600 text-white py-3 px-4 rounded-lg hover:bg-gray-700 transition duration-300"
+                >
+                  その他の方法でシェア
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* フッター */}
+          <div className="text-center space-y-4 py-8">
+            <button
+              onClick={() => {
+                setCurrentStep('start');
+                setMbtiAnswers({});
+                setCharacterAnswers({});
+                setResults(null);
+                setSelectedGender('');
+                setSelectedOccupation('');
+                setUploadedPhoto(null);
+                setShowShareOptions(false);
+              }}
+              className="text-gray-400 hover:text-white transition duration-300"
+            >
+              もう一度診断する
+            </button>
+            <div className="text-gray-500 text-sm">
+              <p>TwinPersona - ツインパーソナ診断</p>
+            </div>
+          </div>
         </div>
-      )}
+      </div>
+    );
+  }
 
-      {/* 決済モーダル */}
-      <PaymentModal
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        onSuccess={handlePaymentSuccess}
-      />
-
-      {/* 隠しキャンバス（画像生成用） */}
-      <canvas ref={canvasRef} className="hidden" />
-    </div>
-  );
-};
-
-export default App;
+  return null;
+}
