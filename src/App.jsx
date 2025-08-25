@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Download, Share2, Camera, ChevronRight, Sparkles, ChevronLeft, RefreshCw } from 'lucide-react';
 import PaymentModal from './components/PaymentModal';
+import CampaignModal from './components/CampaignModal';
 import { CHARACTER_CODE_16_TYPES, CHARACTER_CODE_GROUPS, CHARACTER_CODE_16_QUESTIONS, calculateCharacterCode16Type } from './data/characterCode16Types';
 import { AdviceService } from './services/adviceService';
 import { ImageService } from './services/imageService';
@@ -1564,6 +1565,8 @@ const App = () => {
   const [results, setResults] = useState(null);
   const [isPremium, setIsPremium] = useState(false); // 課金状態管理
   const [showPaymentModal, setShowPaymentModal] = useState(false); // 決済モーダル表示状態
+  const [showCampaignModal, setShowCampaignModal] = useState(false); // キャンペーンモーダル表示状態
+  const [freeCouponCode, setFreeCouponCode] = useState(null); // 無料クーポンコード
   const [accessToken, setAccessToken] = useState(null); // プレミアムアクセストークン
   const [aiAdvice, setAiAdvice] = useState(null); // GEMINI APIからのアドバイス
   const [adviceLoading, setAdviceLoading] = useState(false); // アドバイス生成中
@@ -2103,8 +2106,24 @@ ${topScore.key} ${topScore.value}%でした！
 
   // 決済関連の処理
   const handleSelectPremium = () => {
-    console.log('プレミアムプラン選択');
+    console.log('プレミアムプラン選択 - キャンペーンモーダル表示');
+    // まずキャンペーンモーダルを表示（無料の機会を提供）
+    setShowCampaignModal(true);
+  };;
+  // キャンペーンモーダルでクーポン取得成功時
+  const handleCampaignSuccess = (couponCode) => {
+    console.log('無料クーポン取得:', couponCode);
+    setFreeCouponCode(couponCode);
     setIsPremium(true);
+    // クーポンを使って直接プレミアム機能を有効化
+    generateAIAdvice();
+    generateAICharacterImage();
+  };
+
+  // キャンペーンモーダルを閉じて通常決済へ
+  const handleCampaignClose = () => {
+    setShowCampaignModal(false);
+    // キャンペーンを使わない場合は通常の決済モーダルへ
     setShowPaymentModal(true);
   };
 
@@ -3280,6 +3299,14 @@ ${topScore.key} ${topScore.value}%でした！
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
         onSuccess={handlePaymentSuccess}
+      />
+
+      {/* キャンペーンモーダル */}
+      <CampaignModal
+        isOpen={showCampaignModal}
+        onClose={handleCampaignClose}
+        onSuccess={handleCampaignSuccess}
+        diagnosisResult={results}
       />
 
       {/* 隠しキャンバス（画像生成用） */}
