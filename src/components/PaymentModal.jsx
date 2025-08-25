@@ -3,7 +3,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { X, CreditCard, Mail } from 'lucide-react';
 
-const stripePromise = loadStripe('pk_test_51RzJ5jQl0WdwXwrDcFQYIqu7rSJ0CvXbv9FqSZQEouZVv3dzPRQ2ZPhKic9hzVG2pH5xjP9azWSL0rzCR9O4NcWR00KXTqxLb6');
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51RzJ5jQl0WdwXwrDcFQYIqu7rSJ0CvXbv9FqSZQEouZVv3dzPRQ2ZPhKic9hzVG2pH5xjP9azWSL0rzCR9O4NcWR00KXTqxLb6');
 
 // カード入力フォームコンポーネント
 const CheckoutForm = ({ email, setEmail, onSuccess, onClose }) => {

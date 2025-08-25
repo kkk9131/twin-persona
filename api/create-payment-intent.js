@@ -22,7 +22,7 @@ export default async function handler(req, res) {
 
     // PaymentIntentを作成（500円）
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: 500, // 500円
+      amount: parseInt(process.env.PREMIUM_PRICE || '500'), // デフォルト500円
       currency: 'jpy',
       metadata: {
         email: email || '',

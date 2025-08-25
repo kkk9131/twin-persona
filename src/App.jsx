@@ -1858,8 +1858,9 @@ ${topScore.key} ${topScore.value}%でした！
       ...(results.characterImage?.imageUrl && { characterImage: results.characterImage.imageUrl })
     });
 
-    // OGP画像URL
-    const ogImageUrl = `${window.location.origin}/api/og-image?${ogParams.toString()}`;
+    // OGP画像URL（本番環境対応）
+    const domain = import.meta.env.VITE_APP_URL || window.location.origin;
+    const ogImageUrl = `${domain}/api/og-image?${ogParams.toString()}`;
 
     // シェア用テキスト
     const shareText = `私の診断結果は「${results.title}」でした！
