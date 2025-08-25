@@ -2168,7 +2168,7 @@ ${topScore.key} ${topScore.value}%でした！
                 隠れた二面性を発見しよう
               </h2>
               <p className="text-sm sm:text-base text-dark-300 mb-6 leading-relaxed">
-                28問のMBTI診断と20問のCharacter Code診断で、<br className="hidden sm:block" />
+                28問のMBTI診断と16問のCharacter Code診断で、<br className="hidden sm:block" />
                 <span className="sm:hidden">　</span>あなたの内面の性格と外見の印象のギャップを可視化します。
               </p>
               
