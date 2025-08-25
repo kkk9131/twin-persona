@@ -66,7 +66,11 @@ const CheckoutForm = ({ email, setEmail, onSuccess, onClose }) => {
         setError(error.message);
       } else if (paymentIntent.status === 'succeeded') {
         // 決済成功
-        onSuccess(paymentIntentId);
+        onSuccess({
+          paymentIntentId: paymentIntentId,
+          email: email,
+          amount: 500
+        });
       }
     } catch (err) {
       setError(err.message);

@@ -1,7 +1,8 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Download, Share2, Camera, ChevronRight, Sparkles, ChevronLeft, RefreshCw } from 'lucide-react';
+import { Download, Share2, Camera, ChevronRight, Sparkles, ChevronLeft, RefreshCw, MessageCircle } from 'lucide-react';
 import PaymentModal from './components/PaymentModal';
 import CampaignModal from './components/CampaignModal';
+import FeedbackModal from './components/FeedbackModal';
 import { CHARACTER_CODE_16_TYPES, CHARACTER_CODE_GROUPS, CHARACTER_CODE_16_QUESTIONS, calculateCharacterCode16Type } from './data/characterCode16Types';
 import { AdviceService } from './services/adviceService';
 import { ImageService } from './services/imageService';
@@ -1566,6 +1567,9 @@ const App = () => {
   const [isPremium, setIsPremium] = useState(false); // 課金状態管理
   const [showPaymentModal, setShowPaymentModal] = useState(false); // 決済モーダル表示状態
   const [showCampaignModal, setShowCampaignModal] = useState(false); // キャンペーンモーダル表示状態
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false); // フィードバックモーダル表示状態
+  const [paymentIntentId, setPaymentIntentId] = useState(null); // 決済ID（返金用）
+  const [feedbackLoading, setFeedbackLoading] = useState(false); // フィードバック送信中
   const [freeCouponCode, setFreeCouponCode] = useState(null); // 無料クーポンコード
   const [accessToken, setAccessToken] = useState(null); // プレミアムアクセストークン
   const [aiAdvice, setAiAdvice] = useState(null); // GEMINI APIからのアドバイス
@@ -2127,11 +2131,88 @@ ${topScore.key} ${topScore.value}%でした！
     setShowPaymentModal(true);
   };
 
-  const handlePaymentSuccess = (paymentIntentId) => {
-    console.log('決済成功:', paymentIntentId);
-    setAccessToken(`premium_${paymentIntentId}_${Date.now()}`);
+  const handlePaymentSuccess = (paymentData) => {
+    console.log('決済成功:', paymentData);
+    setAccessToken(`premium_${paymentData.paymentIntentId}_${Date.now()}`);
+    setPaymentIntentId(paymentData.paymentIntentId); // 返金用にPaymentIntent IDを保存
+    setIsPremium(true);
     setShowPaymentModal(false);
     setStep('gender');
+  };
+
+  // ショア時の返金処理
+  const handleShareWithRefund = async (shareFunction, platform = 'unknown') => {
+    if (!paymentIntentId) {
+      // 決済していない場合は普通のシェア
+      await shareFunction();
+      return;
+    }
+
+    try {
+      // シェア実行
+      await shareFunction();
+      
+      // シェア成功後に返金処理
+      const response = await fetch('/api/process-refund', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          paymentIntentId,
+          action: 'share',
+          data: { platform }
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`\u{1f389} ${result.message}\n\u6b8bり枚数: ${result.remainingSlots}人`);
+      } else {
+        console.error('返金エラー:', result.message);
+      }
+    } catch (error) {
+      console.error('返金処理エラー:', error);
+    }
+  };
+
+  // フィードバック送信処理
+  const handleFeedbackSubmit = async (feedbackData) => {
+    if (!paymentIntentId) {
+      alert('決済情報が見つかりません。');
+      return;
+    }
+
+    setFeedbackLoading(true);
+
+    try {
+      const response = await fetch('/api/process-refund', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          paymentIntentId,
+          action: 'feedback',
+          data: feedbackData
+        })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`\u{1f389} ${result.message}\n\u6b8bり枚数: ${result.remainingSlots}人`);
+        setShowFeedbackModal(false);
+      } else {
+        alert(`エラー: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('フィードバック送信エラー:', error);
+      alert('エラーが発生しました。しばらく後に再試行してください。');
+    } finally {
+      setFeedbackLoading(false);
+    }
   };
 
   const handleStartDiagnosis = () => {
@@ -3241,33 +3322,46 @@ ${topScore.key} ${topScore.value}%でした！
               {/* シェアボタン群 */}
               <div className="flex flex-col sm:flex-row justify-center gap-3 mb-4">
                 <button
-                  onClick={handleShareX}
+                  onClick={() => handleShareWithRefund(handleShareX, 'X')}
                   className="bg-black text-white px-6 py-3 rounded-xl font-semibold hover:bg-gray-800 transition-all flex items-center justify-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                   </svg>
-                  Xでシェア
+                  Xでシェア{paymentIntentId && ' (返金対象)'}
                 </button>
                 
                 <button
-                  onClick={handleShareToLine}
+                  onClick={() => handleShareWithRefund(handleShareToLine, 'LINE')}
                   className="bg-[#00B900] text-white px-6 py-3 rounded-xl font-semibold hover:bg-[#009900] transition-all flex items-center justify-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.349 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
                   </svg>
-                  LINEでシェア
+                  LINEでシェア{paymentIntentId && ' (返金対象)'}
                 </button>
                 
                 <button
-                  onClick={handleShare}
+                  onClick={() => handleShareWithRefund(handleShare, 'other')}
                   className="btn-primary"
                 >
                   <Share2 className="w-5 h-5 inline mr-2" />
-                  その他でシェア
+                  その他でシェア{paymentIntentId && ' (返金対象)'}
                 </button>
               </div>
+              
+              {/* フィードバックボタン */}
+              {paymentIntentId && (
+                <div className="flex justify-center mb-4">
+                  <button
+                    onClick={() => setShowFeedbackModal(true)}
+                    className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-green-700 hover:to-blue-700 transition-all flex items-center justify-center gap-2 shadow-lg"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                    フィードバックで返金を受ける
+                  </button>
+                </div>
+              )}
               
               {/* その他のアクション */}
               <div className="flex flex-col sm:flex-row justify-center gap-3">
@@ -3307,6 +3401,14 @@ ${topScore.key} ${topScore.value}%でした！
         onClose={handleCampaignClose}
         onSuccess={handleCampaignSuccess}
         diagnosisResult={results}
+      />
+
+      {/* フィードバックモーダル */}
+      <FeedbackModal
+        isOpen={showFeedbackModal}
+        onClose={() => setShowFeedbackModal(false)}
+        onSubmit={handleFeedbackSubmit}
+        isLoading={feedbackLoading}
       />
 
       {/* 隠しキャンバス（画像生成用） */}
