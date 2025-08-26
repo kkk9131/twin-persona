@@ -3,7 +3,7 @@ const Stripe = require('stripe');
 // Stripe初期化を関数内に移動して、環境変数の読み込みを確実にする
 let stripe = null;
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   // CORS設定
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -79,3 +79,5 @@ export default async function handler(req, res) {
     });
   }
 }
+
+module.exports = handler;

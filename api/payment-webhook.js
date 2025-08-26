@@ -1,12 +1,22 @@
-import Stripe from 'stripe';
-import { addValidToken } from './verify-token.js';
+const Stripe = require('stripe');
+const { addValidToken } = require('./verify-token.js');
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+let stripe = null;
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
+  // Initialize Stripe inside the handler
+  if (!stripe) {
+    const apiKey = process.env.STRIPE_SECRET_KEY;
+    if (!apiKey) {
+      console.error('STRIPE_SECRET_KEY not found in environment');
+      return res.status(500).json({ error: 'Configuration error' });
+    }
+    stripe = new Stripe(apiKey);
   }
 
   const sig = req.headers['stripe-signature'];
@@ -65,7 +75,9 @@ export default async function handler(req, res) {
   res.status(200).json({ received: true });
 }
 
-export const config = {
+module.exports = handler;
+
+module.exports.config = {
   api: {
     bodyParser: {
       sizeLimit: '1mb',

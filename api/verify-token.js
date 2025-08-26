@@ -1,7 +1,7 @@
 // シンプルなトークン管理（実際の本番環境ではDBを使用すべき）
 const validTokens = new Map();
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   // CORS設定
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -62,7 +62,7 @@ export default async function handler(req, res) {
 }
 
 // トークンを追加する関数（webhookから呼ばれる想定）
-export function addValidToken(token, email, paymentIntentId) {
+function addValidToken(token, email, paymentIntentId) {
   validTokens.set(token, {
     email,
     paymentIntentId,
@@ -77,3 +77,6 @@ export function addValidToken(token, email, paymentIntentId) {
     }
   }
 }
+
+module.exports = handler;
+module.exports.addValidToken = addValidToken;

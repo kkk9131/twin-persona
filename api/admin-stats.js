@@ -22,7 +22,7 @@ function checkBasicAuth(req) {
   return user === adminUser && pass === adminPass;
 }
 
-export default async function handler(req, res) {
+async function handler(req, res) {
   // Basic認証
   if (!checkBasicAuth(req)) {
     res.setHeader('WWW-Authenticate', 'Basic realm="Admin Area"');
@@ -80,3 +80,5 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+module.exports = handler;
