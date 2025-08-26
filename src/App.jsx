@@ -1852,6 +1852,29 @@ ${topScore.key} ${topScore.value}%でした！
     // 相性の良いMBTIを取得
     const compatibility = results.compatibility?.most_compatible || 'INFJ';
 
+    // AI生成画像がある場合はそれを使用、なければキャンバスで生成
+    let shareImageBlob = null;
+    
+    if (characterImage?.imageUrl) {
+      // AI生成画像がある場合
+      try {
+        const response = await fetch(characterImage.imageUrl);
+        shareImageBlob = await response.blob();
+      } catch (error) {
+        console.error('AI画像の取得に失敗:', error);
+      }
+    }
+    
+    // AI画像がない、または取得に失敗した場合はCanvas画像を使用
+    if (!shareImageBlob) {
+      generateShareImage();
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const canvasBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+        shareImageBlob = canvasBlob;
+      }
+    }
+
     // OGP画像生成用のパラメータを構築
     const ogParams = new URLSearchParams({
       mbti: results.mbti,
@@ -1862,7 +1885,7 @@ ${topScore.key} ${topScore.value}%でした！
       topScoreValue: topScore.value.toString(),
       compatibility: compatibility,
       // キャラクター画像がある場合は追加（プレミアム機能）
-      ...(results.characterImage?.imageUrl && { characterImage: results.characterImage.imageUrl })
+      ...(characterImage?.imageUrl && { characterImage: characterImage.imageUrl })
     });
 
     // OGP画像URL（本番環境対応）
@@ -1884,31 +1907,52 @@ ${topScore.key} ${topScore.value}%でした！
     
     if (navigator.share) {
       try {
-        // Web Share API（モバイル対応）
-        await navigator.share({
+        const shareData = {
           title: 'TwinPersona診断結果',
           text: shareText,
           url: shareUrl,
-        });
+        };
+        
+        // 画像をファイルとして追加（対応ブラウザのみ）
+        if (shareImageBlob && navigator.canShare) {
+          const file = new File([shareImageBlob], 
+            `twinpersona-${results.mbti}-${results.characterInfo.code}.png`, 
+            { type: 'image/png' }
+          );
+          
+          if (navigator.canShare({ files: [file] })) {
+            shareData.files = [file];
+          }
+        }
+        
+        // Web Share API（モバイル対応）
+        await navigator.share(shareData);
       } catch (err) {
         if (err.name !== 'AbortError') {
           console.error('シェアに失敗しました:', err);
           // フォールバック：クリップボードコピー
-          fallbackShare(shareText, shareUrl, ogImageUrl);
+          fallbackShare(shareText, shareUrl, shareImageBlob || ogImageUrl);
         }
       }
     } else {
       // Web Share APIが利用できない場合
-      fallbackShare(shareText, shareUrl, ogImageUrl);
+      fallbackShare(shareText, shareUrl, shareImageBlob || ogImageUrl);
     }
   };;
 
   // フォールバック共有機能
-  const fallbackShare = async (shareText, shareUrl, ogImageUrl) => {
+  const fallbackShare = async (shareText, shareUrl, imageData) => {
     try {
-      // OGP画像をダウンロード
-      const response = await fetch(ogImageUrl);
-      const blob = await response.blob();
+      let blob;
+      
+      // imageDataがBlobの場合はそのまま使用、URLの場合は取得
+      if (imageData instanceof Blob) {
+        blob = imageData;
+      } else if (typeof imageData === 'string') {
+        // OGP画像URLから取得
+        const response = await fetch(imageData);
+        blob = await response.blob();
+      }
       
       // 一時的なダウンロードリンクを作成
       const url = window.URL.createObjectURL(blob);
