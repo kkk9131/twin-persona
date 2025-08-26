@@ -29,7 +29,13 @@ async function handler(req, res) {
           message: 'Payment service is not properly configured'
         });
       }
-      stripe = new Stripe(apiKey);
+      
+      console.log('Initializing Stripe with key:', apiKey ? `${apiKey.substring(0, 12)}...` : 'undefined');
+      stripe = new Stripe(apiKey, {
+        apiVersion: '2023-10-16',
+        timeout: 20000, // 20秒タイムアウト
+        maxNetworkRetries: 3
+      });
     }
     
     const { email } = req.body;
@@ -54,14 +60,28 @@ async function handler(req, res) {
     });
     
   } catch (error) {
-    console.error('Payment intent creation error:', error);
+    console.error('Payment intent creation error:', {
+      type: error.type,
+      message: error.message,
+      code: error.code,
+      statusCode: error.statusCode,
+      requestId: error.requestId
+    });
     
     // Stripeエラーの詳細な処理
     if (error.type === 'StripeAuthenticationError') {
       return res.status(401).json({ 
         error: 'Authentication failed',
         message: 'Stripe API key is invalid or missing',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        details: error.message
+      });
+    }
+    
+    if (error.type === 'StripeConnectionError') {
+      return res.status(503).json({ 
+        error: 'Connection error',
+        message: 'Unable to connect to Stripe. Please try again in a moment.',
+        retryable: true
       });
     }
     
@@ -72,11 +92,19 @@ async function handler(req, res) {
       });
     }
     
+    if (error.type === 'StripeAPIError') {
+      return res.status(502).json({ 
+        error: 'Stripe API error',
+        message: 'Stripe API temporarily unavailable. Please try again.',
+        retryable: true
+      });
+    }
+    
     return res.status(500).json({ 
       error: 'Payment intent creation failed',
-      message: error.message,
+      message: error.message || 'Unknown error occurred',
       type: error.type,
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      retryable: error.type === 'StripeConnectionError'
     });
   }
 }
