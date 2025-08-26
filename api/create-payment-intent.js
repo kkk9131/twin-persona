@@ -38,6 +38,7 @@ async function handler(req, res) {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: parseInt(process.env.PREMIUM_PRICE || '500'), // デフォルト500円
       currency: 'jpy',
+      payment_method_types: ['card'], // カード決済を明示的に指定
       metadata: {
         email: email || '',
         product: 'twin_persona_premium',
