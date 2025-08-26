@@ -25,7 +25,7 @@ const TokuteiPage = ({ onClose }) => {
               <tbody className="space-y-4">
                 <tr className="border-b border-dark-600/30">
                   <td className="font-semibold py-3 pr-6 text-dark-100 w-1/3">販売事業者名</td>
-                  <td className="py-3 text-dark-300">TwinPersona</td>
+                  <td className="py-3 text-dark-300">岡本和人</td>
                 </tr>
                 <tr className="border-b border-dark-600/30">
                   <td className="font-semibold py-3 pr-6 text-dark-100">代表者氏名</td>
@@ -80,7 +80,7 @@ const TokuteiPage = ({ onClose }) => {
                   <td className="py-3 text-dark-300">
                     パーソナリティ診断サービス（MBTI + Character Code）<br />
                     • 基本診断：無料<br />
-                    • プレミアム診断：AI生成画像、詳細分析、PDF出力
+                    • プレミアム診断：AI生成画像、詳細分析
                   </td>
                 </tr>
               </tbody>
@@ -103,8 +103,8 @@ const TokuteiPage = ({ onClose }) => {
 
           {/* フッター */}
           <div className="mt-8 pt-6 border-t border-dark-600/30 text-center text-sm text-dark-400">
-            <p>&copy; 2024 TwinPersona. All rights reserved.</p>
-            <p className="mt-2">最終更新日: 2024年8月26日</p>
+            <p>&copy; 2025 TwinPersona. All rights reserved.</p>
+            <p className="mt-2">最終更新日: 2025年8月26日</p>
           </div>
         </div>
       </div>
