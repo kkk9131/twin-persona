@@ -19,40 +19,61 @@ async function handler(req, res) {
   }
 
   try {
-    // Stripeインスタンスを初期化
-    if (!stripe) {
-      const apiKey = process.env.STRIPE_SECRET_KEY;
-      if (!apiKey) {
-        console.error('STRIPE_SECRET_KEY is not set');
-        return res.status(500).json({ 
-          error: 'Configuration error',
-          message: 'Payment service is not properly configured'
-        });
-      }
-      
-      console.log('Initializing Stripe with key:', apiKey ? `${apiKey.substring(0, 12)}...` : 'undefined');
-      stripe = new Stripe(apiKey, {
-        apiVersion: '2023-10-16',
-        timeout: 20000, // 20秒タイムアウト
-        maxNetworkRetries: 3
+    // 環境変数を明示的に確認
+    const apiKey = process.env.STRIPE_SECRET_KEY;
+    const environment = process.env.NODE_ENV || 'development';
+    
+    if (!apiKey) {
+      console.error('STRIPE_SECRET_KEY is not set in environment:', environment);
+      return res.status(500).json({ 
+        error: 'Configuration error',
+        message: 'Payment service is not properly configured',
+        environment
       });
     }
     
+    // キーの種類を確認
+    const isTestKey = apiKey.startsWith('sk_test_');
+    const isLiveKey = apiKey.startsWith('sk_live_');
+    
+    if (!isTestKey && !isLiveKey) {
+      console.error('Invalid Stripe key format:', apiKey.substring(0, 7));
+      return res.status(500).json({ 
+        error: 'Configuration error',
+        message: 'Invalid API key format'
+      });
+    }
+    
+    console.log('Stripe key type:', isTestKey ? 'test' : 'live');
+    
+    // Stripeインスタンスを毎回新規作成（キャッシュ問題を回避）
+    const stripe = new Stripe(apiKey, {
+      apiVersion: '2023-10-16',
+      timeout: 30000, // 30秒に延長
+      maxNetworkRetries: 5, // リトライ回数増加
+      telemetry: false // テレメトリ無効化で接続問題を回避
+    });
+    
     const { email } = req.body;
+
+    console.log('Creating PaymentIntent with amount: 500 JPY');
 
     // PaymentIntentを作成（500円）
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: parseInt(process.env.PREMIUM_PRICE || '500'), // デフォルト500円
+      amount: 500, // 固定値で確実性を向上
       currency: 'jpy',
       payment_method_types: ['card'], // カード決済を明示的に指定
       metadata: {
         email: email || '',
         product: 'twin_persona_premium',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        environment
       },
       receipt_email: email || undefined,
       description: 'TwinPersona プレミアム診断'
     });
+
+    console.log('PaymentIntent created successfully:', paymentIntent.id);
 
     return res.status(200).json({
       clientSecret: paymentIntent.client_secret,
