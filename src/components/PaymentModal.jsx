@@ -5,11 +5,14 @@ import { X, CreditCard, Mail } from 'lucide-react';
 
 // Stripe環境設定（本番/テスト自動判定）
 const getStripeKey = () => {
-  const viteKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || import.meta.env.VITE_STRIPE_PUB;
-  if (viteKey) return viteKey;
+  const viteKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+  if (!viteKey) {
+    console.error('VITE_STRIPE_PUBLISHABLE_KEY not found in environment');
+    throw new Error('Stripe configuration missing');
+  }
   
-  // フォールバック：テスト環境
-  return 'pk_test_51RzJ5jQl0WdwXwrDcFQYIqu7rSJ0CvXbv9FqSZQEouZVv3dzPRQ2ZPhKic9hzVG2pH5xjP9azWSL0rzCR9O4NcWR00KXTqxLb6';
+  console.log('Using Stripe key type:', viteKey.startsWith('pk_test_') ? 'test' : 'live');
+  return viteKey;
 };
 
 const stripePromise = loadStripe(getStripeKey());
