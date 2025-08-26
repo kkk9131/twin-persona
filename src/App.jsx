@@ -3457,6 +3457,25 @@ ${topScore.key} ${topScore.value}%でした！
 
       {/* 隠しキャンバス（画像生成用） */}
       <canvas ref={canvasRef} className="hidden" />
+      
+      {/* フッター */}
+      <footer className="bg-dark-800/80 backdrop-blur-sm border-t border-dark-600/50 py-6 mt-12">
+        <div className="container mx-auto px-4 text-center">
+          <div className="flex flex-wrap justify-center items-center gap-4 text-sm text-dark-400">
+            <span>&copy; 2024 TwinPersona</span>
+            <span>•</span>
+            <a 
+              href="/tokutei.html" 
+              target="_blank" 
+              className="text-dark-300 hover:text-dark-100 transition-colors"
+            >
+              特定商取引法表記
+            </a>
+            <span>•</span>
+            <span>先着100名様限定キャンペーン実施中</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
