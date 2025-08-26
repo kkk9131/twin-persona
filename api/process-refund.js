@@ -1,7 +1,7 @@
-import Stripe from 'stripe';
-import { Redis } from '@upstash/redis';
+const Stripe = require('stripe');
+const { Redis } = require('@upstash/redis');
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+let stripe = null;
 const redis = Redis.fromEnv();
 
 const FREE_CAMPAIGN_LIMIT = 100;
@@ -29,6 +29,18 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Stripeインスタンスを初期化
+    if (!stripe) {
+      const apiKey = process.env.STRIPE_SECRET_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ 
+          error: 'Configuration error',
+          message: 'Payment service is not properly configured'
+        });
+      }
+      stripe = new Stripe(apiKey);
+    }
+    
     const fingerprint = generateFingerprint(req);
     
     // 既に返金済みかチェック

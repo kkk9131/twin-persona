@@ -1,5 +1,5 @@
 // 簡易管理統計API（Basic認証付き）
-import { Redis } from '@upstash/redis';
+const { Redis } = require('@upstash/redis');
 
 const redis = Redis.fromEnv();
 

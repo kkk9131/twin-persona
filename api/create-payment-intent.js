@@ -1,6 +1,7 @@
-import Stripe from 'stripe';
+const Stripe = require('stripe');
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+// Stripe初期化を関数内に移動して、環境変数の読み込みを確実にする
+let stripe = null;
 
 export default async function handler(req, res) {
   // CORS設定
@@ -18,6 +19,19 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Stripeインスタンスを初期化
+    if (!stripe) {
+      const apiKey = process.env.STRIPE_SECRET_KEY;
+      if (!apiKey) {
+        console.error('STRIPE_SECRET_KEY is not set');
+        return res.status(500).json({ 
+          error: 'Configuration error',
+          message: 'Payment service is not properly configured'
+        });
+      }
+      stripe = new Stripe(apiKey);
+    }
+    
     const { email } = req.body;
 
     // PaymentIntentを作成（500円）
