@@ -40,9 +40,28 @@ export default async function handler(req, res) {
     
   } catch (error) {
     console.error('Payment intent creation error:', error);
+    
+    // Stripeエラーの詳細な処理
+    if (error.type === 'StripeAuthenticationError') {
+      return res.status(401).json({ 
+        error: 'Authentication failed',
+        message: 'Stripe API key is invalid or missing',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      });
+    }
+    
+    if (error.type === 'StripeInvalidRequestError') {
+      return res.status(400).json({ 
+        error: 'Invalid request',
+        message: error.message
+      });
+    }
+    
     return res.status(500).json({ 
       error: 'Payment intent creation failed',
-      message: error.message 
+      message: error.message,
+      type: error.type,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 }
