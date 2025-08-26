@@ -3,7 +3,16 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
 import { X, CreditCard, Mail } from 'lucide-react';
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51RzJ5jQl0WdwXwrDcFQYIqu7rSJ0CvXbv9FqSZQEouZVv3dzPRQ2ZPhKic9hzVG2pH5xjP9azWSL0rzCR9O4NcWR00KXTqxLb6');
+// Stripe環境設定（本番/テスト自動判定）
+const getStripeKey = () => {
+  const viteKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || import.meta.env.VITE_STRIPE_PUB;
+  if (viteKey) return viteKey;
+  
+  // フォールバック：テスト環境
+  return 'pk_test_51RzJ5jQl0WdwXwrDcFQYIqu7rSJ0CvXbv9FqSZQEouZVv3dzPRQ2ZPhKic9hzVG2pH5xjP9azWSL0rzCR9O4NcWR00KXTqxLb6';
+};
+
+const stripePromise = loadStripe(getStripeKey());
 
 // カード入力フォームコンポーネント
 const CheckoutForm = ({ email, setEmail, onSuccess, onClose }) => {
@@ -102,7 +111,7 @@ const CheckoutForm = ({ email, setEmail, onSuccess, onClose }) => {
           <CreditCard size={16} className="inline mr-1 text-gray-600" />
           カード情報
         </label>
-        <div className="p-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-purple-500 focus-within:border-purple-500">
+        <div className="p-4 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-purple-500 focus-within:border-purple-500 min-h-[50px] bg-white">
           <CardElement
             options={{
               hidePostalCode: true,
@@ -110,12 +119,18 @@ const CheckoutForm = ({ email, setEmail, onSuccess, onClose }) => {
                 base: {
                   fontSize: '16px',
                   color: '#374151',
+                  lineHeight: '1.5',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                  fontWeight: '400',
                   '::placeholder': {
                     color: '#9CA3AF',
                   },
                 },
                 invalid: {
                   color: '#EF4444',
+                },
+                complete: {
+                  color: '#10B981',
                 },
               },
             }}
@@ -147,9 +162,19 @@ const CheckoutForm = ({ email, setEmail, onSuccess, onClose }) => {
         )}
       </button>
 
-      <p className="text-xs text-gray-600 text-center">
-        🔒 安全な決済システムStripeを使用しています
-      </p>
+      <div className="text-xs text-gray-600 text-center space-y-1">
+        <p>🔒 安全な決済システムStripeを使用しています</p>
+        {getStripeKey().startsWith('pk_test_') && (
+          <p className="text-orange-600 font-medium">
+            ⚠️ テスト環境（決済は実行されません）
+          </p>
+        )}
+        {getStripeKey().startsWith('pk_live_') && (
+          <p className="text-green-600 font-medium">
+            ✅ 本番環境（実際に決済されます）
+          </p>
+        )}
+      </div>
     </form>
   );
 };
