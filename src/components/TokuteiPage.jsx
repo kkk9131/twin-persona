@@ -29,11 +29,11 @@ const TokuteiPage = ({ onClose }) => {
                 </tr>
                 <tr className="border-b border-dark-600/30">
                   <td className="font-semibold py-3 pr-6 text-dark-100">代表者氏名</td>
-                  <td className="py-3 text-dark-300">運営者</td>
+                  <td className="py-3 text-dark-300">岡本和人</td>
                 </tr>
                 <tr className="border-b border-dark-600/30">
                   <td className="font-semibold py-3 pr-6 text-dark-100">所在地</td>
-                  <td className="py-3 text-dark-300">日本</td>
+                  <td className="py-3 text-dark-300">大阪府</td>
                 </tr>
                 <tr className="border-b border-dark-600/30">
                   <td className="font-semibold py-3 pr-6 text-dark-100">電話番号</td>
@@ -41,7 +41,7 @@ const TokuteiPage = ({ onClose }) => {
                 </tr>
                 <tr className="border-b border-dark-600/30">
                   <td className="font-semibold py-3 pr-6 text-dark-100">メールアドレス</td>
-                  <td className="py-3 text-dark-300">support@twin-persona.com</td>
+                  <td className="py-3 text-dark-300">kz.m29@icloud.com</td>
                 </tr>
                 <tr className="border-b border-dark-600/30">
                   <td className="font-semibold py-3 pr-6 text-dark-100">販売価格</td>
