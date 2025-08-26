@@ -1,5 +1,5 @@
-const Stripe = require('stripe');
-const { addValidToken } = require('./verify-token.js');
+import Stripe from 'stripe';
+import { addValidToken } from './verify-token.js';
 
 let stripe = null;
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -75,9 +75,9 @@ async function handler(req, res) {
   res.status(200).json({ received: true });
 }
 
-module.exports = handler;
+export default handler;
 
-module.exports.config = {
+export const config = {
   api: {
     bodyParser: {
       sizeLimit: '1mb',

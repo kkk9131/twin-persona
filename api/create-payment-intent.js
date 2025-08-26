@@ -1,4 +1,4 @@
-const Stripe = require('stripe');
+import Stripe from 'stripe';
 
 // Stripe初期化を関数内に移動して、環境変数の読み込みを確実にする
 let stripe = null;
@@ -80,4 +80,4 @@ async function handler(req, res) {
   }
 }
 
-module.exports = handler;
+export default handler;

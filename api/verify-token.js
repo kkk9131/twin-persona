@@ -78,5 +78,5 @@ function addValidToken(token, email, paymentIntentId) {
   }
 }
 
-module.exports = handler;
-module.exports.addValidToken = addValidToken;
+export default handler;
+export { addValidToken };

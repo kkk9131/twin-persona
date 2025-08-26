@@ -1,5 +1,5 @@
 // 簡易管理統計API（Basic認証付き）
-const { Redis } = require('@upstash/redis');
+import { Redis } from '@upstash/redis';
 
 const redis = Redis.fromEnv();
 
@@ -81,4 +81,4 @@ async function handler(req, res) {
   }
 }
 
-module.exports = handler;
+export default handler;

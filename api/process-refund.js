@@ -1,5 +1,5 @@
-const Stripe = require('stripe');
-const { Redis } = require('@upstash/redis');
+import Stripe from 'stripe';
+import { Redis } from '@upstash/redis';
 
 let stripe = null;
 const redis = Redis.fromEnv();
@@ -155,4 +155,4 @@ async function handler(req, res) {
   }
 }
 
-module.exports = handler;
+export default handler;
