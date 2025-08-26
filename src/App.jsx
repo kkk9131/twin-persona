@@ -3,6 +3,7 @@ import { Download, Share2, Camera, ChevronRight, Sparkles, ChevronLeft, RefreshC
 import PaymentModal from './components/PaymentModal';
 import CampaignModal from './components/CampaignModal';
 import FeedbackModal from './components/FeedbackModal';
+import TokuteiPage from './components/TokuteiPage';
 import { CHARACTER_CODE_16_TYPES, CHARACTER_CODE_GROUPS, CHARACTER_CODE_16_QUESTIONS, calculateCharacterCode16Type } from './data/characterCode16Types';
 import { AdviceService } from './services/adviceService';
 import { ImageService } from './services/imageService';
@@ -1578,6 +1579,7 @@ const App = () => {
   const [characterImage, setCharacterImage] = useState(null); // DALL-E 3 キャラクター画像
   const [imageLoading, setImageLoading] = useState(false); // 画像生成中
   const [imageError, setImageError] = useState(null); // 画像生成エラー
+  const [showTokuteiPage, setShowTokuteiPage] = useState(false); // 特定商取引法表記ページ表示
   const canvasRef = useRef(null);
 
   // MBTI結果計算
@@ -2270,6 +2272,12 @@ ${topScore.key} ${topScore.value}%でした！
   };
 
   // レンダリング
+  
+  // 特定商取引法表記ページの表示
+  if (showTokuteiPage) {
+    return <TokuteiPage onClose={() => setShowTokuteiPage(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-rich-gradient font-sans particle-bg">
       {/* 開始画面 */}
@@ -3464,13 +3472,12 @@ ${topScore.key} ${topScore.value}%でした！
           <div className="flex flex-wrap justify-center items-center gap-4 text-sm text-dark-400">
             <span>&copy; 2024 TwinPersona</span>
             <span>•</span>
-            <a 
-              href="/tokutei.html" 
-              target="_blank" 
-              className="text-dark-300 hover:text-dark-100 transition-colors"
+            <button 
+              onClick={() => setShowTokuteiPage(true)}
+              className="text-dark-300 hover:text-dark-100 transition-colors underline"
             >
               特定商取引法表記
-            </a>
+            </button>
             <span>•</span>
             <span>先着100名様限定キャンペーン実施中</span>
           </div>

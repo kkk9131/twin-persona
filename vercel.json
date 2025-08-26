@@ -1,15 +1,8 @@
 {
-  "routes": [
+  "rewrites": [
     {
-      "src": "/tokutei.html",
-      "dest": "/tokutei.html",
-      "headers": {
-        "cache-control": "s-maxage=86400"
-      }
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
     }
   ]
 }
