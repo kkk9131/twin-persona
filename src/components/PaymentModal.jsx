@@ -11,7 +11,7 @@ const getStripeKey = () => {
     throw new Error('Stripe configuration missing');
   }
   
-  console.log('Using Stripe key type:', viteKey.startsWith('pk_test_') ? 'test' : 'live');
+  console.log('[Stripe] Using publishable key type:', viteKey.startsWith('pk_test_') ? 'test' : 'live');
   return viteKey;
 };
 
@@ -76,7 +76,16 @@ const CheckoutForm = ({ email, setEmail, onSuccess, onClose }) => {
       });
 
       if (error) {
-        setError(error.message);
+        // 詳細をコンソールに出力（ユーザー画面には簡易表示）
+        console.error('[Stripe] confirmCardPayment error', {
+          message: error?.message,
+          code: error?.code,
+          decline_code: error?.decline_code,
+          payment_intent_status: error?.payment_intent?.status,
+          last_payment_error: error?.payment_intent?.last_payment_error?.message
+        });
+        const extra = [error?.code, error?.decline_code].filter(Boolean).join(' / ');
+        setError(extra ? `${error.message}\n(${extra})` : error.message);
       } else if (paymentIntent.status === 'succeeded') {
         // 決済成功
         onSuccess({
