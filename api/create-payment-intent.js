@@ -1,7 +1,7 @@
 // Vercel環境に最適化されたStripeインポート
-const Stripe = require('stripe');
+import Stripe from 'stripe';
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // CORS設定
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -62,14 +62,13 @@ module.exports = async function handler(req, res) {
     console.log('Creating PaymentIntent with amount: 500 JPY');
     console.log('Using Stripe API key type:', isTestKey ? 'test' : 'live');
     
-    // Stripe接続テスト
-    try {
-      const stripeAccount = await stripe.accounts.retrieve();
-      console.log('Stripe connection successful. Account ID:', stripeAccount.id);
-    } catch (connectionTest) {
-      console.error('Stripe connection test failed:', connectionTest.message);
-      // テストが失敗しても続行を試みる
-    }
+    // Stripe接続テストは一時的に無効化（accounts.retrieveはAPIキーの権限によってはエラーになる可能性があるため）
+    // try {
+    //   const stripeAccount = await stripe.accounts.retrieve();
+    //   console.log('Stripe connection successful. Account ID:', stripeAccount.id);
+    // } catch (connectionTest) {
+    //   console.error('Stripe connection test failed:', connectionTest.message);
+    // }
 
     // PaymentIntentを作成（500円）
     const paymentIntent = await stripe.paymentIntents.create({
