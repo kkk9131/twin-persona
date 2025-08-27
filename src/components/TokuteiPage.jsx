@@ -25,7 +25,7 @@ const TokuteiPage = ({ onClose }) => {
               <tbody className="space-y-4">
                 <tr className="border-b border-dark-600/30">
                   <td className="font-semibold py-3 pr-6 text-dark-100 w-1/3">法人名</td>
-                  <td className="py-3 text-dark-300">岡本和人</td>
+                  <td className="py-3 text-dark-300">ご請求があった場合には速やかに開示いたします</td>
                 </tr>
                 <tr className="border-b border-dark-600/30">
                   <td className="font-semibold py-3 pr-6 text-dark-100">住所</td>
