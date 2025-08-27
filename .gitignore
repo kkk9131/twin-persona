@@ -128,3 +128,4 @@ Thumbs.db
 
 # Debug and test files
 tests/
+.env*.local

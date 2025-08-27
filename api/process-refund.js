@@ -29,18 +29,6 @@ async function handler(req, res) {
   }
 
   try {
-    // Stripeインスタンスを初期化
-    if (!stripe) {
-      const apiKey = process.env.STRIPE_SECRET_KEY;
-      if (!apiKey) {
-        return res.status(500).json({ 
-          error: 'Configuration error',
-          message: 'Payment service is not properly configured'
-        });
-      }
-      stripe = new Stripe(apiKey);
-    }
-    
     const fingerprint = generateFingerprint(req);
     
     // 既に返金済みかチェック
@@ -61,6 +49,18 @@ async function handler(req, res) {
       });
     }
 
+    // Stripeインスタンスを初期化
+    if (!stripe) {
+      const apiKey = process.env.STRIPE_SECRET_KEY;
+      if (!apiKey) {
+        return res.status(500).json({ 
+          error: 'Configuration error',
+          message: 'Payment service is not properly configured'
+        });
+      }
+      stripe = new Stripe(apiKey);
+    }
+    
     // Stripe PaymentIntentの取得と検証
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
     

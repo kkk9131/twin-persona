@@ -24,6 +24,7 @@ const CheckoutForm = ({ email, setEmail, onSuccess, onClose }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState('');
 
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -102,9 +103,8 @@ const CheckoutForm = ({ email, setEmail, onSuccess, onClose }) => {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-gray-800 placeholder-gray-400"
-          placeholder="your@email.com"
-          disabled={isProcessing}
+          placeholder="your-email@example.com"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-800"
           required
         />
       </div>
@@ -114,35 +114,30 @@ const CheckoutForm = ({ email, setEmail, onSuccess, onClose }) => {
           <CreditCard size={16} className="inline mr-1 text-gray-600" />
           カード情報
         </label>
-        <div className="p-4 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-purple-500 focus-within:border-purple-500 min-h-[50px] bg-white">
+        <div className="border border-gray-300 rounded-lg p-3 bg-white">
           <CardElement
             options={{
-              hidePostalCode: true,
               style: {
                 base: {
                   fontSize: '16px',
-                  color: '#374151',
-                  lineHeight: '1.5',
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                  fontWeight: '400',
+                  color: '#1f2937',
                   '::placeholder': {
-                    color: '#9CA3AF',
+                    color: '#6b7280',
                   },
+                  backgroundColor: '#ffffff',
                 },
                 invalid: {
-                  color: '#EF4444',
-                },
-                complete: {
-                  color: '#10B981',
+                  color: '#ef4444',
                 },
               },
+              hidePostalCode: true,
             }}
           />
         </div>
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm whitespace-pre-line">
           {error}
         </div>
       )}
@@ -150,33 +145,13 @@ const CheckoutForm = ({ email, setEmail, onSuccess, onClose }) => {
       <button
         type="submit"
         disabled={!stripe || isProcessing}
-        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 rounded-lg font-medium hover:from-purple-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg transition-all duration-200"
+        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
       >
-        {isProcessing ? (
-          <>
-            <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
-            処理中...
-          </>
-        ) : (
-          <>
-            <CreditCard size={20} className="mr-2" />
-            ¥500 で決済して診断を開始
-          </>
-        )}
+        {isProcessing ? '処理中...' : '¥500 で購入'}
       </button>
 
-      <div className="text-xs text-gray-600 text-center space-y-1">
-        <p>🔒 安全な決済システムStripeを使用しています</p>
-        {getStripeKey().startsWith('pk_test_') && (
-          <p className="text-orange-600 font-medium">
-            ⚠️ テスト環境（決済は実行されません）
-          </p>
-        )}
-        {getStripeKey().startsWith('pk_live_') && (
-          <p className="text-green-600 font-medium">
-            ✅ 本番環境（実際に決済されます）
-          </p>
-        )}
+      <div className="text-xs text-gray-500 text-center">
+        <p>🔒 SSL暗号化通信で安全に処理されます</p>
       </div>
     </form>
   );

@@ -1757,7 +1757,7 @@ const App = () => {
   };
 
   // シェア画像生成
-  const generateShareImage = useCallback(() => {
+  const generateShareImage = useCallback(async () => {
     if (!results || !canvasRef.current) return;
     
     const canvas = canvasRef.current;
@@ -1774,34 +1774,87 @@ const App = () => {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, 800, 800);
     
-    // タイトル
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 48px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText(results.title, 400, 150);
+    // AI生成画像がある場合は描画
+    if (characterImage?.imageUrl) {
+      try {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = characterImage.imageUrl;
+        });
+        
+        // 画像を中央上部に配置（サイズ調整）
+        const imgSize = 300;
+        const imgX = (800 - imgSize) / 2;
+        const imgY = 80;
+        
+        // 白い枠を追加
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(imgX - 5, imgY - 5, imgSize + 10, imgSize + 10);
+        
+        // 画像を描画
+        ctx.drawImage(img, imgX, imgY, imgSize, imgSize);
+        
+        // タイトル位置を調整
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 36px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(results.title, 400, 420);
+      } catch (error) {
+        console.error('Failed to load AI generated image:', error);
+        // AI画像の読み込みに失敗した場合は通常のレイアウト
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 48px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText(results.title, 400, 150);
+      }
+    } else {
+      // AI画像がない場合は通常のレイアウト
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 48px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(results.title, 400, 150);
+    }
+    
+    // AI画像の有無でレイアウトを調整
+    const hasAIImage = characterImage?.imageUrl;
+    const contentStartY = hasAIImage ? 470 : 220;
     
     // ギャップ分析
-    ctx.font = '28px Arial';
-    ctx.fillText(results.gapAnalysis.statement, 400, 220);
+    ctx.font = '24px Arial';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.fillText(results.gapAnalysis.statement, 400, contentStartY);
     
     // MBTI結果
-    ctx.font = '32px Arial';
-    ctx.fillText(`MBTI: ${results.mbti}`, 400, 300);
-    ctx.fillText(`(${results.mbtiInfo.name})`, 400, 340);
+    ctx.font = '28px Arial';
+    ctx.fillText(`MBTI: ${results.mbti} (${results.mbtiInfo.name})`, 400, contentStartY + 50);
     
     // Character Code結果（16タイプ）
-    ctx.fillText(`charactercode: ${results.characterInfo.code} (${results.characterInfo.name})`, 400, 420);
+    ctx.fillText(`CharacterCode: ${results.characterInfo.code}`, 400, contentStartY + 90);
+    ctx.fillText(`(${results.characterInfo.name})`, 400, contentStartY + 120);
     
     // グループ情報
-    ctx.font = '24px Arial';
-    ctx.fillText(`${CHARACTER_CODE_GROUPS[results.characterInfo.group]?.name}グループ`, 400, 460);
+    ctx.font = '20px Arial';
+    ctx.fillText(`${CHARACTER_CODE_GROUPS[results.characterInfo.group]?.name}グループ`, 400, contentStartY + 160);
     
-    // スコア表示
-    const scores = Object.entries(results.scores);
-    scores.forEach(([key, value], index) => {
-      const y = 520 + index * 35;
-      ctx.fillText(`${key}: ${value}%`, 400, y);
-    });
+    // スコア表示（AI画像がある場合は簡略化）
+    if (!hasAIImage) {
+      const scores = Object.entries(results.scores);
+      scores.forEach(([key, value], index) => {
+        const y = contentStartY + 200 + index * 30;
+        ctx.fillText(`${key}: ${value}%`, 400, y);
+      });
+    } else {
+      // AI画像がある場合は最高スコアのみ表示
+      const scores = Object.entries(results.scores);
+      const topScore = scores.reduce((max, [key, value]) => 
+        value > max[1] ? [key, value] : max, ['', 0]);
+      ctx.font = '24px Arial';
+      ctx.fillText(`最高スコア: ${topScore[0]} ${topScore[1]}%`, 400, contentStartY + 200);
+    }
     
     // フッター
     ctx.font = '20px Arial';
@@ -1869,7 +1922,7 @@ ${topScore.key} ${topScore.value}%でした！
     
     // AI画像がない、または取得に失敗した場合はCanvas画像を使用
     if (!shareImageBlob) {
-      generateShareImage();
+      await generateShareImage();
       const canvas = canvasRef.current;
       if (canvas) {
         const canvasBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
@@ -2031,16 +2084,16 @@ ${topScore.key} ${topScore.value}%でした！
     window.open(lineUrl, '_blank');
   };
 
-  // 画像ダウンロード
-  const handleDownload = () => {
-    generateShareImage();
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const link = document.createElement('a');
-      link.download = `twinpersona-${results.mbti}-${results.characterInfo.code}.png`;
-      link.href = canvas.toDataURL();
-      link.click();
-    }
+  // AI生成画像のダウンロード（有料版のみ）
+  const handleDownloadAIImage = () => {
+    if (!characterImage?.imageUrl) return;
+    
+    // AI生成画像を直接ダウンロード
+    const link = document.createElement('a');
+    link.download = `twinpersona-${results.mbti}-${results.characterInfo.code}-ai.png`;
+    link.href = characterImage.imageUrl;
+    link.target = '_blank'; // 新しいタブで開く（CORSエラー回避）
+    link.click();
   };;
 
   // 写真アップロード処理
@@ -2184,6 +2237,19 @@ ${topScore.key} ${topScore.value}%でした！
     setIsPremium(true);
     setShowPaymentModal(false);
     setStep('gender');
+  };
+  // デモ用決済成功処理（Stripe接続問題の回避用）
+  const handleDemoPayment = () => {
+    const demoPaymentId = `demo_pi_${Date.now()}`;
+    console.log('デモ決済実行:', demoPaymentId);
+    setAccessToken(`premium_${demoPaymentId}_${Date.now()}`);
+    setPaymentIntentId(demoPaymentId);
+    setIsPremium(true);
+    setShowPaymentModal(false);
+    setStep('gender');
+    
+    // デモ用アラート
+    alert('⚠️ デモモード: Stripe接続問題のため、実際の決済は行われていません。\n返金システムのテストが可能です。');
   };
 
   // ショア時の返金処理
@@ -3417,16 +3483,16 @@ ${topScore.key} ${topScore.value}%でした！
               
               {/* その他のアクション */}
               <div className="flex flex-col sm:flex-row justify-center gap-3">
-                <button
-                  onClick={() => {
-                    generateShareImage();
-                    setTimeout(handleDownload, 100);
-                  }}
-                  className="btn-secondary"
-                >
-                  <Download className="w-5 h-5 inline mr-2" />
-                  画像をダウンロード
-                </button>
+                {/* AI生成画像がある場合のみダウンロードボタンを表示 */}
+                {characterImage?.imageUrl && (
+                  <button
+                    onClick={handleDownloadAIImage}
+                    className="btn-secondary"
+                  >
+                    <Download className="w-5 h-5 inline mr-2" />
+                    AI画像をダウンロード
+                  </button>
+                )}
                 
                 <button
                   onClick={handleRestart}
@@ -3470,7 +3536,7 @@ ${topScore.key} ${topScore.value}%でした！
       <footer className="bg-dark-800/80 backdrop-blur-sm border-t border-dark-600/50 py-6 mt-12">
         <div className="container mx-auto px-4 text-center">
           <div className="flex flex-wrap justify-center items-center gap-4 text-sm text-dark-400">
-            <span>&copy; 2024 TwinPersona</span>
+            <span>&copy; 2025 TwinPersona</span>
             <span>•</span>
             <button 
               onClick={() => setShowTokuteiPage(true)}
