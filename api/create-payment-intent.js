@@ -1,9 +1,7 @@
-import Stripe from 'stripe';
+// Vercel環境に最適化されたStripeインポート
+const Stripe = require('stripe');
 
-// Stripe初期化を関数内に移動して、環境変数の読み込みを確実にする
-let stripe = null;
-
-async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // CORS設定
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -22,6 +20,11 @@ async function handler(req, res) {
     // 環境変数を明示的に確認
     const apiKey = process.env.STRIPE_SECRET_KEY;
     const environment = process.env.NODE_ENV || 'development';
+    
+    console.log('API Handler called. Environment:', environment);
+    console.log('Stripe key exists:', !!apiKey);
+    console.log('Request method:', req.method);
+    console.log('Request headers:', req.headers);
     
     if (!apiKey) {
       console.error('STRIPE_SECRET_KEY is not set in environment:', environment);
@@ -46,17 +49,27 @@ async function handler(req, res) {
     
     console.log('Stripe key type:', isTestKey ? 'test' : 'live');
     
-    // Stripeインスタンスを毎回新規作成（キャッシュ問題を回避）
-    const stripe = new Stripe(apiKey, {
+    // Stripe SDKを正しく初期化（Vercel環境に最適化）
+    const stripe = Stripe(apiKey, {
       apiVersion: '2023-10-16',
-      timeout: 30000, // 30秒に延長
-      maxNetworkRetries: 5, // リトライ回数増加
-      telemetry: false // テレメトリ無効化で接続問題を回避
+      httpAgent: null, // デフォルトのHTTPエージェントを使用
+      timeout: 20000, // 20秒のタイムアウト（Vercel関数の制限内）
+      maxNetworkRetries: 2 // リトライ回数を控えめに設定
     });
     
     const { email } = req.body;
 
     console.log('Creating PaymentIntent with amount: 500 JPY');
+    console.log('Using Stripe API key type:', isTestKey ? 'test' : 'live');
+    
+    // Stripe接続テスト
+    try {
+      const stripeAccount = await stripe.accounts.retrieve();
+      console.log('Stripe connection successful. Account ID:', stripeAccount.id);
+    } catch (connectionTest) {
+      console.error('Stripe connection test failed:', connectionTest.message);
+      // テストが失敗しても続行を試みる
+    }
 
     // PaymentIntentを作成（500円）
     const paymentIntent = await stripe.paymentIntents.create({
@@ -81,12 +94,17 @@ async function handler(req, res) {
     });
     
   } catch (error) {
+    // 詳細なエラーログ
     console.error('Payment intent creation error:', {
       type: error.type,
       message: error.message,
       code: error.code,
       statusCode: error.statusCode,
-      requestId: error.requestId
+      requestId: error.requestId,
+      raw: error.raw,
+      errno: error.errno,
+      syscall: error.syscall,
+      hostname: error.hostname
     });
     
     // Stripeエラーの詳細な処理
@@ -99,9 +117,19 @@ async function handler(req, res) {
     }
     
     if (error.type === 'StripeConnectionError') {
+      // 詳細な接続エラー情報をログに出力
+      console.error('StripeConnectionError - Detailed info:', {
+        message: error.message,
+        errno: error.errno,
+        code: error.code,
+        syscall: error.syscall,
+        hostname: error.hostname,
+        stack: error.stack?.split('\n').slice(0, 3).join('\n')
+      });
+      
       return res.status(503).json({ 
         error: 'Connection error',
-        message: 'Unable to connect to Stripe. Please try again in a moment.',
+        message: '決済サービスへの接続に問題が発生しています。しばらくしてから再度お試しください。',
         retryable: true
       });
     }
@@ -129,5 +157,3 @@ async function handler(req, res) {
     });
   }
 }
-
-export default handler;
