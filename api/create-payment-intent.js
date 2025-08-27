@@ -19,11 +19,27 @@ export default async function handler(req, res) {
     const { email } = req.body;
     
     // 環境変数の存在確認
-    const apiKey = process.env.STRIPE_SECRET_KEY;
-    if (!apiKey) {
+    const rawKey = process.env.STRIPE_SECRET_KEY;
+    if (!rawKey) {
       return res.status(500).json({ 
         error: 'Configuration error',
         message: 'Stripe API key not found'
+      });
+    }
+    // 余計な空白・囲み引用符を除去して簡易検証
+    let apiKey = rawKey.trim();
+    if ((apiKey.startsWith('"') && apiKey.endsWith('"')) || (apiKey.startsWith("'") && apiKey.endsWith("'"))) {
+      apiKey = apiKey.slice(1, -1);
+    }
+    const keyLooksValid = /^(sk|rk)_(live|test)_[A-Za-z0-9]+$/.test(apiKey);
+    if (!keyLooksValid) {
+      const debug = process.env.STRIPE_DEBUG_ERRORS === 'true';
+      const masked = `${apiKey.slice(0, 8)}...${apiKey.slice(-4)}`;
+      console.error('Invalid STRIPE_SECRET_KEY format detected', { masked });
+      return res.status(500).json({
+        error: 'Configuration error',
+        message: 'Stripe API key format invalid',
+        ...(debug ? { maskedKey: masked } : {})
       });
     }
     
