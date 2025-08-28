@@ -1,5 +1,5 @@
-import Stripe from 'stripe';
 import { addValidToken } from './verify-token.js';
+import { createStripeClient } from './_stripe-util.js';
 
 let stripe = null;
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -9,14 +9,14 @@ async function handler(req, res) {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  // Initialize Stripe inside the handler
+  // Initialize Stripe via shared util (includes key sanitization)
   if (!stripe) {
-    const apiKey = process.env.STRIPE_SECRET_KEY;
-    if (!apiKey) {
-      console.error('STRIPE_SECRET_KEY not found in environment');
+    try {
+      stripe = await createStripeClient();
+    } catch (e) {
+      console.error('Failed to initialize Stripe client', { message: e?.message, code: e?.code, maskedKey: e?.maskedKey });
       return res.status(500).json({ error: 'Configuration error' });
     }
-    stripe = new Stripe(apiKey);
   }
 
   const sig = req.headers['stripe-signature'];
